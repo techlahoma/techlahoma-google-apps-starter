@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "data-automation",
+  "description": "Durable unattended automation with provenance and last-known-good publication.",
+  "files": [
+    {
+      "source": "files/schemas/run-ledger.schema.json",
+      "target": "schemas/run-ledger.schema.json",
+      "render": false
+    },
+    {
+      "source": "files/scripts/validate-run-ledger.py",
+      "target": "scripts/validate-run-ledger.py",
+      "render": false
+    },
+    {
+      "source": "files/docs/operations/data-automation.md",
+      "target": "docs/operations/data-automation.md",
+      "render": true
+    }
+  ],
+  "verification": [
+    "python3 scripts/validate-run-ledger.py PATH"
+  ]
+}

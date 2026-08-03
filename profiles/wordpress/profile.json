@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "wordpress",
+  "description": "WordPress plugin, theme, and managed-host release safety.",
+  "files": [
+    {
+      "source": "files/phpcs.xml.dist",
+      "target": "phpcs.xml.dist",
+      "render": false
+    },
+    {
+      "source": "files/scripts/wordpress-verify.sh",
+      "target": "scripts/wordpress-verify.sh",
+      "render": false
+    },
+    {
+      "source": "files/docs/operations/wordpress.md",
+      "target": "docs/operations/wordpress.md",
+      "render": true
+    },
+    {
+      "source": "files/docs/templates/wordpress-release-verification.md",
+      "target": "docs/templates/wordpress-release-verification.md",
+      "render": false
+    }
+  ],
+  "verification": [
+    "bash scripts/wordpress-verify.sh --strict",
+    "project-specific PHPUnit or integration tests",
+    "project-specific browser tests",
+    "managed-host post-deployment checks"
+  ]
+}

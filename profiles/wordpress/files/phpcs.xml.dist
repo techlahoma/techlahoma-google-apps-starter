@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="Project WordPress Coding Standards">
+  <description>WordPress interoperability, documentation, and security checks.</description>
+
+  <file>.</file>
+
+  <arg name="basepath" value="."/>
+  <arg name="colors"/>
+  <arg name="extensions" value="php"/>
+  <arg name="parallel" value="4"/>
+  <arg value="sp"/>
+
+  <exclude-pattern>/build/</exclude-pattern>
+  <exclude-pattern>/dist/</exclude-pattern>
+  <exclude-pattern>/node_modules/</exclude-pattern>
+  <exclude-pattern>/profiles/</exclude-pattern>
+  <exclude-pattern>/vendor/</exclude-pattern>
+
+  <rule ref="WordPress"/>
+</ruleset>

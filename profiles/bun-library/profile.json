@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "bun-library",
+  "description": "A private pure-ESM Bun library package with tsdown and explicit verification.",
+  "files": [
+    {
+      "source": "files/packages/library/bunfig.toml",
+      "target": "packages/library/bunfig.toml",
+      "render": false
+    },
+    {
+      "source": "files/packages/library/package.json",
+      "target": "packages/library/package.json",
+      "render": true
+    },
+    {
+      "source": "files/packages/library/biome.json",
+      "target": "packages/library/biome.json",
+      "render": false
+    },
+    {
+      "source": "files/packages/library/.oxlintrc.json",
+      "target": "packages/library/.oxlintrc.json",
+      "render": false
+    },
+    {
+      "source": "files/packages/library/tsconfig.json",
+      "target": "packages/library/tsconfig.json",
+      "render": false
+    },
+    {
+      "source": "files/packages/library/tsdown.config.ts",
+      "target": "packages/library/tsdown.config.ts",
+      "render": false
+    },
+    {
+      "source": "files/packages/library/src/index.ts",
+      "target": "packages/library/src/index.ts",
+      "render": true
+    },
+    {
+      "source": "files/packages/library/src/index.test.ts",
+      "target": "packages/library/src/index.test.ts",
+      "render": true
+    }
+  ],
+  "verification": [
+    "bun install --cwd packages/library",
+    "bun run --cwd packages/library verify"
+  ]
+}

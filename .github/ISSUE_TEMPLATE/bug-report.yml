@@ -1,0 +1,83 @@
+name: Bug report
+description: Report reproducible behavior that differs from the project contract.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep this report small and reproducible. Paste text logs instead of
+        screenshots, remove secrets and personal data, and confirm the problem
+        belongs to this repository rather than an upstream dependency.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: State the observed behavior and why it is a problem.
+      placeholder: A clear, concise description of the failure.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: |
+        Link a minimal repository or provide the smallest files and commands
+        needed to reproduce the problem.
+      placeholder: |
+        Repository or sandbox URL:
+        Commands:
+        1.
+        2.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Describe the result required by the documented contract.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Describe the repeatable result, including frequency.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Paste relevant runtime, package-manager, operating-system, browser, and
+        project version output. Do not include tokens or private environment
+        values.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Text logs
+      description: Paste the shortest relevant text log or stack trace.
+      render: shell
+
+  - type: checkboxes
+    id: validations
+    attributes:
+      label: Intake checks
+      options:
+        - label: I searched existing issues for the same behavior.
+          required: true
+        - label: I reproduced this from a clean checkout or documented why that is not possible.
+          required: true
+        - label: I removed credentials, personal data, customer data, and unrelated logs.
+          required: true
+        - label: I confirmed the failing behavior belongs to this repository or identified the uncertain boundary.
+          required: true

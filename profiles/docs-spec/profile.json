@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "docs-spec",
+  "description": "Docs-as-spec routing, open questions, privacy, and release proof.",
+  "files": [
+    {
+      "source": "files/docs/project/open-questions.md",
+      "target": "docs/project/open-questions.md",
+      "render": true
+    },
+    {
+      "source": "files/docs/operations/docs-spec-release.md",
+      "target": "docs/operations/docs-spec-release.md",
+      "render": true
+    },
+    {
+      "source": "files/scripts/docs-route-check.sh",
+      "target": "scripts/docs-route-check.sh",
+      "render": false
+    }
+  ],
+  "verification": [
+    "bash scripts/docs-route-check.sh PUBLIC_URL PROTECTED_URL"
+  ]
+}

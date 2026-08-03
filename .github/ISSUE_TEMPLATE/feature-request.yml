@@ -1,0 +1,70 @@
+name: Feature request
+description: Propose a bounded outcome tied to a real problem.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the problem and affected user. A proposed implementation is
+        useful, but it should not substitute for a clear outcome and boundary.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who has this problem, what are they trying to do, and what happens today?
+      placeholder: When [user] tries to [goal], [current consequence].
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and frequency
+      description: Link or summarize real examples. Label assumptions and unknowns.
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable success without prescribing unnecessary implementation detail.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed direction
+      description: Describe a possible interface, behavior, or workflow.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include the current workaround and why it is insufficient.
+    validations:
+      required: true
+
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals and constraints
+      description: State what this request should not change or automate.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: validations
+    attributes:
+      label: Intake checks
+      options:
+        - label: I searched existing issues for the same request.
+          required: true
+        - label: I separated confirmed evidence from assumptions.
+          required: true
+        - label: This request does not include credentials, private customer data, or fabricated evidence.
+          required: true

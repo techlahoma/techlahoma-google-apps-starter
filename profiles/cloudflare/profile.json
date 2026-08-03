@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "cloudflare",
+  "description": "Scale-to-zero Cloudflare deployment and live-verification contract.",
+  "files": [
+    {
+      "source": "files/wrangler.jsonc",
+      "target": "wrangler.jsonc",
+      "render": true
+    },
+    {
+      "source": "files/docs/operations/cloudflare.md",
+      "target": "docs/operations/cloudflare.md",
+      "render": true
+    },
+    {
+      "source": "files/scripts/cloudflare-verify.sh",
+      "target": "scripts/cloudflare-verify.sh",
+      "render": false
+    }
+  ],
+  "verification": [
+    "wrangler whoami",
+    "bash scripts/cloudflare-verify.sh URL"
+  ]
+}

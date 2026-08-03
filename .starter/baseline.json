@@ -1,0 +1,478 @@
+{
+  "schema_version": 1,
+  "starter": {
+    "source": "ThatGuySam/project-starter",
+    "version": "2.0.0",
+    "source_revision": null
+  },
+  "tracked_roots": [
+    ".editorconfig",
+    ".github",
+    ".gitignore",
+    "AGENTS.md",
+    "CHATGPT-PROJECT-INSTRUCTIONS.md",
+    "PROJECT.md",
+    "README.md",
+    "SECURITY.md",
+    "bunfig.toml",
+    "docs",
+    "mise.toml",
+    "prek.toml",
+    "profiles",
+    "scripts",
+    "tests"
+  ],
+  "owned_paths": [
+    {
+      "path": ".editorconfig",
+      "policy": "merge",
+      "base_sha256": "a6b98ea7cb6d61ed8d430dd0dffa46c87012b5cf859d4ce7207898954951fdcd"
+    },
+    {
+      "path": ".github/CODEOWNERS",
+      "policy": "merge",
+      "base_sha256": "3b8d299c705d97150d0fb5061db584978f3e7d28976de6766d2255ecc6caab09"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug-report.yml",
+      "policy": "managed",
+      "base_sha256": "988cefe051ac5a8e16afb62bd9e6cb0c872e9b45b98996eaa44c1d4c4af3c8e6"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "policy": "managed",
+      "base_sha256": "8b09e7df09fc7534371988062769ee427af2954a02c04c763e8a8005be0f2be4"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature-request.yml",
+      "policy": "managed",
+      "base_sha256": "2cad4d4adf96aa4282f90a2e2dc0276b39b933b251a7a2e3076198a66ab848ba"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "policy": "merge",
+      "base_sha256": "639512aa9077bbc09c96d46f64ab745fc1592ee49b45b626b106ed95cc05e1ae"
+    },
+    {
+      "path": ".github/rulesets/main.json",
+      "policy": "managed",
+      "base_sha256": "4df48bf76bd369278e86be435bf9817d1db561f41284906ab42bbea04719622b"
+    },
+    {
+      "path": ".github/workflows/guardrails.yml",
+      "policy": "managed",
+      "base_sha256": "9734070a01ae294d9221e5f8c860238b8b9512bf164af6aecf8b9b0c155d117a"
+    },
+    {
+      "path": ".gitignore",
+      "policy": "merge",
+      "base_sha256": "b017f666c04431d1d9915d26a4bdea3078b9e946be52203587eacdb6b6361f16"
+    },
+    {
+      "path": "AGENTS.md",
+      "policy": "merge",
+      "base_sha256": "dceb270ada9d8bbfd88aabee2c91c12bb73bc3ad26ceb89de7ca823c85c98062"
+    },
+    {
+      "path": "CHATGPT-PROJECT-INSTRUCTIONS.md",
+      "policy": "merge",
+      "base_sha256": "81ce046aa47790854f72c13677ebbf8cc93f79f22d6d2b0c93d24056ef07ae1e"
+    },
+    {
+      "path": "PROJECT.md",
+      "policy": "merge",
+      "base_sha256": "e31a750c8c9d4c27771daf3aeb6de7caef78c681b7f4f8ae0b1ef68f3715a5f0"
+    },
+    {
+      "path": "README.md",
+      "policy": "merge",
+      "base_sha256": "fb8881bfda07aef33195e0271cc5d80e00a140a8f58b036750b16ef2fb190720"
+    },
+    {
+      "path": "SECURITY.md",
+      "policy": "merge",
+      "base_sha256": "ffe7950aa68a6775cee759032df26cc2c886ab3d3155e6c52d89a3e0a0ef85b5"
+    },
+    {
+      "path": "bunfig.toml",
+      "policy": "merge",
+      "base_sha256": "e505f0cfda23c61aa54c6d8ff16c73cc7acd0f3f82c32f53f47bed65a299d4a9"
+    },
+    {
+      "path": "docs/README.md",
+      "policy": "managed",
+      "base_sha256": "b427b2d2685ad86ce6e3ef01cdb1eae58096ba579b99142d62b98b3bf5cc77df"
+    },
+    {
+      "path": "docs/conventions/command-effects.md",
+      "policy": "managed",
+      "base_sha256": "936e57426e5b3f33a9d9dc98e4f93203d8ec0c84012e690e7496720c3d58e017"
+    },
+    {
+      "path": "docs/operations/repository-settings.md",
+      "policy": "managed",
+      "base_sha256": "b94d011b708c653640ce437e7142c4b717bb7db6e3f12f0ec51256616294c978"
+    },
+    {
+      "path": "docs/starter/README.md",
+      "policy": "managed",
+      "base_sha256": "9c6bf833908b732a01217fd18c9e94fdef760195eb1384021a86086c792417d3"
+    },
+    {
+      "path": "docs/starter/baseline-updates.md",
+      "policy": "managed",
+      "base_sha256": "0d0e51ed0d40113b6c9c601075779a577574018839416718724256f473f138ee"
+    },
+    {
+      "path": "docs/starter/decisions/scale-to-zero-and-durable-defaults-2026-07-29.md",
+      "policy": "managed",
+      "base_sha256": "9ff73d079c814b708286ef93a557f7582e59ccc83f51f264d632da32234e9c25"
+    },
+    {
+      "path": "docs/starter/plans/bun-control-plane-and-community-templates-2026-07-30.md",
+      "policy": "managed",
+      "base_sha256": "3291e1d7293f16ff7e56e2b3489b7b6fa73d586a2fb7e42ae6ccaf5b10bac967"
+    },
+    {
+      "path": "docs/starter/plans/opinionated-repository-kernel-2026-07-29.md",
+      "policy": "managed",
+      "base_sha256": "e7dbe6e6161b8c6c763b13f3213878cf36d4aa746400c647db44de6ba542afaa"
+    },
+    {
+      "path": "docs/starter/research/bun-anthony-fu-community-templates-2026-07-30.md",
+      "policy": "managed",
+      "base_sha256": "687ff3e369e3d05f45cded081f5a9206ecd51bf21b6763e2c11f8609bdab060b"
+    },
+    {
+      "path": "docs/templates/automation-contract.md",
+      "policy": "managed",
+      "base_sha256": "080102034826c9fc154ca3560f555f4c7f4f2fd00a9f440918a93123b16a6c4d"
+    },
+    {
+      "path": "docs/templates/decision.md",
+      "policy": "managed",
+      "base_sha256": "8aa7df85f19c32b90d36e828c97c60af903f8e19637f8d2aee0eedb6e50a3c67"
+    },
+    {
+      "path": "docs/templates/handoff.md",
+      "policy": "managed",
+      "base_sha256": "d453a076055188f82c11cb2aabbb2773a4476c613016b4cf868529c4d4424df0"
+    },
+    {
+      "path": "docs/templates/plan-progress.md",
+      "policy": "managed",
+      "base_sha256": "d636e073f7ab8b6e55b3ea5a71f6b8427312b6d2d1546642cf1b5df6a35f2a0c"
+    },
+    {
+      "path": "docs/templates/project-open-questions.md",
+      "policy": "managed",
+      "base_sha256": "2c6dbe4bb6ef4599f2161a2c01694a1b661f358be68ff682d086b536aa6100e4"
+    },
+    {
+      "path": "docs/templates/research.md",
+      "policy": "managed",
+      "base_sha256": "5e6f63c338447d4f15e15a68ccc3d3ad092339be5b344bba1a3529b0e3b20090"
+    },
+    {
+      "path": "docs/templates/verification.md",
+      "policy": "managed",
+      "base_sha256": "e43fdec27db5a69c150a1c1fe67901c0691e5149c5775cbe22cbe52b6d4bc2ee"
+    },
+    {
+      "path": "docs/workflows/change-loop.md",
+      "policy": "managed",
+      "base_sha256": "530fc98f5ca2d3b4022f69aa9cbe692ae6e18e5486b2f5fe0661d8847eaac308"
+    },
+    {
+      "path": "mise.toml",
+      "policy": "merge",
+      "base_sha256": "9f40d24ba2e268b3c6311a930d13da772aa8135c4fa97ebba048f0541e2e1c77"
+    },
+    {
+      "path": "prek.toml",
+      "policy": "merge",
+      "base_sha256": "e884e3a996b28430aac37fe039c36d715678dc787978f4bffb0d1b26ba5e90f2"
+    },
+    {
+      "path": "profiles/README.md",
+      "policy": "managed",
+      "base_sha256": "942046b8aa6177240be0bba17bc86097d02ffc71bf2585bdc3bb00b4a5a358c0"
+    },
+    {
+      "path": "profiles/bun-library/AGENTS.md",
+      "policy": "managed",
+      "base_sha256": "161a170cf7b196045aa94813a21132176322bf94191d39a9f695658574dd746d"
+    },
+    {
+      "path": "profiles/bun-library/README.md",
+      "policy": "managed",
+      "base_sha256": "17fce0768cee2590e93dddee65ce0fa69981370253b585eaf419780192346aaa"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/.oxlintrc.json",
+      "policy": "managed",
+      "base_sha256": "cc748f31969d56ad565b9e11efe8a430a632e90f46eda5d265d62ce0b3a3b1fa"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/biome.json",
+      "policy": "managed",
+      "base_sha256": "844199de3f0d512b3cfdfd55087c25e1c355f31780ad7f5c2eaa87de06975026"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/bunfig.toml",
+      "policy": "managed",
+      "base_sha256": "e505f0cfda23c61aa54c6d8ff16c73cc7acd0f3f82c32f53f47bed65a299d4a9"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/package.json",
+      "policy": "managed",
+      "base_sha256": "8786b708cc99d3bafcf2a1f72710705097053d425bca44a09fe3ed463b6c17b4"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/src/index.test.ts",
+      "policy": "managed",
+      "base_sha256": "04ac394d316c5ef789905e3da96d166a1d9017fb7f4f8e29a52b6a743668bee8"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/src/index.ts",
+      "policy": "managed",
+      "base_sha256": "bd38e7b14047f985e78b60799d0fc3d27de2a8f9a7b3bcc05591c1f479eeb901"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/tsconfig.json",
+      "policy": "managed",
+      "base_sha256": "5f115fe1b73e621556afe50d4368d551177028bb90303ec7057d2487528b3ba0"
+    },
+    {
+      "path": "profiles/bun-library/files/packages/library/tsdown.config.ts",
+      "policy": "managed",
+      "base_sha256": "0222073390ef10338c9fc054a10b259a14674ff0baa2642a52d54685c4d0ebcb"
+    },
+    {
+      "path": "profiles/bun-library/profile.json",
+      "policy": "managed",
+      "base_sha256": "adab1c0b954aa8ea74d31a7d37b6e56796844009570ad2c6ee1113f673f917e0"
+    },
+    {
+      "path": "profiles/bun-typescript/AGENTS.md",
+      "policy": "managed",
+      "base_sha256": "d5084f6623565672cca84adb7931384eda52c1cee45d1a2959bd1f1df8e55dd0"
+    },
+    {
+      "path": "profiles/bun-typescript/README.md",
+      "policy": "managed",
+      "base_sha256": "4f901c5846a43c08ccfb11fe5d8c83c45c1c0067143c2464a5cb3dfdfb622372"
+    },
+    {
+      "path": "profiles/bun-typescript/files/.oxlintrc.json",
+      "policy": "managed",
+      "base_sha256": "a6a9764bd5b1a6db72c19843bca770657b4c394cc3a91210d74085f3e8adeab1"
+    },
+    {
+      "path": "profiles/bun-typescript/files/biome.root.json",
+      "policy": "managed",
+      "base_sha256": "ab8b998a378039b8e2e8f295b398d28a1d0a3fedd02c783336b77f43120a4d4b"
+    },
+    {
+      "path": "profiles/bun-typescript/files/bunfig.toml",
+      "policy": "managed",
+      "base_sha256": "e505f0cfda23c61aa54c6d8ff16c73cc7acd0f3f82c32f53f47bed65a299d4a9"
+    },
+    {
+      "path": "profiles/bun-typescript/files/package.json",
+      "policy": "managed",
+      "base_sha256": "a28db8abfe55ff5215047c52d365a9e082d761f7414c7419b75adebacbd91ea5"
+    },
+    {
+      "path": "profiles/bun-typescript/files/tsconfig.json",
+      "policy": "managed",
+      "base_sha256": "1f0a133401b2b6eb31a76d3df6d00ac114f0b8d05a60469daa1c6d57045503ff"
+    },
+    {
+      "path": "profiles/bun-typescript/profile.json",
+      "policy": "managed",
+      "base_sha256": "265feec051e07195d5773d613b5b330989482248ea03bc0830750920b5ec6257"
+    },
+    {
+      "path": "profiles/cloudflare/AGENTS.md",
+      "policy": "managed",
+      "base_sha256": "f66c5f923b788713fa3ccbac754d763b5bf4258dfe30c29deefe18148b29b947"
+    },
+    {
+      "path": "profiles/cloudflare/README.md",
+      "policy": "managed",
+      "base_sha256": "f3bcfa0b2b38482836de3e23fadbe130afec3153d75a187758a0804ef0a8cdef"
+    },
+    {
+      "path": "profiles/cloudflare/files/docs/operations/cloudflare.md",
+      "policy": "managed",
+      "base_sha256": "0fa35a9e7c949dc8606fb90015538bcdc5bbeb27bac263b89d98419a2c94336a"
+    },
+    {
+      "path": "profiles/cloudflare/files/scripts/cloudflare-verify.sh",
+      "policy": "managed",
+      "base_sha256": "dd9d61daa2edceb4770be2edbef04bb38818f79a89ec2936824c3d9d09d0ff23"
+    },
+    {
+      "path": "profiles/cloudflare/files/wrangler.jsonc",
+      "policy": "managed",
+      "base_sha256": "8af2185eecc9a4aa03bddbb384e48351ec203a5e833b931bdb574d4faead1f22"
+    },
+    {
+      "path": "profiles/cloudflare/profile.json",
+      "policy": "managed",
+      "base_sha256": "d8aec6140937e6e6c8880fa03a858bdccdf2c6ee7816ae8c1a7a55b24414441a"
+    },
+    {
+      "path": "profiles/data-automation/AGENTS.md",
+      "policy": "managed",
+      "base_sha256": "180f0d4220cf0af5f6a2c365cf4c86794e5d95291519a92a041d64b80c0e3dc6"
+    },
+    {
+      "path": "profiles/data-automation/README.md",
+      "policy": "managed",
+      "base_sha256": "42a91006a32587505308ef88af2ceccd3c579b8579c7c1af2c9e12ce20754406"
+    },
+    {
+      "path": "profiles/data-automation/files/docs/operations/data-automation.md",
+      "policy": "managed",
+      "base_sha256": "bc8d0450606dce02e4ff856acef1afbe6cb5c32f97fe694711fa225b95a87f0a"
+    },
+    {
+      "path": "profiles/data-automation/files/schemas/run-ledger.schema.json",
+      "policy": "managed",
+      "base_sha256": "b241defae023c8ae848f25eddc5c53450398eb20149f87db146eae6b32dce875"
+    },
+    {
+      "path": "profiles/data-automation/files/scripts/validate-run-ledger.py",
+      "policy": "managed",
+      "base_sha256": "e44cbf53fdd4d1b2ae12280b716dc8e72204ece74bf9a31085524e201ac929b6"
+    },
+    {
+      "path": "profiles/data-automation/profile.json",
+      "policy": "managed",
+      "base_sha256": "c3ac8ceb741c03cb30b10391f55402a52eaf47623ed883e28488b7fcfe9eef8c"
+    },
+    {
+      "path": "profiles/docs-spec/AGENTS.md",
+      "policy": "managed",
+      "base_sha256": "56c4858207945bf6f3ed907484fa5499c7fe3077604a7021c0b50030d7e00828"
+    },
+    {
+      "path": "profiles/docs-spec/README.md",
+      "policy": "managed",
+      "base_sha256": "a1919a5cb30346cd6f65f638d500d2b127790f0f3b4c6969d16ad8639c3d60fa"
+    },
+    {
+      "path": "profiles/docs-spec/files/docs/operations/docs-spec-release.md",
+      "policy": "managed",
+      "base_sha256": "7cce7be2b697c95b3bc6edb44cd7de4d80d3532d6eebf8dbb109206ac4d90b07"
+    },
+    {
+      "path": "profiles/docs-spec/files/docs/project/open-questions.md",
+      "policy": "managed",
+      "base_sha256": "ff5fc5133647713f611949a18435f91dafc54a63a0727e57d67b20de6c980cdd"
+    },
+    {
+      "path": "profiles/docs-spec/files/scripts/docs-route-check.sh",
+      "policy": "managed",
+      "base_sha256": "0ec0514082ba58d7bbbec2851adfa41bc12f15b3779db8f1cadb18698a3290c2"
+    },
+    {
+      "path": "profiles/docs-spec/profile.json",
+      "policy": "managed",
+      "base_sha256": "fee69ef43974e1edfd2a3f1790b34ee649ccb76b31451df58f8ab8086148c30b"
+    },
+    {
+      "path": "profiles/ui-browser/AGENTS.md",
+      "policy": "managed",
+      "base_sha256": "eaf25552a5985a1d42d2e1d7cd82fd51c5351defe13c26748ef2e3c2c40f0b68"
+    },
+    {
+      "path": "profiles/ui-browser/README.md",
+      "policy": "managed",
+      "base_sha256": "691200f55ac5be60a62eb532e8f9278d06b685479a3e4dbc9c56fd82acc99b93"
+    },
+    {
+      "path": "profiles/ui-browser/files/docs/operations/browser-testing.md",
+      "policy": "managed",
+      "base_sha256": "5de0a8d2fb6ef55848883775a26c55ae9a4c8b416d2384a92eda0e55fec6794c"
+    },
+    {
+      "path": "profiles/ui-browser/files/docs/templates/screen-review.md",
+      "policy": "managed",
+      "base_sha256": "de43c184b2747de423c54ba5564fcb58622e015c18302ccb2c3f75d7b778fca0"
+    },
+    {
+      "path": "profiles/ui-browser/files/docs/templates/ux-frame.md",
+      "policy": "managed",
+      "base_sha256": "6a750fead2440c0935994e3ef544dce4c191f01ecd243c3d976d7c478e631b50"
+    },
+    {
+      "path": "profiles/ui-browser/files/docs/ux/README.md",
+      "policy": "managed",
+      "base_sha256": "91823bb929b0b46796ae88af059d917b2e72315f683beb780e1b67a5b51c59e0"
+    },
+    {
+      "path": "profiles/ui-browser/profile.json",
+      "policy": "managed",
+      "base_sha256": "ea0dbbcc405d0f4148c148bf45103a81d5aa321d1559549cb082948998dbc422"
+    },
+    {
+      "path": "profiles/wordpress/AGENTS.md",
+      "policy": "managed",
+      "base_sha256": "79b370acf4b03d0da23158f603f1f207858555a528021d096288d115a4431a2b"
+    },
+    {
+      "path": "profiles/wordpress/README.md",
+      "policy": "managed",
+      "base_sha256": "0f2bbd3c8f906a901d9a2a368c80d87d4d4f1465450310d687e643b1f56b21c7"
+    },
+    {
+      "path": "profiles/wordpress/files/docs/operations/wordpress.md",
+      "policy": "managed",
+      "base_sha256": "0b7200d6c8a295626ab0fcb37bfe529a60a7edc4c69bb141eab2e87b4d634e6e"
+    },
+    {
+      "path": "profiles/wordpress/files/docs/templates/wordpress-release-verification.md",
+      "policy": "managed",
+      "base_sha256": "777d81294e35c431482ed874bed38a842426e43f6b196a21c0d912853085e5e3"
+    },
+    {
+      "path": "profiles/wordpress/files/phpcs.xml.dist",
+      "policy": "managed",
+      "base_sha256": "f833be8bd2b23ae36ea92a7a2654ac68ab6bf8ca5d4f01b652797941a162d4ea"
+    },
+    {
+      "path": "profiles/wordpress/files/scripts/wordpress-verify.sh",
+      "policy": "managed",
+      "base_sha256": "c658511c899f283325e13820fbbb235dd7fe88fbc4b3afe1819538622706d8c3"
+    },
+    {
+      "path": "profiles/wordpress/profile.json",
+      "policy": "managed",
+      "base_sha256": "7308d82fe03bbdd7cfe822a08fa2c2b4c72f984c99078adfe687f1ea873607c4"
+    },
+    {
+      "path": "scripts/hooks/gitleaks-staged",
+      "policy": "managed",
+      "base_sha256": "59559aa0c9bb5cdb5e3b3dd7392a2c13e7827f3a2e6b77e5a28d49d123d0cc39"
+    },
+    {
+      "path": "scripts/project-starter.ts",
+      "policy": "managed",
+      "base_sha256": "7b88598da7f3751e69d57f3136115ec9184735bf7b544e0e5f5c1a6119c02f21"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "policy": "managed",
+      "base_sha256": "9595ba326c89ee464e71dc4c9d10077e8a1021546930d947fa8fe66388921309"
+    },
+    {
+      "path": "tests/project-starter.test.ts",
+      "policy": "managed",
+      "base_sha256": "5dd95b11922aab6803e2495ac87ab3ac8ab80d2c9f29d1d394b2c73691632961"
+    }
+  ],
+  "manual_reconcile": []
+}

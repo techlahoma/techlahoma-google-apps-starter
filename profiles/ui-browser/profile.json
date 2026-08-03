@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "ui-browser",
+  "description": "UX framing, accessibility, isolated browser testing, and visual evidence.",
+  "files": [
+    {
+      "source": "files/docs/ux/README.md",
+      "target": "docs/ux/README.md",
+      "render": true
+    },
+    {
+      "source": "files/docs/operations/browser-testing.md",
+      "target": "docs/operations/browser-testing.md",
+      "render": true
+    },
+    {
+      "source": "files/docs/templates/ux-frame.md",
+      "target": "docs/templates/ux-frame.md",
+      "render": false
+    },
+    {
+      "source": "files/docs/templates/screen-review.md",
+      "target": "docs/templates/screen-review.md",
+      "render": false
+    }
+  ],
+  "verification": [
+    "project-specific accessibility checks",
+    "project-owned browser test command",
+    "screen review at the evidence revision"
+  ]
+}

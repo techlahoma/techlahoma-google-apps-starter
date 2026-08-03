@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "__PROJECT_SLUG__",
+  "compatibility_date": "__TODAY__",
+  "observability": {
+    "enabled": true
+  }
+}

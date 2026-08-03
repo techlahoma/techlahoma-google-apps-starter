@@ -1,0 +1,11 @@
+# Default ownership for the private starter and generated repositories.
+* @ThatGuySam
+
+# Make durable policy and automation ownership explicit.
+/AGENTS.md @ThatGuySam
+/PROJECT.md @ThatGuySam
+/.starter/ @ThatGuySam
+/.github/ @ThatGuySam
+/docs/ @ThatGuySam
+/profiles/ @ThatGuySam
+/scripts/ @ThatGuySam

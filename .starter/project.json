@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "initialized": true,
+  "name": "Google App Starter",
+  "slug": "google-app-starter",
+  "description": "A static-first, agent-friendly Firebase and Google Cloud starter that begins without billing or dashboard setup.",
+  "initialized_at": "2026-08-03",
+  "profiles": [
+    "bun-typescript"
+  ],
+  "repository": {
+    "expected_visibility": "private",
+    "expected_default_branch": "main",
+    "required_ruleset": "Sam project baseline",
+    "ruleset_mode": "preferred"
+  }
+}

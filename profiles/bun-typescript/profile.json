@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "bun-typescript",
+  "description": "Strict Bun and TypeScript checks with Biome and Oxlint.",
+  "files": [
+    {
+      "source": "files/bunfig.toml",
+      "target": "bunfig.toml",
+      "render": false
+    },
+    {
+      "source": "files/package.json",
+      "target": "package.json",
+      "render": true
+    },
+    {
+      "source": "files/tsconfig.json",
+      "target": "tsconfig.json",
+      "render": false
+    },
+    {
+      "source": "files/biome.root.json",
+      "target": "biome.json",
+      "render": false
+    },
+    {
+      "source": "files/.oxlintrc.json",
+      "target": ".oxlintrc.json",
+      "render": false
+    }
+  ],
+  "verification": [
+    "bun install --frozen-lockfile",
+    "bun run verify"
+  ]
+}

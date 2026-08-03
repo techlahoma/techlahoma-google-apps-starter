@@ -1,0 +1,4 @@
+[install]
+auto = "disable"
+linker = "isolated"
+globalStore = true
