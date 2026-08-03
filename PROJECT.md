@@ -129,7 +129,7 @@ See
 There is no deploy-on-push workflow in the starter.
 
 The intended source host is the private GitHub template repository
-`ThatGuySam/google-app-starter`. Repository publication is separate from Firebase Hosting or Google
+`Techlahoma/google-app-starter`. Repository publication is separate from Firebase Hosting or Google
 Cloud deployment.
 
 ## Sensitive-data boundary
