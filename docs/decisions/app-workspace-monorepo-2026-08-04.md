@@ -1,7 +1,7 @@
 # App-Workspace Monorepo
 
 - `Tease:` Clone once, then let each prompt create one isolated app.
-- `Lede:` Google App Starter uses a Bun workspace monorepo whose root owns policy and tooling while every independently runnable artifact lives under `apps/<slug>/` with app-local build and Firebase configuration.
+- `Lede:` Techlahoma Google Apps Starter uses a Bun workspace monorepo whose root owns policy and tooling while every independently runnable artifact lives under `apps/<slug>/` with app-local build and Firebase configuration.
 - `Why it matters:` Antigravity can execute multiple one-shot demo prompts in one checkout without overwriting the starter, duplicating repository infrastructure, or confusing deployment targets.
 - `Go deeper:` Use `bun run app:create plan` and `app:create apply`; launch and verify the generated app with its app-scoped commands.
 

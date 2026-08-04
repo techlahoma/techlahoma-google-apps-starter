@@ -1,4 +1,4 @@
-# Google App Starter Verification
+# Techlahoma Google Apps Starter Verification
 
 - `Tease:` The starter passes its complete local verification; no Google project was created,
   deployed, or deleted.

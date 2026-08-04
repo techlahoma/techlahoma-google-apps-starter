@@ -52,7 +52,7 @@ bun run --cwd apps/welcome build
 bun run firebase:serve
 ```
 
-The emulator uses the fake, local-only `demo-google-app-starter` ID and does not call a real project.
+The emulator uses the fake, local-only `demo-techlahoma-google-apps` ID and does not call a real project.
 
 ## 2. Choose one app and environment
 

@@ -3,22 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f7f5ef" />
+    <meta name="theme-color" content="#f8c702" />
     <meta
       name="description"
-      content="A monorepo-first Firebase and Google Cloud starter that grows one app at a time."
+      content="Techlahoma's monorepo-first Firebase and Google Cloud starter for small agent-built apps."
     />
-    <title>Google App Starter</title>
+    <title>Techlahoma Google Apps Starter</title>
   </head>
   <body>
     <main id="app">
       <section class="shell">
-        <p class="eyebrow">Google App Starter</p>
-        <h1>One repo.<br />As many small apps as the demo needs.</h1>
+        <nav aria-label="Techlahoma and event links">
+          <a class="brand" href="https://www.techlahoma.org/">
+            <img src="/techlahoma-logo-black-transparent.png" alt="Techlahoma" />
+          </a>
+          <div class="nav-links">
+            <a href="https://luma.com/j0vrcn5h">Event</a>
+            <a href="https://gdg.community.dev/gdg-tulsa/">GDG Tulsa</a>
+            <a href="https://github.com/techlahoma/techlahoma-google-apps-starter">GitHub</a>
+          </div>
+        </nav>
+
+        <p class="eyebrow">Techlahoma Google Apps Starter</p>
+        <h1>Build small.<br />Learn fast.<br />Share what works.</h1>
         <p class="lede">
-          Shared TypeScript tooling, app-local Firebase configuration, and explicit agent-safe
-          commands. Create every experiment under <code>apps/</code> without disturbing the others.
+          A public workshop repo from Techlahoma and GDG Tulsa. Give Antigravity one prompt and it
+          creates a new app under <code>apps/</code>, proves it locally, and leaves the other demos
+          alone.
         </p>
+
+        <div class="actions" aria-label="Get started">
+          <a class="button button-primary" href="https://github.com/techlahoma/techlahoma-google-apps-starter#clone-and-start">Clone the starter</a>
+          <a class="button button-secondary" href="https://github.com/techlahoma/techlahoma-google-apps-starter/blob/main/docs/events/antigravity-one-shot-prompts.md">Try a one-shot prompt</a>
+        </div>
 
         <div class="steps" aria-label="Starter workflow">
           <article>
@@ -38,7 +55,21 @@
           </article>
         </div>
 
-        <p class="footnote">Static by default · app-scoped config · one project per environment</p>
+        <section class="community" aria-labelledby="community-heading">
+          <div>
+            <p class="section-label">Build with Oklahoma</p>
+            <h2 id="community-heading">The repo is only the starting point.</h2>
+          </div>
+          <div class="community-links">
+            <a href="https://www.techlahoma.org/techlahoma-slack/">Join Techlahoma Slack <span aria-hidden="true">↗</span></a>
+            <a href="https://www.techlahoma.org/user-groups/">Find a user group <span aria-hidden="true">↗</span></a>
+            <a href="https://www.techlahoma.org/code-of-conduct/">Read the Code of Conduct <span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
+
+        <p class="footnote">
+          Static by default · app-scoped config · one project per environment · built in Oklahoma
+        </p>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>

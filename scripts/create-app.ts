@@ -23,7 +23,7 @@ const TEMPLATE_DIR = join(ROOT_DIR, 'templates', 'vite-app');
 const APPS_DIR = join(ROOT_DIR, 'apps');
 const TEMP_DIR = join(ROOT_DIR, '.starter', 'tmp');
 
-const HELP = `Create a Google App Starter workspace
+const HELP = `Create a Techlahoma Google Apps Starter workspace
 
 Usage:
   bun run app:create plan --name APP-SLUG --title "App Title"

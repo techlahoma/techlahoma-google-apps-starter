@@ -1,15 +1,17 @@
-# Google App Starter
+# Techlahoma Google Apps Starter
 
-- `Tease:` Clone once; build a new runnable app with every prompt.
-- `Lede:` This Bun and TypeScript monorepo gives Antigravity a shared Google-aligned control plane,
-  an embedded one-shot build skill, and isolated `apps/<slug>` workspaces with app-scoped Firebase
-  Hosting configuration.
+- `Tease:` Oklahoma's public launchpad for building small Google-powered apps with agents.
+- `Lede:` [Techlahoma](https://www.techlahoma.org/) maintains this Bun and TypeScript monorepo so
+  Antigravity can turn one prompt into one isolated, runnable `apps/<slug>` project with a
+  Google-aligned control plane and app-scoped Firebase Hosting configuration.
 - `Why it matters:`
   - The default path needs no billing account, database, Terraform state, or dashboard setup.
   - Agents can preserve several demo results in one checkout instead of rebuilding the root app.
   - Cloud commands must name both the exact app and project before a mutation.
 - `Go deeper:`
   - Follow the five-minute local start below.
+  - Use the [Intro to GDG event hub](docs/events/README.md) and
+    [one-shot Antigravity prompts](docs/events/antigravity-one-shot-prompts.md).
   - Read the [cloud operations guide](docs/operations/google-cloud.md) before creating a project.
   - Read the [research](docs/research/firebase-gcp-agent-provisioning-2026-08-03.md) and
     [architecture decision](docs/decisions/project-per-environment-google-starter-2026-08-03.md)
@@ -17,13 +19,33 @@
   - Read the [Google engineering profile](docs/research/google-public-engineering-conventions-2026-08-03.md)
     before changing repository conventions.
 
+<p align="center">
+  <a href="https://www.techlahoma.org/">
+    <img src="apps/welcome/public/techlahoma-logo-black-transparent.png" alt="Techlahoma" width="360" />
+  </a>
+</p>
+
+## Intro to GDG event materials
+
+This starter is the public build workspace for Techlahoma's **Intro to Google Developer Group**
+workshop with GDG Tulsa. These attendee-safe resources are public:
+
+- [Event handout and resource hub](docs/events/README.md)
+- [Copy-ready Antigravity demo prompts](docs/events/antigravity-one-shot-prompts.md)
+- [Live event page](https://luma.com/j0vrcn5h)
+- [GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/)
+- [Techlahoma Code of Conduct](https://www.techlahoma.org/code-of-conduct/)
+
+The working presentation is intentionally not linked here until its Google Drive sharing setting is
+public. A public repository link should work for attendees without requesting access.
+
 ## Clone and start
 
 Prerequisite: [Bun](https://bun.sh/) 1.3.14, or use the tools pinned in `mise.toml`.
 
 ```sh
-git clone https://github.com/techlahoma/google-app-starter.git
-cd google-app-starter
+git clone https://github.com/techlahoma/techlahoma-google-apps-starter.git
+cd techlahoma-google-apps-starter
 bun install --frozen-lockfile
 bun run dev
 ```
@@ -155,3 +177,13 @@ boundary.
   create long-lived service-account keys.
 
 The complete command/effect table and current proof live in [`PROJECT.md`](PROJECT.md).
+
+## About Techlahoma
+
+[Techlahoma](https://www.techlahoma.org/) is an Oklahoma technology community nonprofit. Find a
+[user group](https://www.techlahoma.org/user-groups/), join the
+[Techlahoma Slack](https://www.techlahoma.org/techlahoma-slack/), or
+[contact the organization](https://www.techlahoma.org/contact-us/) to get involved.
+
+This is a Techlahoma community project, not an official Google product. GDG Tulsa is an independent
+Google Developer Group; its activities and opinions are not affiliated with or endorsed by Google.

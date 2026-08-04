@@ -1,6 +1,6 @@
 :root {
   color: #202124;
-  background: #f7f5ef;
+  background: #fafafa;
   font-family: system-ui, sans-serif;
   font-synthesis: none;
 }
@@ -13,6 +13,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  border-top: 8px solid #f8c702;
+  background: radial-gradient(circle at 85% 15%, rgb(33 158 188 / 18%), transparent 22rem), #fafafa;
 }
 
 .shell {
@@ -22,7 +24,7 @@ body {
 }
 
 .eyebrow {
-  color: #1967d2;
+  color: #023047;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;

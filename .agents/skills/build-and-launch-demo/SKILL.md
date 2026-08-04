@@ -9,7 +9,7 @@ Complete the requested local demo in one uninterrupted pass. Do not turn the req
 
 ## Work autonomously
 
-1. Confirm the current working directory is the Google App Starter root. Read `AGENTS.md`, `PROJECT.md`, `apps/AGENTS.md`, the active `.starter/addenda/`, and relevant scripts before editing.
+1. Confirm the current working directory is the Techlahoma Google Apps Starter root. Read `AGENTS.md`, `PROJECT.md`, `apps/AGENTS.md`, the active `.starter/addenda/`, and relevant scripts before editing.
 2. Treat the user's prompt as the acceptance contract. Resolve minor ambiguity with the smallest reversible interpretation and state it in the final report.
 3. Install the locked root dependencies when needed and run the existing repository verification before editing. Record failures without weakening checks.
 4. Choose a short lowercase app slug from the requested artifact. If `apps/<slug>` exists, add the first unused numeric suffix; never overwrite an existing app.

@@ -19,7 +19,7 @@ const ROOT_DIR = resolve(import.meta.dir, '..');
 const ROOT_FIREBASE_BINARY = './node_modules/.bin/firebase';
 const APP_FIREBASE_BINARY = '../../node_modules/.bin/firebase';
 
-const HELP = `Google App Starter cloud lifecycle
+const HELP = `Techlahoma Google Apps Starter cloud lifecycle
 
 Usage:
   bun scripts/google-cloud.ts doctor --app APP

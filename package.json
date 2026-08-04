@@ -1,5 +1,5 @@
 {
-  "name": "google-app-starter",
+  "name": "techlahoma-google-apps-starter",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.3.14",
@@ -22,7 +22,7 @@
     "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run apps:check",
     "verify": "bun run check",
     "firebase:login": "NO_UPDATE_NOTIFIER=1 firebase login",
-    "firebase:serve": "NO_UPDATE_NOTIFIER=1 firebase emulators:start --only hosting --project demo-google-app-starter --config apps/welcome/firebase.json",
+    "firebase:serve": "NO_UPDATE_NOTIFIER=1 firebase emulators:start --only hosting --project demo-techlahoma-google-apps --config apps/welcome/firebase.json",
     "google:doctor": "bun scripts/google-cloud.ts doctor",
     "google:config": "bun scripts/google-cloud.ts config",
     "google:provision": "bun scripts/google-cloud.ts provision",

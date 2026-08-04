@@ -20,6 +20,7 @@
 | Nygard architecture decision | `docs/decisions/<topic>-YYYY-MM-DD.md` |
 | Durable verification evidence | `docs/verification/<topic>-YYYY-MM-DD.md` |
 | Repository-wide convention | `docs/conventions/<topic>.md` |
+| Public event handout | `docs/events/<event>/` or `docs/events/README.md` |
 | Reusable document starting point | `docs/templates/<type>.md` |
 
 Create a folder only when its first real document exists.
@@ -31,7 +32,8 @@ Create a folder only when its first real document exists.
 - [Decision: selectively adopt public Google engineering conventions](decisions/google-public-engineering-conventions-2026-08-03.md)
 - [Decision: static Firebase Hosting with one project per environment](decisions/project-per-environment-google-starter-2026-08-03.md)
 - [Operations: Google Cloud lifecycle](operations/google-cloud.md)
-- [Verification: Google App Starter](verification/google-app-starter-2026-08-03.md)
+- [Public event materials: Intro to Google Developer Group](events/README.md)
+- [Verification: Techlahoma Google Apps Starter](verification/google-app-starter-2026-08-03.md)
 
 ## Initiative slices
 

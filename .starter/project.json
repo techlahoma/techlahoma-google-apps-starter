@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "initialized": true,
-  "name": "Google App Starter",
-  "slug": "google-app-starter",
-  "description": "A static-first, agent-friendly Firebase and Google Cloud starter that begins without billing or dashboard setup.",
+  "name": "Techlahoma Google Apps Starter",
+  "slug": "techlahoma-google-apps-starter",
+  "description": "Techlahoma's static-first, agent-friendly Firebase and Google Cloud starter for small workshop apps.",
   "initialized_at": "2026-08-03",
   "profiles": [
     "bun-typescript"
   ],
   "repository": {
-    "expected_visibility": "private",
+    "expected_visibility": "public",
     "expected_default_branch": "main",
     "required_ruleset": "Sam project baseline",
     "ruleset_mode": "preferred"

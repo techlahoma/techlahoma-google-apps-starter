@@ -1,7 +1,7 @@
 # Project Contract
 
-- `Tease:` One operational source of truth for Google App Starter.
-- `Lede:` The project is an active, static-first Bun monorepo with generated app workspaces,
+- `Tease:` One operational source of truth for Techlahoma Google Apps Starter.
+- `Lede:` The project is an active, public Techlahoma Bun monorepo with generated app workspaces,
   public-Google-aligned engineering conventions, and an app-scoped Firebase lifecycle; no Google
   Cloud project has been created or deployed.
 - `Why it matters:`
@@ -16,9 +16,9 @@
 ## Status
 
 - Lifecycle: `active`
-- Current objective: let Antigravity create and launch isolated demo apps under `apps/` from one prompt
-- Next decision or action: review and publish the verified monorepo refactor when explicitly authorized
-- Last verified revision: local monorepo worktree based on public revision `f3f6036`
+- Current objective: let Antigravity create and launch isolated Techlahoma workshop apps under `apps/` from one prompt
+- Next decision or action: rehearse the public event prompts from a fresh clone in Antigravity
+- Verification base: public monorepo revision `fb5528f`; see current `main` for this identity update
 - Last verified at: 2026-08-04
 
 ## User and problem
@@ -105,6 +105,7 @@ See
 | Operations | `docs/operations/google-cloud.md` |
 | Verification evidence | `docs/verification/google-app-starter-2026-08-03.md` |
 | Monorepo verification evidence | `docs/verification/app-workspace-monorepo-2026-08-04.md` |
+| Public Intro to GDG event materials | `docs/events/README.md` |
 | Runtime data | none in the starter |
 
 ## Commands and effects
@@ -139,7 +140,7 @@ See
 There is no deploy-on-push workflow in the starter.
 
 The source host is the public GitHub template repository
-`Techlahoma/google-app-starter`. Repository publication is separate from Firebase Hosting or Google
+`techlahoma/techlahoma-google-apps-starter`. Repository publication is separate from Firebase Hosting or Google
 Cloud deployment.
 
 ## Sensitive-data boundary
@@ -158,11 +159,10 @@ The machine-readable active-profile list is `.starter/project.json`.
 
 ## Handoff
 
-- Changed locally: yes
-- Committed locally: no
-- Pushed: no
+- Changed locally: no
+- Committed locally: yes
+- Pushed: yes
 - Deployed: no
 - Live-verified: no
 - Remaining risk or gap: authenticated provisioning, deployment, and deletion are intentionally
-  untested because no cloud-side effects were authorized; the verified refactor is not committed or
-  pushed
+  untested because no cloud-side effects were authorized
