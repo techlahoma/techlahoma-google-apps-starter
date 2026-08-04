@@ -2,8 +2,9 @@
 
 - `Tease:` Build locally in two commands; touch Google only through an explicit plan and confirmed
   apply.
-- `Lede:` Firebase Hosting is the only enabled surface. A real project ID is kept in an ignored
-  local file, passed to every cloud command, and used as the confirmation phrase for mutation.
+- `Lede:` Firebase Hosting is the only enabled surface. Every command names an app workspace; its
+  real project ID is kept in an ignored app-local file, passed explicitly, and used as the
+  confirmation phrase for mutation.
 - `Why it matters:`
   - No dashboard setup or ambient CLI project is required.
   - Provisioning, deployment, billing, and deletion remain distinct effects.
@@ -15,16 +16,16 @@
 ## Effect map
 
 ```text
-bun install / dev / verify        local only
-google:config plan                read-only
-google:config apply               writes ignored local config
+bun install / app:create / dev    local only
+google:config plan --app APP      read-only
+google:config apply --app APP     writes ignored app-local config
 firebase:login                    changes local Firebase authentication
-google:provision plan             read-only
-google:provision apply            creates a Google Cloud project and adds Firebase
-google:deploy plan                read-only
-google:deploy apply               publishes static assets to Firebase Hosting
-google:destroy plan               read-only
-google:destroy apply              deletes the entire Google Cloud project
+google:provision plan --app APP   read-only
+google:provision apply --app APP  creates a Google Cloud project and adds Firebase
+google:deploy plan --app APP      read-only
+google:deploy apply --app APP     publishes that app to Firebase Hosting
+google:destroy plan --app APP     read-only
+google:destroy apply --app APP    deletes the app's entire Google Cloud project
 ```
 
 No command links billing. There is no deploy-on-push workflow.
@@ -33,13 +34,13 @@ No command links billing. There is no deploy-on-push workflow.
 
 ```sh
 bun install --frozen-lockfile
-bun run dev
+bun run --cwd apps/welcome dev
 ```
 
 Production-equivalent build and full repository verification:
 
 ```sh
-bun run build
+bun run --cwd apps/welcome build
 bash scripts/verify.sh
 ```
 
@@ -47,13 +48,13 @@ The static app does not need Firebase emulation. To serve the built Hosting conf
 Firebase's local Hosting emulator:
 
 ```sh
-bun run build
+bun run --cwd apps/welcome build
 bun run firebase:serve
 ```
 
 The emulator uses the fake, local-only `demo-google-app-starter` ID and does not call a real project.
 
-## 2. Choose one environment
+## 2. Choose one app and environment
 
 Google Cloud project IDs are globally unique and immutable. Use a lowercase ID that visibly names
 the application and environment, such as a real app slug followed by `-dev`. Do not put an account
@@ -63,6 +64,7 @@ Preview the local file first, replacing both TODO values before running the comm
 
 ```sh
 bun run google:config plan \
+  --app welcome \
   --project-id TODO-replace-with-real-unique-id \
   --display-name "TODO Replace With Real Name"
 ```
@@ -71,13 +73,14 @@ Write the ignored local config only after the preview is correct:
 
 ```sh
 bun run google:config apply \
+  --app welcome \
   --project-id TODO-replace-with-real-unique-id \
   --display-name "TODO Replace With Real Name"
 ```
 
 Use `--environment preview` or `--environment production` when applicable. The default is
-`development`. `google.project.json` contains no credential, but remains ignored so a reusable
-starter never ships a default real target.
+`development`. `apps/welcome/google.project.json` contains no credential, but remains ignored so a
+reusable starter never ships a default real target. Replace `welcome` with the selected app slug.
 
 The command refuses to replace a different existing config. Review and remove that ignored file
 manually before retargeting the checkout.
@@ -101,8 +104,8 @@ project.
 ## 4. Provision without the dashboard
 
 ```sh
-bun run google:doctor
-bun run google:provision plan
+bun run google:doctor --app welcome
+bun run google:provision plan --app welcome
 ```
 
 The plan should say:
@@ -115,7 +118,7 @@ The plan should say:
 With explicit project-creation authority, run the plan's exact project ID as confirmation:
 
 ```sh
-bun run google:provision apply --confirm TODO-replace-with-real-unique-id
+bun run google:provision apply --app welcome --confirm TODO-replace-with-real-unique-id
 ```
 
 This creates a Google Cloud project and adds Firebase. It does not register a web app because static
@@ -127,13 +130,13 @@ Those are organization-specific infrastructure decisions and are not safe defaul
 ## 5. Deploy Hosting only
 
 ```sh
-bun run google:deploy plan
-bun run google:deploy apply --confirm TODO-replace-with-real-unique-id
+bun run google:deploy plan --app welcome
+bun run google:deploy apply --app welcome --confirm TODO-replace-with-real-unique-id
 ```
 
-The apply builds `dist/`, then runs Firebase deploy with both `--only hosting` and the explicit
-project ID. After an authorized deployment, retain the CLI output and verify the reported Hosting
-URL independently. A successful local build is not a live deployment proof.
+The apply runs from `apps/welcome`, builds that app's `dist/`, then runs Firebase deploy with both
+`--only hosting` and the explicit project ID. After an authorized deployment, retain the CLI output
+and verify the reported Hosting URL independently. A successful local build is not live proof.
 
 Rollback means checking out or rebuilding a known-good Git revision and performing another
 explicit Hosting deploy. The starter does not make a mutable dashboard release the source of truth.
@@ -154,8 +157,8 @@ Before deletion:
 - obtain explicit deletion authority.
 
 ```sh
-bun run google:destroy plan
-bun run google:destroy apply --confirm TODO-replace-with-real-unique-id
+bun run google:destroy plan --app welcome
+bun run google:destroy apply --app welcome --confirm TODO-replace-with-real-unique-id
 ```
 
 The apply calls `gcloud projects delete` for the configured project and nothing broader. Google
@@ -193,9 +196,9 @@ before declaring the CLI path obsolete.
 ## Optional agent integrations
 
 Firebase's official MCP server is included in the pinned CLI. If an agent client needs it, invoke
-`./node_modules/.bin/firebase mcp --dir .` and restrict discovery with `--only` or `--tools` to the
-smallest useful set. Do not give it a broader identity or effect authority than the equivalent CLI
-command.
+`./node_modules/.bin/firebase mcp --dir apps/<slug>` and restrict discovery with `--only` or
+`--tools` to the smallest useful set. Do not give it a broader identity or effect authority than
+the equivalent CLI command.
 
 Google also publishes official Firebase agent skills, including a Codex plugin. Installing those
 skills changes the developer's agent configuration and is intentionally not part of `bun install`.

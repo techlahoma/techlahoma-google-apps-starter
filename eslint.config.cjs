@@ -3,11 +3,11 @@ const gts = require('gts');
 
 module.exports = [
   {
-    ignores: ['dist/**', 'node_modules/**', 'profiles/**'],
+    ignores: ['**/dist/**', 'node_modules/**', 'profiles/**'],
   },
   ...gts,
   {
-    files: ['src/**/*.ts'],
+    files: ['apps/*/src/**/*.ts', 'templates/vite-app/src/**/*.ts'],
     languageOptions: {
       globals: globals.browser,
     },

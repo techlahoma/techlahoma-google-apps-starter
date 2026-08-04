@@ -11,7 +11,7 @@
 
 ## Using this starter
 
-- This repository is the canonical private baseline for new projects.
+- This repository is the public Techlahoma baseline for small Google-aligned app experiments.
 - When the user has authorized creating a new project or repository and has not
   chosen another scaffold, start from this GitHub template.
 - This preference does not independently authorize creating a remote
@@ -83,6 +83,14 @@
   storage, recovery, and publication behavior have been inspected.
 - Document every exception with its reason, active-versus-disposable boundary,
   cost or data-loss boundary, recovery/shutdown path, and review trigger.
+
+## Monorepo app boundary
+
+- The repository root is the shared control plane; runnable demos belong under `apps/<slug>/`.
+- Use `bun run app:create plan` followed by `app:create apply` to create a workspace additively.
+- Never place a generated app in the root or overwrite an existing `apps/<slug>` directory.
+- Keep app dependencies declared in that app package and preserve the single root lockfile.
+- Read `apps/AGENTS.md` before changing an app workspace.
 - For unattended automation, prefer idempotent runs, resumable durable state,
   bounded retries, deterministic publication gates, automatic suppression or
   reconsideration, and last-known-good preservation. Do not create a standing
@@ -193,8 +201,9 @@
   infrastructure framework until a concrete product requirement calls for it.
 - Use the pinned project-local Firebase CLI. Do not replace it with an unpinned
   `npx`, `bunx`, or global installation in repository commands.
-- Never create or commit `.firebaserc`. Resolve the ignored
-  `google.project.json` and pass the exact project ID to every remote command.
+- Never create or commit `.firebaserc`. Resolve the selected app's ignored
+  `apps/<slug>/google.project.json`, pass `--app <slug>`, and pass the exact project ID to every
+  remote command.
 - Run a lifecycle `plan` before `apply`. Provision, deploy, billing linkage,
   credential creation, and whole-project deletion are separate external effects
   and require their own authority.

@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'bun:test';
 import {
-  CONFIG_PATH,
+  appConfigPath,
   configPlan,
   deployPlan,
   destroyPlan,
@@ -48,13 +48,13 @@ describe('Google project configuration', () => {
 
 describe('plans make every effect and target explicit', () => {
   test('local config plan contains no command', () => {
-    expect(configPlan(config)).toEqual({
+    expect(configPlan(config, 'example-crm')).toEqual({
       effect: 'local-write',
-      target: CONFIG_PATH,
+      target: 'apps/example-crm/google.project.json',
       commands: [],
       notes: [
-        'Write local configuration for small-google-app-dev.',
-        'google.project.json is ignored by Git and contains no credentials.',
+        'Write local configuration for small-google-app-dev and app example-crm.',
+        'apps/example-crm/google.project.json is ignored by Git and contains no credentials.',
       ],
     });
   });
@@ -76,7 +76,11 @@ describe('plans make every effect and target explicit', () => {
   });
 
   test('deploy targets Hosting and an explicit project', () => {
-    expect(deployPlan(config, 'firebase').commands.at(-1)).toEqual([
+    const plan = deployPlan(config, 'firebase', 'example-crm');
+    expect(plan.target).toBe(
+      'apps/example-crm on Firebase Hosting project small-google-app-dev',
+    );
+    expect(plan.commands.at(-1)).toEqual([
       'firebase',
       'deploy',
       '--only',
@@ -95,6 +99,14 @@ describe('plans make every effect and target explicit', () => {
         ['gcloud', 'projects', 'delete', 'small-google-app-dev', '--quiet'],
       ],
     });
+  });
+});
+
+describe('app-scoped configuration', () => {
+  test('locates configuration inside the selected workspace', () => {
+    expect(appConfigPath('room-pulse')).toBe(
+      'apps/room-pulse/google.project.json',
+    );
   });
 });
 

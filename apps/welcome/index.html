@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#f7f5ef" />
     <meta
       name="description"
-      content="A static-first Firebase and Google Cloud starter that grows only when needed."
+      content="A monorepo-first Firebase and Google Cloud starter that grows one app at a time."
     />
     <title>Google App Starter</title>
   </head>
@@ -14,33 +14,31 @@
     <main id="app">
       <section class="shell">
         <p class="eyebrow">Google App Starter</p>
-        <h1>Start with a website.<br />Add a cloud only when you need one.</h1>
+        <h1>One repo.<br />As many small apps as the demo needs.</h1>
         <p class="lede">
-          A small TypeScript app, Firebase Hosting, and explicit agent-safe commands. No billing
-          account, database, or infrastructure framework is required.
+          Shared TypeScript tooling, app-local Firebase configuration, and explicit agent-safe
+          commands. Create every experiment under <code>apps/</code> without disturbing the others.
         </p>
 
         <div class="steps" aria-label="Starter workflow">
           <article>
             <span>01</span>
-            <h2>Build locally</h2>
-            <code>bun run dev</code>
+            <h2>Create an app</h2>
+            <code>bun run app:create plan --name my-app --title "My App"</code>
           </article>
           <article>
             <span>02</span>
-            <h2>Plan first</h2>
-            <code>bun run google:provision plan</code>
+            <h2>Build locally</h2>
+            <code>bun run --cwd apps/my-app dev</code>
           </article>
           <article>
             <span>03</span>
             <h2>Grow deliberately</h2>
-            <p>Add Auth, Firestore, or Cloud Run only after the product calls for it.</p>
+            <p>Add Firebase or Cloud Run only after that app actually needs shared state.</p>
           </article>
         </div>
 
-        <p class="footnote">
-          Static by default · one project per environment · whole-project teardown
-        </p>
+        <p class="footnote">Static by default · app-scoped config · one project per environment</p>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>

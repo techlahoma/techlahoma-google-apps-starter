@@ -1,4 +1,4 @@
-export const CONFIG_PATH = 'google.project.json';
+export const CONFIG_FILENAME = 'google.project.json';
 
 export type Environment = 'development' | 'preview' | 'production';
 
@@ -105,14 +105,22 @@ export function makeConfig(options: {
   });
 }
 
-export function configPlan(config: GoogleProjectConfig): CommandPlan {
+export function appConfigPath(app: string): string {
+  return `apps/${app}/${CONFIG_FILENAME}`;
+}
+
+export function configPlan(
+  config: GoogleProjectConfig,
+  app: string,
+): CommandPlan {
+  const configPath = appConfigPath(app);
   return {
     effect: 'local-write',
-    target: CONFIG_PATH,
+    target: configPath,
     commands: [],
     notes: [
-      `Write local configuration for ${config.project_id}.`,
-      `${CONFIG_PATH} is ignored by Git and contains no credentials.`,
+      `Write local configuration for ${config.project_id} and app ${app}.`,
+      `${configPath} is ignored by Git and contains no credentials.`,
     ],
   };
 }
@@ -144,10 +152,11 @@ export function provisionPlan(
 export function deployPlan(
   config: GoogleProjectConfig,
   firebaseBinary: string,
+  app: string,
 ): CommandPlan {
   return {
     effect: 'deploy',
-    target: `Firebase Hosting project ${config.project_id}`,
+    target: `apps/${app} on Firebase Hosting project ${config.project_id}`,
     commands: [
       ['bun', 'run', 'build'],
       [
@@ -160,7 +169,10 @@ export function deployPlan(
         '--non-interactive',
       ],
     ],
-    notes: ['Builds locally, then deploys only the static Hosting surface.'],
+    notes: [
+      `Runs from apps/${app}.`,
+      'Builds locally, then deploys only the static Hosting surface.',
+    ],
   };
 }
 

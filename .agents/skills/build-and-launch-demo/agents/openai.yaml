@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build and Launch Demo"
+  short_description: "Build and verify a usable local demo"
+  default_prompt: "Use $build-and-launch-demo to build and launch this demo locally."

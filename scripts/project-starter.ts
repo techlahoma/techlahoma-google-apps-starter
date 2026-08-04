@@ -85,6 +85,7 @@ const ACTION_SHA_PATTERN = /@[0-9a-f]{40}(?:\s|$)/;
 const PROJECT_TOKEN_PATTERN = /__PROJECT_(?:NAME|SLUG|DESCRIPTION)__/g;
 const MARKDOWN_LINK_PATTERN = /\[[^\]]+\]\(([^)]+)\)/g;
 const REQUIRED_CORE_PATHS = [
+  '.agents/skills/build-and-launch-demo/SKILL.md',
   '.editorconfig',
   '.github/CODEOWNERS',
   '.github/ISSUE_TEMPLATE/bug-report.yml',
@@ -97,6 +98,8 @@ const REQUIRED_CORE_PATHS = [
   '.starter/project.json',
   '.starter/baseline.json',
   'AGENTS.md',
+  'apps/AGENTS.md',
+  'apps/welcome/package.json',
   'CHATGPT-PROJECT-INSTRUCTIONS.md',
   'PROJECT.md',
   'README.md',
@@ -106,9 +109,13 @@ const REQUIRED_CORE_PATHS = [
   'mise.toml',
   'prek.toml',
   'profiles/README.md',
+  'scripts/create-app.ts',
   'scripts/hooks/gitleaks-staged',
   'scripts/project-starter.ts',
   'scripts/verify.sh',
+  'scripts/workspace-apps.ts',
+  'templates/vite-app/package.json',
+  'tsconfig.base.json',
 ] as const;
 
 export class Report {
@@ -254,6 +261,12 @@ function verifyJsonFiles(report: Report): void {
     ...filesMatching(join(ROOT, 'profiles'), path =>
       ['.json', '.jsonc'].includes(extname(path)),
     ),
+    ...filesMatching(join(ROOT, 'apps'), path =>
+      ['.json', '.jsonc'].includes(extname(path)),
+    ),
+    ...filesMatching(join(ROOT, 'templates'), path =>
+      ['.json', '.jsonc'].includes(extname(path)),
+    ),
   ];
   for (const path of [...new Set(candidates)].toSorted()) {
     if (!existsSync(path)) continue;
@@ -273,6 +286,14 @@ function verifySbc4(report: Report): void {
     join(ROOT, 'PROJECT.md'),
     join(ROOT, 'SECURITY.md'),
     ...filesMatching(join(ROOT, 'docs'), path => extname(path) === '.md'),
+    ...filesMatching(
+      join(ROOT, 'apps'),
+      path => basename(path) === 'README.md',
+    ),
+    ...filesMatching(
+      join(ROOT, 'templates'),
+      path => basename(path) === 'README.md',
+    ),
     ...filesMatching(join(ROOT, 'profiles'), path => {
       const pathText = relative(path);
       return (

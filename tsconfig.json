@@ -1,28 +1,7 @@
 {
-  "extends": "./node_modules/gts/tsconfig-google.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "allowJs": false,
-    "exactOptionalPropertyTypes": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "moduleResolution": "Bundler",
-    "composite": false,
-    "noEmit": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noUncheckedIndexedAccess": true,
-    "resolveJsonModule": true,
-    "sourceMap": false,
-    "skipLibCheck": true,
-    "strict": true,
-    "stripInternal": false,
-    "target": "ESNext",
-    "types": ["bun"],
-    "useDefineForClassFields": true,
-    "verbatimModuleSyntax": true
+    "types": ["bun"]
   },
-  "include": ["src", "scripts", "tests"]
+  "include": ["scripts", "tests", "apps/*/src", "templates/vite-app/src"]
 }

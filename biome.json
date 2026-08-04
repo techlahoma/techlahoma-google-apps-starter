@@ -8,7 +8,16 @@
   "files": {
     "ignoreUnknown": true,
     "maxSize": 1048576,
-    "includes": ["*.json", "*.jsonc", "index.html", "src/**/*.css"]
+    "includes": [
+      "*.json",
+      "*.jsonc",
+      "apps/*/*.json",
+      "apps/*/index.html",
+      "apps/*/src/**/*.css",
+      "templates/vite-app/*.json",
+      "templates/vite-app/index.html",
+      "templates/vite-app/src/**/*.css"
+    ]
   },
   "formatter": {
     "enabled": true,
