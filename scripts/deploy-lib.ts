@@ -3,6 +3,7 @@ import {isAbsolute, join, relative, resolve} from 'node:path';
 import {
   CONFIG_FILENAME,
   type GoogleProjectConfig,
+  deriveSiteId,
   validateConfig,
   validateSiteId,
 } from './google-cloud-lib';
@@ -14,12 +15,16 @@ export const PLACEHOLDER_PROJECT_IDS = new Set([
   'placeholder-project',
 ]);
 
+export type AppDeployStatus =
+  'not_configured' | 'site_missing' | 'site_exists' | 'deployed' | 'unknown';
+
 export interface DiscoveredApp {
   slug: string;
   directory: string;
   title: string;
   siteId?: string;
   deployedUrl?: string;
+  status?: AppDeployStatus;
 }
 
 export interface FirebaseProject {
@@ -121,6 +126,67 @@ export class DefaultCommandExecutor implements CommandExecutor {
   }
 }
 
+export function sanitizeFirebaseErrorOutput(output: string): string {
+  if (!output || typeof output !== 'string') {
+    return '';
+  }
+
+  // Strip ANSI color sequences
+  // eslint-disable-next-line no-control-regex
+  let clean = output.replace(/\u001b\[[0-9;]*m/g, '');
+
+  // Redact Bearer tokens, API keys, and sensitive flags/parameters
+  clean = clean.replace(/Bearer\s+[A-Za-z0-9._~+/-]+=*/gi, 'Bearer [REDACTED]');
+  clean = clean.replace(/AIza[0-9A-Za-z-_]{20,50}/g, '[REDACTED_API_KEY]');
+  clean = clean.replace(/FIREBASE_TOKEN=\S+/gi, 'FIREBASE_TOKEN=[REDACTED]');
+  clean = clean.replace(/access_token=\S+/gi, 'access_token=[REDACTED]');
+  clean = clean.replace(/refresh_token=\S+/gi, 'refresh_token=[REDACTED]');
+
+  // Limit output lines and characters to prevent diagnostic log dumps
+  const lines = clean.split(/\r?\n/).filter(l => l.trim().length > 0);
+  const boundedLines = lines.slice(-25);
+  let boundedText = boundedLines.join('\n');
+
+  if (boundedText.length > 2500) {
+    boundedText = boundedText.slice(-2500);
+  }
+
+  return boundedText.trim();
+}
+
+export async function saveDiagnosticReceipt(options: {
+  rootDir: string;
+  app: string;
+  projectId: string;
+  siteId: string;
+  exitCode: number;
+  command: string[];
+  firebaseStderr: string;
+}): Promise<string> {
+  const {rootDir, app, projectId, siteId, exitCode, command, firebaseStderr} =
+    options;
+  const tmpDir = join(rootDir, '.starter', 'tmp', 'deploy-errors');
+
+  await mkdir(tmpDir, {recursive: true});
+
+  const timestampStr = new Date().toISOString().replace(/[:.]/g, '-');
+  const filename = `deploy-error-${app}-${timestampStr}.json`;
+  const filePath = join(tmpDir, filename);
+
+  const safeData = {
+    timestamp: new Date().toISOString(),
+    app,
+    projectId,
+    siteId,
+    exitCode,
+    command,
+    firebaseStderr,
+  };
+
+  await Bun.write(filePath, `${JSON.stringify(safeData, null, 2)}\n`);
+  return relative(rootDir, filePath).replace(/\\/g, '/');
+}
+
 export function formatAppTitle(
   slug: string,
   pkgJson?: {title?: string; name?: string},
@@ -181,7 +247,6 @@ export function resolveAppTarget(
     cleanArg = cleanArg.slice(0, -1);
   }
 
-  // Handle paths like ./apps/foo, apps/foo, or absolute path
   let targetSlug = cleanArg;
   if (cleanArg.startsWith('./')) {
     cleanArg = cleanArg.slice(2);
@@ -223,6 +288,35 @@ export function detectAppFromCwd(
     return discoveredApps.find(a => a.slug === slug);
   }
   return undefined;
+}
+
+export function determineAppStatuses(
+  apps: DiscoveredApp[],
+  config: GoogleProjectConfig | null,
+  existingSites: FirebaseHostingSite[],
+  verifiedApps?: Set<string>,
+): DiscoveredApp[] {
+  if (isPlaceholderConfig(config)) {
+    return apps.map(a => ({...a, status: 'not_configured'}));
+  }
+
+  const projectId = config!.project_id;
+
+  return apps.map(app => {
+    const siteId = config!.sites[app.slug] ?? deriveSiteId(projectId, app.slug);
+    const existsRemotely = existingSites.some(s => s.siteId === siteId);
+
+    let status: AppDeployStatus = 'site_missing';
+    if (existsRemotely) {
+      status = verifiedApps?.has(app.slug) ? 'deployed' : 'site_exists';
+    }
+
+    return {
+      ...app,
+      siteId,
+      status,
+    };
+  });
 }
 
 export async function readRootConfig(
@@ -298,11 +392,16 @@ export async function listFirebaseProjects(
 ): Promise<FirebaseProject[]> {
   const res = await executor.exec([firebaseBinary, 'projects:list', '--json']);
   if (res.exitCode !== 0) {
+    const sanitized = sanitizeFirebaseErrorOutput(res.stderr || res.stdout);
     throw new DeployError(
       'AUTH_REQUIRED',
       'Failed to query Firebase projects. Firebase CLI authentication is missing or expired.',
       'Run "bun run firebase:login" to authenticate with Firebase.',
-      {stderr: res.stderr},
+      {
+        exitCode: res.exitCode,
+        command: [firebaseBinary, 'projects:list', '--json'],
+        firebaseStderr: sanitized,
+      },
     );
   }
 
@@ -360,11 +459,17 @@ export async function listHostingSites(
   ]);
 
   if (res.exitCode !== 0) {
+    const sanitized = sanitizeFirebaseErrorOutput(res.stderr || res.stdout);
     throw new DeployError(
       'FIREBASE_CLI_ERROR',
       `Failed to list Hosting sites for project ${projectId}.`,
       `Verify project ${projectId} exists and your account has permission.`,
-      {stderr: res.stderr},
+      {
+        projectId,
+        exitCode: res.exitCode,
+        command: [firebaseBinary, 'hosting:sites:list', '--project', projectId],
+        firebaseStderr: sanitized,
+      },
     );
   }
 
@@ -381,7 +486,6 @@ export async function listHostingSites(
     const sites: FirebaseHostingSite[] = [];
     for (const item of rawSites) {
       if (!item || typeof item !== 'object') continue;
-      // site name can be "projects/PROJECT/sites/SITE_ID" or just siteId
       let siteId: string | undefined;
       if (typeof item.name === 'string' && item.name.includes('/sites/')) {
         siteId = item.name.split('/sites/')[1];
@@ -445,6 +549,111 @@ export function validateDeploymentSite(
   }
 }
 
+export interface SiteReadinessOptions {
+  maxAttempts?: number;
+  initialDelayMs?: number;
+  backoffFactor?: number;
+  sleepFn?: (ms: number) => Promise<void>;
+  onProgress?: (attempt: number, maxAttempts: number) => void;
+}
+
+export async function pollSiteReadiness(
+  firebaseBinary: string,
+  projectId: string,
+  siteId: string,
+  executor: CommandExecutor,
+  options?: SiteReadinessOptions,
+): Promise<FirebaseHostingSite> {
+  const maxAttempts = options?.maxAttempts ?? 6;
+  const initialDelay = options?.initialDelayMs ?? 300;
+  const backoffFactor = options?.backoffFactor ?? 1.5;
+  const sleep = options?.sleepFn ?? (ms => new Promise(r => setTimeout(r, ms)));
+
+  let currentDelay = initialDelay;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    if (options?.onProgress) {
+      options.onProgress(attempt, maxAttempts);
+    }
+
+    const res = await executor.exec([
+      firebaseBinary,
+      'hosting:sites:get',
+      siteId,
+      '--project',
+      projectId,
+      '--json',
+    ]);
+
+    if (res.exitCode === 0) {
+      try {
+        const data = JSON.parse(res.stdout);
+        const siteObj = data.result ?? data;
+        if (siteObj && typeof siteObj === 'object') {
+          return {
+            siteId,
+            type: typeof siteObj.type === 'string' ? siteObj.type : undefined,
+            defaultUrl:
+              typeof siteObj.defaultUrl === 'string'
+                ? siteObj.defaultUrl
+                : `https://${siteId}.web.app`,
+          };
+        }
+      } catch {
+        // Retry parsing failure
+      }
+    }
+
+    const sanitized = sanitizeFirebaseErrorOutput(res.stderr || res.stdout);
+
+    // Fail immediately without retrying non-transient errors (auth, quota, forbidden)
+    if (
+      sanitized.includes('403') ||
+      sanitized.includes('PERMISSION_DENIED') ||
+      sanitized.includes('AUTH_REQUIRED') ||
+      sanitized.includes('unauthenticated') ||
+      sanitized.includes('Quota exceeded')
+    ) {
+      throw new DeployError(
+        'SITE_READINESS_FAILED',
+        `Site readiness check failed with a non-transient error for site "${siteId}".`,
+        'Verify account permissions and Firebase Hosting project status.',
+        {
+          app: siteId,
+          projectId,
+          siteId,
+          exitCode: res.exitCode,
+          command: [
+            firebaseBinary,
+            'hosting:sites:get',
+            siteId,
+            '--project',
+            projectId,
+          ],
+          firebaseStderr: sanitized,
+        },
+      );
+    }
+
+    if (attempt < maxAttempts) {
+      await sleep(currentDelay);
+      currentDelay = Math.round(currentDelay * backoffFactor);
+    }
+  }
+
+  throw new DeployError(
+    'SITE_NOT_READY',
+    `Hosting site "${siteId}" did not become ready within the expected propagation window (${maxAttempts} attempts).`,
+    'Wait a moment for site creation to complete propagating and retry "bun run deploy".',
+    {
+      app: siteId,
+      projectId,
+      siteId,
+      attempts: maxAttempts,
+    },
+  );
+}
+
 export async function ensureSiteExists(
   firebaseBinary: string,
   projectId: string,
@@ -452,6 +661,7 @@ export async function ensureSiteExists(
   existingSites: FirebaseHostingSite[],
   executor: CommandExecutor,
   dryRun = false,
+  readinessOptions?: SiteReadinessOptions,
 ): Promise<{created: boolean}> {
   const existing = existingSites.find(s => s.siteId === siteId);
   if (existing) {
@@ -472,13 +682,35 @@ export async function ensureSiteExists(
   ]);
 
   if (res.exitCode !== 0) {
+    const sanitized = sanitizeFirebaseErrorOutput(res.stderr || res.stdout);
     throw new DeployError(
       'SITE_CREATION_FAILED',
       `Failed to create Firebase Hosting site "${siteId}" in project "${projectId}".`,
       'Check Firebase Hosting site limits or site name availability.',
-      {stderr: res.stderr},
+      {
+        app: siteId,
+        projectId,
+        siteId,
+        exitCode: res.exitCode,
+        command: [
+          firebaseBinary,
+          'hosting:sites:create',
+          siteId,
+          '--project',
+          projectId,
+        ],
+        firebaseStderr: sanitized,
+      },
     );
   }
+
+  await pollSiteReadiness(
+    firebaseBinary,
+    projectId,
+    siteId,
+    executor,
+    readinessOptions,
+  );
 
   return {created: true};
 }
@@ -586,11 +818,39 @@ export async function deployAppWithTarget(options: {
     );
 
     if (res.exitCode !== 0) {
+      const sanitized = sanitizeFirebaseErrorOutput(res.stderr || res.stdout);
+      const safeCmd = [
+        'firebase',
+        'deploy',
+        '--only',
+        `hosting:${app.slug}`,
+        '--project',
+        projectId,
+      ];
+
+      const evidencePath = await saveDiagnosticReceipt({
+        rootDir,
+        app: app.slug,
+        projectId,
+        siteId,
+        exitCode: res.exitCode,
+        command: safeCmd,
+        firebaseStderr: sanitized,
+      });
+
       throw new DeployError(
         'DEPLOYMENT_FAILED',
         `Firebase CLI deployment failed for app workspace apps/${app.slug} on site ${siteId}.`,
-        'Check Firebase deployment logs and site permissions.',
-        {stderr: res.stderr, stdout: res.stdout},
+        'Review the Firebase error below.',
+        {
+          app: app.slug,
+          projectId,
+          siteId,
+          exitCode: res.exitCode,
+          command: safeCmd,
+          firebaseStderr: sanitized,
+          evidencePath,
+        },
       );
     }
   } finally {

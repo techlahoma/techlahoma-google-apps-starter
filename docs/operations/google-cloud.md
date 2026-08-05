@@ -80,13 +80,16 @@ Additional options:
 - `bun run deploy APP --yes`: Accept confirmations automatically for unattended deployment.
 - `bun run deploy APP --json`: Output machine-readable JSON deployment receipts.
 
-### Automatic Preflight & Protections
+### Automatic Preflight, Readiness & Incident Diagnostics
 
 1. **Default Site Protection**: Deployments unconditionally protect your primary default site (`projectId.web.app`). Each app is deployed to a dedicated secondary Hosting site.
 2. **First-Run Setup**: Interactive execution guides Firebase authentication, project selection, and provisions secondary sites automatically.
 3. **Build Preflight**: `bun run deploy` builds the target app workspace locally before initiating any remote deployment. For `--all`, every app is built before any deployment occurs.
-4. **Temporary Target Configuration**: Deployments bind targets in a task-scoped temporary deployment workspace without modifying tracked files or committing `.firebaserc`.
-5. **Live Verification**: Post-deployment, the CLI queries site metadata, reads authoritative `defaultUrl`, verifies HTTP responsiveness, and returns public & console URLs.
+4. **Site Creation & Propagation Readiness Polling**: When a new secondary Hosting site is created (`hosting:sites:create`), the CLI polls site metadata (`hosting:sites:get`) with bounded exponential backoff until the site is ready before attempting deployment. Non-transient errors (such as 403 Forbidden or quota errors) fail immediately without retrying.
+5. **Secondary Site Reuse**: If site creation succeeds but deployment fails, the secondary site exists remotely on Firebase. Subsequent `bun run deploy` executions discover the existing site, skip site creation, validate target boundaries, and proceed directly to deployment.
+6. **Sanitized Failure Output & Evidence Receipts**: If `firebase deploy` fails, the CLI outputs sanitized Firebase error text (redacting bearer tokens, API keys, and sensitive flags), cleans up the temporary deployment workspace, and saves a sanitized diagnostic receipt under `.starter/tmp/deploy-errors/deploy-error-<app>-<timestamp>.json`.
+7. **Temporary Target Configuration**: Deployments bind targets in a task-scoped temporary deployment workspace without modifying tracked files or committing `.firebaserc`.
+8. **Live Verification**: Post-deployment, the CLI queries site metadata, reads authoritative `defaultUrl`, verifies HTTP responsiveness, and returns public & console URLs.
 
 ## 6. Teardown options
 

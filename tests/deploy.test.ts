@@ -8,7 +8,9 @@ import {
   type DiscoveredApp,
   type FirebaseHostingSite,
   type FirebaseProject,
+  deployAppWithTarget,
   detectAppFromCwd,
+  determineAppStatuses,
   discoverApps,
   ensureSiteExists,
   fetchHostingSiteReceipt,
@@ -16,7 +18,9 @@ import {
   isPlaceholderConfig,
   listFirebaseProjects,
   listHostingSites,
+  pollSiteReadiness,
   resolveAppTarget,
+  sanitizeFirebaseErrorOutput,
   validateDeploymentSite,
   writeRootConfig,
 } from '../scripts/deploy-lib';
@@ -563,5 +567,310 @@ describe('Execution flow end-to-end with mock executor and test fixture director
       c.command.includes('deploy'),
     );
     expect(firstBuildIdx).toBeLessThan(firstDeployIdx);
+  });
+});
+
+describe('Sanitization, diagnostic evidence, site readiness, and site reuse', () => {
+  test('sanitizeFirebaseErrorOutput redacts tokens, API keys, ANSI codes, and bounds output', () => {
+    const raw =
+      '\u001b[31mError\u001b[0m: Authorization Bearer secret-token-12345 failed for key AIzaSyA1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p. FIREBASE_TOKEN=my-secret-token access_token=xyz';
+    const clean = sanitizeFirebaseErrorOutput(raw);
+
+    expect(clean).not.toContain('\u001b[31m');
+    expect(clean).not.toContain('secret-token-12345');
+    expect(clean).not.toContain('AIzaSyA1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p');
+    expect(clean).not.toContain('my-secret-token');
+    expect(clean).toContain('Bearer [REDACTED]');
+    expect(clean).toContain('[REDACTED_API_KEY]');
+    expect(clean).toContain('FIREBASE_TOKEN=[REDACTED]');
+    expect(clean).toContain('access_token=[REDACTED]');
+  });
+
+  test('pollSiteReadiness succeeds after transient not-found responses with zero delay in test', async () => {
+    const executor = new MockCommandExecutor();
+    let callsCount = 0;
+
+    executor.setResponse('hosting:sites:get', {
+      exitCode: 1,
+      stdout: '',
+      stderr: 'HTTP 404 Site not found',
+    });
+
+    const sleepFn = async () => {};
+
+    const readinessPromise = pollSiteReadiness(
+      'firebase',
+      'sam-carlton-creative',
+      'numeronym-generator-ef4ba1',
+      {
+        async exec() {
+          callsCount++;
+          if (callsCount >= 3) {
+            return {
+              exitCode: 0,
+              stdout: JSON.stringify({
+                result: {
+                  name: 'projects/sam-carlton-creative/sites/numeronym-generator-ef4ba1',
+                  type: 'USER_SITE',
+                  defaultUrl: 'https://numeronym-generator-ef4ba1.web.app',
+                },
+              }),
+              stderr: '',
+            };
+          }
+          return {
+            exitCode: 1,
+            stdout: '',
+            stderr: 'HTTP 404 Site not found',
+          };
+        },
+      },
+      {maxAttempts: 5, initialDelayMs: 10, sleepFn},
+    );
+
+    const result = await readinessPromise;
+    expect(result.siteId).toBe('numeronym-generator-ef4ba1');
+    expect(callsCount).toBe(3);
+  });
+
+  test('pollSiteReadiness fails with SITE_NOT_READY when maxAttempts exhausted', async () => {
+    const executor = new MockCommandExecutor();
+    executor.setResponse('hosting:sites:get', {
+      exitCode: 1,
+      stdout: '',
+      stderr: 'HTTP 404 Site not found',
+    });
+
+    const sleepFn = async () => {};
+
+    try {
+      await pollSiteReadiness(
+        'firebase',
+        'sam-carlton-creative',
+        'numeronym-generator-ef4ba1',
+        executor,
+        {maxAttempts: 3, initialDelayMs: 1, sleepFn},
+      );
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      expect((err as DeployError).code).toBe('SITE_NOT_READY');
+    }
+  });
+
+  test('pollSiteReadiness fails immediately without retrying non-transient errors (403/Forbidden)', async () => {
+    let callsCount = 0;
+    const sleepFn = async () => {};
+
+    const promise = pollSiteReadiness(
+      'firebase',
+      'sam-carlton-creative',
+      'numeronym-generator-ef4ba1',
+      {
+        async exec() {
+          callsCount++;
+          return {
+            exitCode: 1,
+            stdout: '',
+            stderr: 'HTTP 403 PERMISSION_DENIED: User does not have permission',
+          };
+        },
+      },
+      {maxAttempts: 5, initialDelayMs: 1, sleepFn},
+    );
+
+    try {
+      await promise;
+      expect(true).toBe(false); // should not reach
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      expect((err as DeployError).code).toBe('SITE_READINESS_FAILED');
+      expect(callsCount).toBe(1); // failed immediately without retrying!
+    }
+  });
+
+  test('ensureSiteExists reuses existing secondary site without creating or polling', async () => {
+    const executor = new MockCommandExecutor();
+    const existingSites: FirebaseHostingSite[] = [
+      {
+        siteId: 'numeronym-generator-ef4ba1',
+        type: 'USER_SITE',
+        defaultUrl: 'https://numeronym-generator-ef4ba1.web.app',
+      },
+    ];
+
+    const res = await ensureSiteExists(
+      'firebase',
+      'sam-carlton-creative',
+      'numeronym-generator-ef4ba1',
+      existingSites,
+      executor,
+    );
+
+    expect(res.created).toBe(false);
+    expect(executor.calls.length).toBe(0);
+  });
+
+  test('determineAppStatuses correctly distinguishes missing, existing, deployed, and unconfigured sites', () => {
+    const apps: DiscoveredApp[] = [
+      {
+        slug: 'numeronym-generator',
+        title: 'Numeronym Generator',
+        directory: '/apps/numeronym-generator',
+      },
+      {slug: 'welcome', title: 'Welcome', directory: '/apps/welcome'},
+      {slug: 'room-pulse', title: 'Room Pulse', directory: '/apps/room-pulse'},
+    ];
+
+    const config = makeConfig({
+      projectId: 'sam-carlton-creative',
+      displayName: 'Sam Carlton Creative',
+      sites: {
+        'numeronym-generator': 'numeronym-generator-ef4ba1',
+      },
+    });
+
+    const existingSites: FirebaseHostingSite[] = [
+      {siteId: 'sam-carlton-creative', type: 'DEFAULT_SITE'},
+      {siteId: 'numeronym-generator-ef4ba1', type: 'USER_SITE'},
+    ];
+
+    const verifiedApps = new Set<string>(['numeronym-generator']);
+
+    const statuses = determineAppStatuses(
+      apps,
+      config,
+      existingSites,
+      verifiedApps,
+    );
+
+    expect(statuses.find(a => a.slug === 'numeronym-generator')?.status).toBe(
+      'deployed',
+    );
+    expect(statuses.find(a => a.slug === 'welcome')?.status).toBe(
+      'site_missing',
+    );
+  });
+
+  test('REGRESSION TEST (eb995e4 fix): failed firebase deploy surfaces sanitized stderr, saves evidence receipt, and cleans temporary workspace', async () => {
+    const testDir = join(
+      process.cwd(),
+      'tests',
+      'fixtures',
+      `test-regression-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    );
+
+    await mkdir(join(testDir, 'apps/numeronym-generator/dist'), {
+      recursive: true,
+    });
+    await writeFile(
+      join(testDir, 'apps/numeronym-generator/dist/index.html'),
+      '<html>Test</html>',
+    );
+    await writeFile(
+      join(testDir, 'apps/numeronym-generator/package.json'),
+      JSON.stringify({
+        name: 'numeronym-generator',
+        title: 'Numeronym Generator',
+      }),
+    );
+    await writeFile(
+      join(testDir, 'apps/numeronym-generator/firebase.json'),
+      '{}',
+    );
+
+    const app: DiscoveredApp = {
+      slug: 'numeronym-generator',
+      title: 'Numeronym Generator',
+      directory: join(testDir, 'apps/numeronym-generator'),
+    };
+
+    const failingExecutor: CommandExecutor = {
+      async exec(command, options) {
+        // Assert temporary .firebaserc and firebase.json contents in cwd
+        if (options?.cwd) {
+          const firebasercFile = Bun.file(join(options.cwd, '.firebaserc'));
+          const firebaseJsonFile = Bun.file(join(options.cwd, 'firebase.json'));
+
+          expect(await firebasercFile.exists()).toBe(true);
+          expect(await firebaseJsonFile.exists()).toBe(true);
+
+          const rcData = JSON.parse(await firebasercFile.text());
+          const jsonData = JSON.parse(await firebaseJsonFile.text());
+
+          expect(rcData.projects.default).toBe('sam-carlton-creative');
+          expect(
+            rcData.targets['sam-carlton-creative'].hosting[
+              'numeronym-generator'
+            ],
+          ).toEqual(['numeronym-generator-ef4ba1']);
+          expect(jsonData.hosting.target).toBe('numeronym-generator');
+        }
+
+        return {
+          exitCode: 1,
+          stdout: '',
+          stderr:
+            'Error: Deploy failed due to insufficient hosting release authorization Bearer secret-auth-token-999',
+        };
+      },
+    };
+
+    try {
+      await deployAppWithTarget({
+        rootDir: testDir,
+        firebaseBinary: 'firebase',
+        projectId: 'sam-carlton-creative',
+        app,
+        siteId: 'numeronym-generator-ef4ba1',
+        executor: failingExecutor,
+      });
+      expect(true).toBe(false); // should not reach
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      const deployErr = err as DeployError;
+      expect(deployErr.code).toBe('DEPLOYMENT_FAILED');
+
+      const details = deployErr.details as {
+        app: string;
+        projectId: string;
+        siteId: string;
+        exitCode: number;
+        command: string[];
+        firebaseStderr: string;
+        evidencePath: string;
+      };
+
+      // 1. Surfaced sanitized stderr (redacting secret-auth-token-999)
+      expect(details.firebaseStderr).toContain('Bearer [REDACTED]');
+      expect(details.firebaseStderr).not.toContain('secret-auth-token-999');
+
+      // 2. Evidence receipt saved on disk under .starter/tmp/deploy-errors/
+      expect(details.evidencePath).toBeDefined();
+      const evidenceFile = Bun.file(join(testDir, details.evidencePath));
+      expect(await evidenceFile.exists()).toBe(true);
+
+      const savedEvidence = JSON.parse(await evidenceFile.text());
+      expect(savedEvidence.app).toBe('numeronym-generator');
+      expect(savedEvidence.projectId).toBe('sam-carlton-creative');
+      expect(savedEvidence.siteId).toBe('numeronym-generator-ef4ba1');
+      expect(savedEvidence.exitCode).toBe(1);
+      expect(savedEvidence.command).toEqual([
+        'firebase',
+        'deploy',
+        '--only',
+        'hosting:numeronym-generator',
+        '--project',
+        'sam-carlton-creative',
+      ]);
+      expect(savedEvidence.firebaseStderr).toContain('Bearer [REDACTED]');
+      expect(savedEvidence.env).toBeUndefined(); // no env dump!
+    }
+
+    // 3. Verify temporary deploy folder was cleaned up
+    const entries = await Bun.file(join(testDir, '.firebaserc')).exists();
+    expect(entries).toBe(false);
+
+    await rm(testDir, {recursive: true, force: true});
   });
 });

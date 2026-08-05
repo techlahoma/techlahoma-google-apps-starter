@@ -38,7 +38,18 @@ export class CliPromptAdapter implements PromptAdapter {
     apps.forEach((app, idx) => {
       const isDefault = defaultSlug === app.slug;
       const prefix = isDefault ? '❯' : ' ';
-      const statusStr = app.siteId ? app.siteId : 'Not deployed';
+      let statusStr = 'Not deployed';
+      if (app.status === 'deployed') {
+        statusStr = 'Deployed & verified';
+      } else if (app.status === 'site_exists') {
+        statusStr = 'Site exists';
+      } else if (app.status === 'site_missing') {
+        statusStr = 'Site missing';
+      } else if (app.status === 'not_configured') {
+        statusStr = 'Not configured';
+      } else if (app.siteId) {
+        statusStr = app.siteId;
+      }
       const paddedTitle = app.title.padEnd(24, ' ');
       console.log(`${prefix} ${idx + 1}) ${paddedTitle} ${statusStr}`);
     });

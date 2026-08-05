@@ -11,6 +11,7 @@ import {
   buildAppWorkspace,
   checkFirebaseAuth,
   detectAppFromCwd,
+  determineAppStatuses,
   discoverApps,
   deployAppWithTarget,
   ensureSiteExists,
@@ -256,6 +257,11 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
   }
 
   const defaultSite = getProtectedDefaultSite(existingSites, projectId);
+  const appsWithStatus = determineAppStatuses(
+    discoveredApps,
+    activeConfig,
+    existingSites,
+  );
 
   // If interactive single selection (no app specified on CLI)
   if (isInteractiveSingleSelection) {
@@ -266,8 +272,8 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
 
     const cwdApp = detectAppFromCwd(process.cwd(), rootDir, discoveredApps);
     const selectedApp = await promptAdapter.selectApp(
-      discoveredApps,
-      cwdApp?.slug ?? discoveredApps[0]?.slug,
+      appsWithStatus,
+      cwdApp?.slug ?? appsWithStatus[0]?.slug,
     );
     targetApps = [selectedApp];
 
@@ -534,8 +540,34 @@ if (import.meta.main) {
         console.error(JSON.stringify(error.toJSON(), null, 2));
       } else {
         console.error(`\nDeploy Error [${error.code}]: ${error.message}`);
+        const details = error.details as
+          | {
+              command?: string[];
+              firebaseStderr?: string;
+              evidencePath?: string;
+            }
+          | undefined;
+
+        if (details?.command) {
+          console.error(`Command: ${details.command.join(' ')}`);
+        }
+        if (details?.firebaseStderr) {
+          console.error('\nFirebase Error Output:');
+          console.error(
+            '--------------------------------------------------------------------------------',
+          );
+          console.error(details.firebaseStderr);
+          console.error(
+            '--------------------------------------------------------------------------------',
+          );
+        }
         if (error.remediation) {
           console.error(`Remediation: ${error.remediation}`);
+        }
+        if (details?.evidencePath) {
+          console.error(
+            `Diagnostic evidence saved to: ${details.evidencePath}`,
+          );
         }
       }
     } else {
