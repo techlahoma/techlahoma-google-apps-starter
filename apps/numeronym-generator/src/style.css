@@ -76,7 +76,7 @@ body {
 
 /* Header */
 .header {
-  padding: clamp(40px, 8vw, 64px) 0 24px;
+  padding: clamp(24px, 5vw, 48px) 0 20px;
   text-align: center;
 }
 
@@ -85,7 +85,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
@@ -121,18 +121,18 @@ body {
 
 h1 {
   font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 6vw, 3.8rem);
+  font-size: clamp(2.2rem, 5.5vw, 3.4rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .subtitle {
   color: var(--text-muted);
-  font-size: 1.125rem;
+  font-size: 1.05rem;
   max-width: 580px;
   margin: 0 auto;
 }
@@ -149,8 +149,8 @@ h1 {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--bg-card-border);
   border-radius: var(--radius-lg);
-  padding: 24px;
-  margin-bottom: 24px;
+  padding: 20px;
+  margin-bottom: 20px;
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
   transition:
     transform var(--transition-normal),
@@ -165,17 +165,30 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .card-header h2 {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--text-main);
 }
 
-/* Inputs */
+/* Controls Grid & Inputs */
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .controls-inline {
   display: flex;
   align-items: center;
@@ -183,7 +196,8 @@ h1 {
 }
 
 .control-label {
-  font-size: 0.875rem;
+  font-size: 0.825rem;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
@@ -191,12 +205,13 @@ h1 {
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid var(--bg-card-border);
   color: var(--text-main);
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
   font-size: 0.875rem;
   outline: none;
   cursor: pointer;
+  width: 100%;
   transition: border-color var(--transition-fast);
 }
 .select-input:focus {
@@ -204,7 +219,7 @@ h1 {
 }
 
 .input-wrapper {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .textarea-input {
@@ -215,9 +230,10 @@ h1 {
   color: var(--text-main);
   font-family: var(--font-sans);
   font-size: 1.125rem;
-  padding: 14px 16px;
+  padding: 12px 14px;
   resize: vertical;
   outline: none;
+  min-height: 70px;
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
@@ -268,19 +284,33 @@ h1 {
   transform: translateY(-1px);
 }
 
+.chip-featured {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #a5b4fc;
+  font-weight: 600;
+}
+.chip-featured:hover {
+  background: rgba(99, 102, 241, 0.4);
+  color: #ffffff;
+}
+
 /* Result Card */
 .stats-badge {
   font-size: 0.825rem;
   padding: 3px 10px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-dim);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: var(--accent-cyan);
+  font-weight: 600;
 }
 
 .output-box-container {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 12px;
   background: rgba(15, 23, 42, 0.9);
   border: 2px solid rgba(99, 102, 241, 0.4);
   border-radius: var(--radius-md);
@@ -293,8 +323,8 @@ h1 {
 
 .numeronym-output {
   font-family: var(--font-mono);
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
   color: #818cf8;
   letter-spacing: 0.02em;
   word-break: break-all;
@@ -307,12 +337,14 @@ h1 {
   justify-content: center;
   gap: 8px;
   padding: 10px 18px;
+  min-height: 44px;
   border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   border: none;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .btn-primary {
@@ -371,7 +403,7 @@ h1 {
 }
 
 .breakdown-word-title {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   margin-bottom: 12px;
   color: var(--text-muted);
@@ -518,13 +550,66 @@ h1 {
 /* Footer */
 .footer {
   text-align: center;
-  padding: 32px 0 48px;
+  padding: 24px 0 36px;
   font-size: 0.875rem;
   color: var(--text-dim);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 .footer strong {
   color: var(--text-muted);
+}
+
+/* Mobile & iPhone Optimizations */
+@media (max-width: 600px) {
+  .container {
+    width: calc(100% - 20px);
+  }
+
+  .header {
+    padding: 20px 0 14px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .card {
+    padding: 16px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+  }
+
+  .controls-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .output-box-container {
+    padding: 12px 14px;
+    min-height: 68px;
+    flex-wrap: wrap;
+  }
+
+  .numeronym-output {
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+  }
+
+  .chip {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .part-badge {
+    padding: 8px 10px;
+  }
+
+  .part-badge .char {
+    font-size: 1.25rem;
+  }
 }

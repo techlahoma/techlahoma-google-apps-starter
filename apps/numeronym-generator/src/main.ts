@@ -9,6 +9,7 @@ import './style.css';
 const inputText = document.querySelector<HTMLTextAreaElement>('#input-text');
 const minLengthSelect =
   document.querySelector<HTMLSelectElement>('#min-length-select');
+const modeSelect = document.querySelector<HTMLSelectElement>('#mode-select');
 const numeronymOutput =
   document.querySelector<HTMLDivElement>('#numeronym-output');
 const copyBtn = document.querySelector<HTMLButtonElement>('#copy-btn');
@@ -44,6 +45,7 @@ function init() {
 
   inputText.addEventListener('input', updateNumeronym);
   minLengthSelect.addEventListener('change', updateNumeronym);
+  modeSelect?.addEventListener('change', updateNumeronym);
 
   presetChips?.addEventListener('click', e => {
     const target = e.target as HTMLElement;
@@ -65,12 +67,17 @@ function getMinLength(): number {
   return parseInt(minLengthSelect?.value || '3', 10);
 }
 
+function getMode(): 'collapse' | 'word' {
+  return (modeSelect?.value as 'collapse' | 'word') || 'collapse';
+}
+
 function updateNumeronym() {
   if (!inputText || !numeronymOutput || !breakdownContainer || !statsBadge)
     return;
 
   const rawText = inputText.value;
   const minLength = getMinLength();
+  const mode = getMode();
 
   if (!rawText.trim()) {
     numeronymOutput.textContent = '...';
@@ -79,15 +86,19 @@ function updateNumeronym() {
     return;
   }
 
-  const result = generatePhraseNumeronym(rawText, minLength);
+  const result = generatePhraseNumeronym(rawText, minLength, mode);
   numeronymOutput.textContent = result;
 
   // Stats
   const words = rawText.trim().split(/\s+/).filter(Boolean);
-  statsBadge.textContent = `${words.length} word${words.length === 1 ? '' : 's'}`;
+  if (mode === 'collapse' && words.length > 1) {
+    statsBadge.textContent = `Collapsed (${words.length} words)`;
+  } else {
+    statsBadge.textContent = `${words.length} word${words.length === 1 ? '' : 's'}`;
+  }
 
   // Breakdown
-  renderBreakdown(words, minLength);
+  renderBreakdown(rawText.trim(), words, minLength, mode);
 
   // Add to history
   addToHistory(rawText.trim(), result);
@@ -97,27 +108,33 @@ function renderEmptyBreakdown() {
   if (!breakdownContainer || !breakdownTag) return;
   breakdownTag.textContent = 'Analysis';
   breakdownContainer.innerHTML = `
-    <p class="empty-state">Type a word above to inspect its numeronym structure.</p>
+    <p class="empty-state">Type a word or phrase above to inspect its numeronym structure.</p>
   `;
 }
 
-function renderBreakdown(words: string[], minLength: number) {
+function renderBreakdown(
+  rawText: string,
+  words: string[],
+  minLength: number,
+  mode: 'collapse' | 'word',
+) {
   if (!breakdownContainer || !breakdownTag) return;
 
-  if (words.length === 1 && words[0]) {
-    breakdownTag.textContent = 'Single Word Anatomy';
-    const singleWord = words[0];
+  if (mode === 'collapse' || words.length === 1) {
+    breakdownTag.textContent =
+      words.length > 1 ? 'Collapsed Phrase Anatomy' : 'Single Word Anatomy';
     const breakdown: NumeronymBreakdown = getNumeronymBreakdown(
-      singleWord,
+      rawText,
       minLength,
+      mode,
     );
 
     if (!breakdown.isEligible) {
       breakdownContainer.innerHTML = `
         <div class="breakdown-box">
-          <p class="breakdown-word-title">Word: <span class="highlight">${breakdown.original}</span></p>
+          <p class="breakdown-word-title">Input: <span class="highlight">${escapeHtml(breakdown.original)}</span></p>
           <div class="breakdown-explanation">
-            This word has length <strong>${breakdown.original.length}</strong>, which is less than the minimum length threshold of <strong>${minLength}</strong>. It remains unchanged.
+            This input contains fewer eligible letters than the minimum threshold of <strong>${minLength}</strong>. It remains unchanged.
           </div>
         </div>
       `;
@@ -126,10 +143,10 @@ function renderBreakdown(words: string[], minLength: number) {
 
     breakdownContainer.innerHTML = `
       <div class="breakdown-box">
-        <p class="breakdown-word-title">Analyzing: <span class="highlight">${breakdown.original}</span></p>
+        <p class="breakdown-word-title">Analyzing: <span class="highlight">${escapeHtml(breakdown.original)}</span></p>
         <div class="anatomy-flex">
           <div class="part-badge part-first">
-            <span class="char">${breakdown.firstChar}</span>
+            <span class="char">${escapeHtml(breakdown.firstChar)}</span>
             <span class="label">First Letter</span>
           </div>
           <span class="anatomy-operator">+</span>
@@ -139,32 +156,36 @@ function renderBreakdown(words: string[], minLength: number) {
           </div>
           <span class="anatomy-operator">+</span>
           <div class="part-badge part-last">
-            <span class="char">${breakdown.lastChar}</span>
+            <span class="char">${escapeHtml(breakdown.lastChar)}</span>
             <span class="label">Last Letter</span>
           </div>
           <span class="anatomy-equals">=</span>
           <div class="part-badge part-result">
-            <span class="char">${breakdown.numeronym}</span>
+            <span class="char">${escapeHtml(breakdown.numeronym)}</span>
             <span class="label">Numeronym</span>
           </div>
         </div>
         <div class="breakdown-explanation">
-          Word starts with <strong>'${breakdown.firstChar}'</strong>, ends with <strong>'${breakdown.lastChar}'</strong>, and contains <span class="count-num">${breakdown.middleCount}</span> letters in between: <code>"${breakdown.middleText}"</code>.
+          Starts with <strong>'${escapeHtml(breakdown.firstChar)}'</strong>, ends with <strong>'${escapeHtml(breakdown.lastChar)}'</strong>, and contains <span class="count-num">${breakdown.middleCount}</span> letters in between${
+            breakdown.middleText
+              ? `: <code>"${escapeHtml(breakdown.middleText)}"</code>`
+              : ''
+          }.
         </div>
       </div>
     `;
   } else {
-    breakdownTag.textContent = `Phrase Breakdown (${words.length} Words)`;
+    breakdownTag.textContent = `Word-by-Word Breakdown (${words.length} Words)`;
     const itemsHtml = words
       .map(w => {
-        const b = getNumeronymBreakdown(w, minLength);
+        const b = getNumeronymBreakdown(w, minLength, 'word');
         if (!b.isEligible) {
-          return `<div class="history-item"><span class="history-word">${w}</span> <span class="history-numeronym" style="color:#64748b;">(unchanged)</span></div>`;
+          return `<div class="history-item"><span class="history-word">${escapeHtml(w)}</span> <span class="history-numeronym" style="color:#64748b;">(unchanged)</span></div>`;
         }
         return `
         <div class="history-item">
-          <span class="history-word">${b.original} (${b.firstChar} + <span style="color:#f59e0b;">${b.middleCount}</span> + ${b.lastChar})</span>
-          <span class="history-numeronym">${b.numeronym}</span>
+          <span class="history-word">${escapeHtml(b.original)} (${escapeHtml(b.firstChar)} + <span style="color:#f59e0b;">${b.middleCount}</span> + ${escapeHtml(b.lastChar)})</span>
+          <span class="history-numeronym">${escapeHtml(b.numeronym)}</span>
         </div>
       `;
       })
@@ -181,7 +202,8 @@ function renderBreakdown(words: string[], minLength: number) {
 function addToHistory(input: string, output: string) {
   if (!input || input === output) return;
   const firstItem = history[0];
-  if (firstItem && firstItem.input === input) return;
+  if (firstItem && firstItem.input === input && firstItem.output === output)
+    return;
 
   history.unshift({
     input,

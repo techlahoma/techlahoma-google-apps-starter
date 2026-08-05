@@ -25,11 +25,20 @@ describe('Numeronym Generator Core', () => {
     expect(generateWordNumeronym('cat', 4)).toBe('cat');
   });
 
-  test('parses full phrases correctly', () => {
+  test('collapses multi-word phrases correctly (e.g. Andreessen Horowitz -> A16Z)', () => {
+    expect(generatePhraseNumeronym('Andreessen Horowitz')).toBe('A16Z');
+    expect(generatePhraseNumeronym('andreessen horowitz')).toBe('a16z');
+    expect(generatePhraseNumeronym('Andrew Horowitz')).toBe('A12Z');
     expect(generatePhraseNumeronym('Techlahoma Google Apps Starter')).toBe(
-      'T8a G4e A2s S5r',
+      'T25R',
     );
-    expect(generatePhraseNumeronym('Hello World!')).toBe('H3o W3d!');
+  });
+
+  test('supports per-word mode when explicitly specified', () => {
+    expect(
+      generatePhraseNumeronym('Techlahoma Google Apps Starter', 3, 'word'),
+    ).toBe('T8a G4e A2s S5r');
+    expect(generatePhraseNumeronym('Hello World!', 3, 'word')).toBe('H3o W3d!');
   });
 
   test('returns accurate breakdown structure', () => {
@@ -40,5 +49,18 @@ describe('Numeronym Generator Core', () => {
     expect(breakdown.middleText).toBe('nternationalizatio');
     expect(breakdown.lastChar).toBe('n');
     expect(breakdown.numeronym).toBe('i18n');
+  });
+
+  test('returns accurate collapsed breakdown structure for phrase', () => {
+    const breakdown = getNumeronymBreakdown(
+      'Andreessen Horowitz',
+      3,
+      'collapse',
+    );
+    expect(breakdown.isEligible).toBe(true);
+    expect(breakdown.firstChar).toBe('A');
+    expect(breakdown.middleCount).toBe(16);
+    expect(breakdown.lastChar).toBe('Z');
+    expect(breakdown.numeronym).toBe('A16Z');
   });
 });

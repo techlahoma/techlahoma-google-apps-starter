@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#6366f1" />
     <meta
       name="description"
-      content="Instant static Numeronym Generator. Transform words like kubernetes into k8s, internationalization into i18n, and accessibility into a11y."
+      content="Instant static Numeronym Generator. Transform words and phrases like Andreessen Horowitz into A16Z, kubernetes into k8s, and accessibility into a11y."
     />
     <title>Numeronym Generator | Techlahoma Google Apps Starter</title>
 
@@ -34,61 +34,22 @@
           </div>
           <h1>Numeronym Generator</h1>
           <p class="subtitle">
-            Instantly turn long words into sleek abbreviations like <strong>k8s</strong>, <strong>i18n</strong>, and <strong>a11y</strong>.
+            Turn words &amp; phrases into sleek abbreviations like <strong>A16Z</strong>, <strong>k8s</strong>, and <strong>a11y</strong>.
           </p>
         </div>
       </header>
 
       <main class="container">
-        <!-- Input & Controls Section -->
-        <section class="card input-card" aria-labelledby="input-heading">
-          <div class="card-header">
-            <h2 id="input-heading">Input Text</h2>
-            <div class="controls-inline">
-              <label for="min-length-select" class="control-label">
-                Min Length:
-              </label>
-              <select id="min-length-select" class="select-input">
-                <option value="3" selected>3+ letters (e.g. cat → c1t)</option>
-                <option value="4">4+ letters (e.g. code → c2e)</option>
-                <option value="5">5+ letters (e.g. hello → h3o)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="input-wrapper">
-            <textarea
-              id="input-text"
-              class="textarea-input"
-              rows="3"
-              placeholder="Type any word or phrase here... e.g. internationalization"
-              spellcheck="false"
-            >kubernetes</textarea>
-          </div>
-
-          <div class="presets-row">
-            <span class="presets-label">Quick Presets:</span>
-            <div class="preset-chips" id="preset-chips">
-              <button type="button" class="chip" data-preset="kubernetes">kubernetes</button>
-              <button type="button" class="chip" data-preset="internationalization">internationalization</button>
-              <button type="button" class="chip" data-preset="accessibility">accessibility</button>
-              <button type="button" class="chip" data-preset="localization">localization</button>
-              <button type="button" class="chip" data-preset="Techlahoma Google Apps Starter">Techlahoma Google Apps Starter</button>
-              <button type="button" class="chip" data-preset="antigravity">antigravity</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Result Output Card -->
+        <!-- 1. Result Output Card (UP TOP for iPhone / Mobile preview) -->
         <section class="card result-card" aria-labelledby="result-heading">
           <div class="card-header">
             <h2 id="result-heading">Generated Numeronym</h2>
-            <div class="stats-badge" id="stats-badge">1 word</div>
+            <div class="stats-badge" id="stats-badge">Phrase Collapsed</div>
           </div>
 
           <div class="output-box-container">
             <div id="numeronym-output" class="numeronym-output" tabindex="0" role="region" aria-live="polite">
-              k8s
+              A16Z
             </div>
             <button type="button" id="copy-btn" class="btn btn-primary btn-copy" title="Copy to clipboard">
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -102,11 +63,64 @@
           <div id="copy-toast" class="copy-toast" aria-live="polite">Copied to clipboard!</div>
         </section>
 
-        <!-- Visual Breakdown Explainer Card -->
+        <!-- 2. Input & Controls Section (BELOW RESULT) -->
+        <section class="card input-card" aria-labelledby="input-heading">
+          <div class="card-header">
+            <h2 id="input-heading">Input Text</h2>
+          </div>
+
+          <div class="input-wrapper">
+            <textarea
+              id="input-text"
+              class="textarea-input"
+              rows="2"
+              placeholder="Type any word or phrase... e.g. Andreessen Horowitz"
+              spellcheck="false"
+            >Andreessen Horowitz</textarea>
+          </div>
+
+          <div class="controls-grid">
+            <div class="control-group">
+              <label for="mode-select" class="control-label">
+                Mode:
+              </label>
+              <select id="mode-select" class="select-input">
+                <option value="collapse" selected>Single Phrase (e.g. Andreessen Horowitz → A16Z)</option>
+                <option value="word">Word by Word (e.g. Andreessen Horowitz → a8n h6z)</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="min-length-select" class="control-label">
+                Min Length:
+              </label>
+              <select id="min-length-select" class="select-input">
+                <option value="3" selected>3+ letters (cat → c1t)</option>
+                <option value="4">4+ letters (code → c2e)</option>
+                <option value="5">5+ letters (hello → h3o)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="presets-row">
+            <span class="presets-label">Quick Presets:</span>
+            <div class="preset-chips" id="preset-chips">
+              <button type="button" class="chip chip-featured" data-preset="Andreessen Horowitz">Andreessen Horowitz</button>
+              <button type="button" class="chip" data-preset="kubernetes">kubernetes</button>
+              <button type="button" class="chip" data-preset="internationalization">internationalization</button>
+              <button type="button" class="chip" data-preset="accessibility">accessibility</button>
+              <button type="button" class="chip" data-preset="localization">localization</button>
+              <button type="button" class="chip" data-preset="Techlahoma Google Apps Starter">Techlahoma Google Apps Starter</button>
+              <button type="button" class="chip" data-preset="antigravity">antigravity</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Visual Breakdown Explainer Card -->
         <section class="card breakdown-card" aria-labelledby="breakdown-heading">
           <div class="card-header">
             <h2 id="breakdown-heading">Anatomy of the Numeronym</h2>
-            <span class="breakdown-tag" id="breakdown-tag">Single Word Analysis</span>
+            <span class="breakdown-tag" id="breakdown-tag">Phrase Anatomy</span>
           </div>
 
           <div id="breakdown-container" class="breakdown-container">
@@ -114,7 +128,7 @@
           </div>
         </section>
 
-        <!-- History Section -->
+        <!-- 4. History Section -->
         <section class="card history-card" aria-labelledby="history-heading">
           <div class="card-header">
             <h2 id="history-heading">Recent Numeronyms</h2>
@@ -138,3 +152,4 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+
