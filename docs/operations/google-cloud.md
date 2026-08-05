@@ -14,21 +14,20 @@
 
 ```text
 bun install / app:create / dev     local only
-google:config plan                 read-only
-google:config apply                writes ignored root google.project.json
-firebase:login                     changes local Firebase authentication
-google:provision plan              read-only
-google:provision apply             creates the shared Google Cloud project and adds Firebase
-google:sites plan [--app APP]      read-only
-google:sites apply [--app APP]     provisions Firebase Hosting sites for apps
-google:deploy plan --app APP       read-only
-google:deploy apply --app APP      publishes one app to its designated Hosting site
-google:deploy-all plan             read-only
-google:deploy-all apply            builds and publishes all apps to their Hosting sites
-google:sites:destroy plan --app APP read-only
-google:sites:destroy apply --app APP deletes one app's Hosting site without touching the project
-google:destroy plan                read-only
-google:destroy apply               deletes the entire shared Google Cloud project
+bun run deploy                         interactive deployment & guided setup
+bun run deploy <APP>                   deploy single app workspace
+bun run deploy --all                   deploy all app workspaces sequentially
+bun run deploy <APP> --dry-run         read-only deployment plan
+bun run deploy <APP> --yes             unattended deployment
+bun run deploy <APP> --json            structured JSON deployment receipt
+google:doctor                          read-only environment check
+google:config plan                     read-only
+google:config apply                    writes ignored root google.project.json
+firebase:login                         changes local Firebase authentication
+google:sites:destroy plan --app APP    read-only
+google:sites:destroy apply --app APP   deletes one app's Hosting site without touching project
+google:destroy plan                    read-only
+google:destroy apply                   deletes the entire shared Google Cloud project
 ```
 
 No command links billing. There is no deploy-on-push workflow.
@@ -56,77 +55,38 @@ bun run firebase:serve
 
 The emulator uses the fake, local-only `demo-techlahoma-google-apps` ID and does not call a real project.
 
-## 2. Configure the shared project and environment
+## 2. Deploying to Firebase Hosting
 
-Google Cloud project IDs are globally unique and immutable. Use a lowercase ID that visibly names the environment, such as `techlahoma-apps-dev`. Do not put an account number, email address, customer name, or secret in it.
-
-Preview the local root configuration file first:
+Deploy your app workspace with one simple command:
 
 ```sh
-bun run google:config plan \
-  --project-id TODO-replace-with-real-unique-id \
-  --display-name "TODO Replace With Real Name"
+bun run deploy
 ```
 
-Write the ignored root config (`google.project.json`) only after the preview is correct:
+Running `bun run deploy` without arguments opens an interactive terminal picker showing discovered apps, project settings, and destination URLs.
+
+You can also deploy directly by specifying an app slug or workspace path:
 
 ```sh
-bun run google:config apply \
-  --project-id TODO-replace-with-real-unique-id \
-  --display-name "TODO Replace With Real Name"
+bun run deploy numeronym-generator
+bun run deploy apps/numeronym-generator
+bun run deploy ./apps/numeronym-generator
 ```
 
-The configuration automatically maps discovered `apps/<slug>` workspaces to deterministic Hosting site IDs (e.g. `welcome-9b9408`).
+Additional options:
 
-## 3. Authenticate
+- `bun run deploy --all`: Build all apps first, then deploy each app to its dedicated site.
+- `bun run deploy APP --dry-run`: Perform all local preflight and site resolution without mutating any remote resources.
+- `bun run deploy APP --yes`: Accept confirmations automatically for unattended deployment.
+- `bun run deploy APP --json`: Output machine-readable JSON deployment receipts.
 
-The shortest interactive path uses the pinned local Firebase CLI:
+### Automatic Preflight & Protections
 
-```sh
-bun run firebase:login
-```
-
-This opens Google's browser authentication flow and changes Firebase CLI state outside the repo. For a headless machine, use the local binary's `login --no-localhost` flow. Do not put a legacy `FIREBASE_TOKEN`, service-account JSON key, or copied browser credential in the repository.
-
-For future CI, configure Workload Identity Federation and a narrowly scoped deploy identity.
-
-## 4. Provision shared project and Hosting sites
-
-```sh
-bun run google:doctor
-bun run google:provision plan
-```
-
-With explicit project-creation authority, create the project:
-
-```sh
-bun run google:provision apply --confirm TODO-replace-with-real-unique-id
-```
-
-Next, plan and create the Firebase Hosting sites for your apps:
-
-```sh
-bun run google:sites plan
-bun run google:sites apply --confirm TODO-replace-with-real-unique-id
-```
-
-## 5. Deploy Hosting sites
-
-To deploy a single app:
-
-```sh
-bun run google:deploy plan --app welcome
-bun run google:deploy apply --app welcome --confirm TODO-replace-with-real-unique-id
-```
-
-To build and deploy all discovered apps to their respective Hosting sites in one pass:
-
-```sh
-bun run google:deploy-all plan
-bun run google:deploy-all apply --confirm TODO-replace-with-real-unique-id
-```
-
-Each app is deployed to its explicit site target (`hosting:<site-id>`) on the shared project, preventing any app from overwriting another.
+1. **Default Site Protection**: Deployments unconditionally protect your primary default site (`projectId.web.app`). Each app is deployed to a dedicated secondary Hosting site.
+2. **First-Run Setup**: Interactive execution guides Firebase authentication, project selection, and provisions secondary sites automatically.
+3. **Build Preflight**: `bun run deploy` builds the target app workspace locally before initiating any remote deployment. For `--all`, every app is built before any deployment occurs.
+4. **Temporary Target Configuration**: Deployments bind targets in a task-scoped temporary deployment workspace without modifying tracked files or committing `.firebaserc`.
+5. **Live Verification**: Post-deployment, the CLI queries site metadata, reads authoritative `defaultUrl`, verifies HTTP responsiveness, and returns public & console URLs.
 
 ## 6. Teardown options
 

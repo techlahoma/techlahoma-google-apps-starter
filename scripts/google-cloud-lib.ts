@@ -16,10 +16,7 @@ export interface GoogleProjectConfig {
 
 export interface CommandPlan {
   effect:
-    | 'local-write'
-    | 'remote-write'
-    | 'deploy'
-    | 'destructive-remote-write';
+    'local-write' | 'remote-write' | 'deploy' | 'destructive-remote-write';
   target: string;
   commands: string[][];
   notes: string[];
@@ -208,7 +205,9 @@ export function configPlan(config: GoogleProjectConfig): CommandPlan {
     notes: [
       `Write root configuration for shared Firebase project ${config.project_id}.`,
       `${configPath} is ignored by Git and contains no credentials.`,
-      siteMappings ? `Hosting site mappings:\n${siteMappings}` : 'No apps mapped.',
+      siteMappings
+        ? `Hosting site mappings:\n${siteMappings}`
+        : 'No apps mapped.',
     ],
   };
 }

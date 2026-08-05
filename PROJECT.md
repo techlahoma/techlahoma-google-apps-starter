@@ -119,6 +119,9 @@ See
 | `bun run format` | local-write | TypeScript, JSON, HTML, and CSS source | local-edit authority | clean format check |
 | `bun run audit:dependencies` | read-only network query | locked dependency graph | none | current advisory report |
 | `bash scripts/verify.sh` | read-only except disposable build output | local checkout | none | exit status and output |
+| `bun run deploy [APP]` | deploy | selected app workspace and its dedicated Firebase Hosting site | explicit deployment authority | CLI deployment result & live URL check |
+| `bun run deploy --all` | deploy | all app workspaces and their dedicated Firebase Hosting sites | explicit deployment authority | CLI deployment results & live URL checks |
+| `bun run deploy [APP] --dry-run` | read-only | deployment plan, project config, site mapping | none | JSON or text dry run plan |
 | `bun run google:doctor [--app APP]` | read-only | shared project, app hosting sites, local tools, and ignored config | none | JSON report |
 | `bun run google:config plan --project-id ID --display-name NAME` | read-only | proposed shared project config | none | JSON plan |
 | `bun run google:config apply --project-id ID --display-name NAME` | local-write | ignored root `google.project.json` | local-edit authority | written and validated file |
@@ -127,10 +130,10 @@ See
 | `bun run google:provision apply --confirm ID` | remote-write | shared Google/Firebase project | explicit provisioning authority | CLI result plus project query |
 | `bun run google:sites plan [--app APP]` | read-only | Firebase Hosting site(s) | none | JSON plan |
 | `bun run google:sites apply --confirm ID [--app APP]` | remote-write | Firebase Hosting site(s) | explicit site provisioning authority | CLI result plus site query |
-| `bun run google:deploy plan --app APP` | read-only | selected app and its Firebase Hosting site | none | JSON plan |
-| `bun run google:deploy apply --app APP --confirm ID` | deploy | selected app and its Firebase Hosting site | explicit deployment authority | CLI result plus live URL check |
-| `bun run google:deploy-all plan` | read-only | all apps and their Firebase Hosting sites | none | JSON plan |
-| `bun run google:deploy-all apply --confirm ID` | deploy | all apps and their Firebase Hosting sites | explicit deployment authority | CLI results plus live URL check |
+| `bun run google:deploy plan --app APP` | read-only (legacy) | selected app and its Firebase Hosting site | none | JSON plan |
+| `bun run google:deploy apply --app APP --confirm ID` | deploy (legacy) | selected app and its Firebase Hosting site | explicit deployment authority | CLI result plus live URL check |
+| `bun run google:deploy-all plan` | read-only (legacy) | all apps and their Firebase Hosting sites | none | JSON plan |
+| `bun run google:deploy-all apply --confirm ID` | deploy (legacy) | all apps and their Firebase Hosting sites | explicit deployment authority | CLI results plus live URL check |
 | `bun run google:sites:destroy plan --app APP` | read-only | selected app Firebase Hosting site | none | JSON plan |
 | `bun run google:sites:destroy apply --app APP --confirm ID` | destructive remote-write | selected app Firebase Hosting site | explicit site deletion authority | CLI result plus site query |
 | `bun run google:destroy plan` | read-only | entire shared environment project | none | JSON plan |
@@ -141,7 +144,7 @@ See
 | Environment | Host or account | Deploy command | Rollback | Live verification |
 |---|---|---|---|---|
 | local | developer machine | `bun run --cwd apps/APP dev` | stop process | local browser or HTTP check |
-| development | not provisioned | `bun run google:deploy apply --app APP --confirm ID` | rebuild and redeploy a prior Git revision | Firebase Hosting URL check |
+| development | provisioned project | `bun run deploy APP` | rebuild and redeploy a prior Git revision | Firebase Hosting URL check |
 
 There is no deploy-on-push workflow in the starter.
 

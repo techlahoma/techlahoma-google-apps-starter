@@ -4,9 +4,7 @@
   "display_name": "Techlahoma Apps Shared Dev",
   "environment": "development",
   "region": "us-central1",
-  "features": [
-    "hosting"
-  ],
+  "features": ["hosting"],
   "sites": {
     "welcome": "welcome-a1b2c3"
   }

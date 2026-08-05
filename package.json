@@ -12,6 +12,7 @@
     "build": "bun scripts/workspace-apps.ts build",
     "app:create": "bun scripts/create-app.ts",
     "apps:check": "bun scripts/workspace-apps.ts check",
+    "deploy": "bun scripts/deploy.ts",
     "preview": "bun run --cwd apps/welcome preview",
     "test": "bun test tests",
     "audit:dependencies": "bun audit",

@@ -25,6 +25,10 @@ const APP_FIREBASE_BINARY = '../../node_modules/.bin/firebase';
 
 const HELP = `Techlahoma Google Apps Starter shared cloud lifecycle
 
+Notice:
+  For routine app deployments, use the simplified command:
+    bun run deploy [APP_OR_DIRECTORY]
+
 Usage:
   bun scripts/google-cloud.ts doctor [--app APP]
   bun scripts/google-cloud.ts config plan --project-id ID --display-name NAME
@@ -33,10 +37,10 @@ Usage:
   bun scripts/google-cloud.ts provision apply --confirm ID
   bun scripts/google-cloud.ts sites plan [--app APP]
   bun scripts/google-cloud.ts sites apply --confirm ID [--app APP]
-  bun scripts/google-cloud.ts deploy plan --app APP
-  bun scripts/google-cloud.ts deploy apply --app APP --confirm ID
-  bun scripts/google-cloud.ts deploy-all plan
-  bun scripts/google-cloud.ts deploy-all apply --confirm ID
+  bun scripts/google-cloud.ts deploy plan --app APP (legacy; prefer "bun run deploy")
+  bun scripts/google-cloud.ts deploy apply --app APP --confirm ID (legacy; prefer "bun run deploy")
+  bun scripts/google-cloud.ts deploy-all plan (legacy; prefer "bun run deploy --all")
+  bun scripts/google-cloud.ts deploy-all apply --confirm ID (legacy; prefer "bun run deploy --all")
   bun scripts/google-cloud.ts sites:destroy plan --app APP
   bun scripts/google-cloud.ts sites:destroy apply --app APP --confirm ID
   bun scripts/google-cloud.ts destroy plan

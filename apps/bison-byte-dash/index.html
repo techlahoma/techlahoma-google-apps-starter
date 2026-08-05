@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bison Byte Dash - 45-Second Oklahoma Arcade Game</title>
+    <meta
+      name="description"
+      content="An original 45-second browser arcade game set across the Oklahoma plains. Collect code brackets, avoid tumbleweeds, and jump with keyboard, touch, or MediaPipe pose landmarker camera gesture!"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Space+Mono:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="app" class="game-container">
+      <!-- Top Header / Bar -->
+      <header class="poster-header">
+        <div class="brand">
+          <span class="state-badge">OKLAHOMA ARCADE</span>
+          <h1 class="game-title">BISON BYTE DASH</h1>
+        </div>
+
+        <div class="controls-bar">
+          <button type="button" id="btn-sound" class="btn-toggle" aria-label="Toggle Sound">
+            <span class="icon">🔊</span> <span class="label">Sound ON</span>
+          </button>
+          <button type="button" id="btn-motion" class="btn-toggle" aria-label="Toggle Motion">
+            <span class="icon">⚡</span> <span class="label">Motion: Normal</span>
+          </button>
+          <button type="button" id="btn-camera-toggle" class="btn-primary-sm" aria-label="Camera Jump Mode">
+            <span class="icon">📷</span> <span class="label">Camera Jump</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Game Canvas Container -->
+      <main class="canvas-wrapper" id="game-wrapper">
+        <canvas id="game-canvas" width="800" height="450" tabindex="0" aria-label="Bison Byte Dash Game Area"></canvas>
+
+        <!-- HUD Layer -->
+        <div class="hud-overlay">
+          <div class="hud-item score-badge">
+            <span class="hud-label">SCORE</span>
+            <span id="hud-score" class="hud-value">0000</span>
+          </div>
+
+          <div class="hud-item timer-badge" id="timer-badge">
+            <span class="hud-label">TIME</span>
+            <span id="hud-timer" class="hud-value">45.0s</span>
+          </div>
+
+          <div class="hud-item high-badge">
+            <span class="hud-label">HIGH SCORE</span>
+            <span id="hud-highscore" class="hud-value">0000</span>
+          </div>
+        </div>
+
+        <!-- Start / Idle Overlay Banner -->
+        <div id="overlay-idle" class="modal-overlay">
+          <div class="poster-card">
+            <h2 class="card-title">BISON BYTE DASH</h2>
+            <p class="card-subtitle">45-Second Oklahoma Prairie Run</p>
+            <div class="card-rules">
+              <div class="rule-item">
+                <span class="rule-icon">🦬</span>
+                <span>Collect <strong>{ }</strong> <strong>&lt;/&gt;</strong> <strong>[ ]</strong> Code Brackets!</span>
+              </div>
+              <div class="rule-item">
+                <span class="rule-icon">🌾</span>
+                <span>Avoid rolling tumbleweed obstacles!</span>
+              </div>
+              <div class="rule-item">
+                <span class="rule-icon">⏱️</span>
+                <span>Dash against the 45-second timer!</span>
+              </div>
+            </div>
+            <button type="button" id="btn-start" class="btn-action-lg">START DASH [SPACE / CLICK]</button>
+          </div>
+        </div>
+
+        <!-- Pause Overlay Banner -->
+        <div id="overlay-pause" class="modal-overlay hidden">
+          <div class="poster-card">
+            <h2 class="card-title">GAME PAUSED</h2>
+            <p class="card-subtitle">Window focus lost or manual pause</p>
+            <button type="button" id="btn-resume" class="btn-action-lg">RESUME GAME [P / SPACE]</button>
+          </div>
+        </div>
+
+        <!-- Game Over / End-of-Round Modal -->
+        <div id="overlay-gameover" class="modal-overlay hidden">
+          <div class="poster-card">
+            <span class="card-badge">ROUND COMPLETE!</span>
+            <h2 class="card-title">TIME'S UP!</h2>
+            <div class="score-breakdown">
+              <div class="final-score-box">
+                <span class="score-lbl">FINAL SCORE</span>
+                <span id="final-score" class="score-num">0</span>
+              </div>
+              <div id="high-score-tag" class="new-high-tag hidden">★ NEW HIGH SCORE! ★</div>
+              <div class="final-high-box">
+                <span class="score-lbl">ALL-TIME BEST</span>
+                <span id="final-highscore" class="score-num">0</span>
+              </div>
+            </div>
+            <button type="button" id="btn-restart" class="btn-action-lg">PLAY AGAIN [SPACE / R]</button>
+          </div>
+        </div>
+      </main>
+
+      <!-- Giant Touch / Pointer Jump Button -->
+      <div class="touch-control-area">
+        <button type="button" id="btn-jump-touch" class="btn-jump-touch" aria-label="Jump Action">
+          <span class="jump-icon">🦬 ⬆️</span>
+          <span class="jump-text">JUMP (SPACE / TOUCH / CLICK)</span>
+        </button>
+      </div>
+
+      <!-- Camera Explanation & Permission Modal -->
+      <div id="camera-modal" class="modal-overlay hidden">
+        <div class="poster-card camera-card">
+          <h2 class="card-title">📷 Camera Jump Mode</h2>
+          <p class="card-desc">
+            Jump in real life to control your bison! Camera feed is processed <strong>100% locally on your device</strong> using MediaPipe Pose Landmarker.
+          </p>
+          <ul class="camera-bullets">
+            <li>🔒 No video or frames are recorded or transmitted online.</li>
+            <li>🛑 You can stop the camera at any time with the "Stop Camera" button.</li>
+            <li>⌨️ Instant fallback to Keyboard/Touch if permission is denied or loading fails.</li>
+          </ul>
+          <div class="card-actions">
+            <button type="button" id="btn-camera-allow" class="btn-action-lg">ALLOW CAMERA & START</button>
+            <button type="button" id="btn-camera-cancel" class="btn-secondary">USE KEYBOARD / TOUCH</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera PIP Widget & Status Box -->
+      <div id="camera-pip" class="camera-pip hidden">
+        <video id="camera-video" playsinline muted width="160" height="120"></video>
+        <div class="camera-info">
+          <span id="camera-status-text" class="camera-status">Initializing Camera...</span>
+          <div class="camera-controls">
+            <span id="camera-jump-indicator" class="jump-indicator hidden">JUMP DETECTED!</span>
+            <button type="button" id="btn-camera-stop" class="btn-danger-sm">STOP CAMERA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fallback Notification Toast -->
+      <div id="toast-fallback" class="toast-fallback hidden" role="alert">
+        <span class="toast-icon">⚠️</span>
+        <span id="toast-msg" class="toast-msg">Camera unavailable. Switched to Keyboard / Touch mode.</span>
+        <button type="button" id="btn-toast-dismiss" class="btn-toast-close" aria-label="Dismiss">✕</button>
+      </div>
+
+      <!-- Footer & Accessibility / Instructions -->
+      <footer class="poster-footer">
+        <div class="controls-guide">
+          <span><strong>Jump:</strong> Spacebar, ArrowUp, Touch Button, Screen Click, or Camera Motion</span>
+          <span><strong>Pause:</strong> P Key or Blur</span>
+          <span><strong>Restart:</strong> R Key</span>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

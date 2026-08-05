@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta
+      name="description"
+      content="Instant static Numeronym Generator. Transform words like kubernetes into k8s, internationalization into i18n, and accessibility into a11y."
+    />
+    <title>Numeronym Generator | Techlahoma Google Apps Starter</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Background Ambient Glows -->
+      <div class="ambient-glow glow-1"></div>
+      <div class="ambient-glow glow-2"></div>
+
+      <header class="header">
+        <div class="container">
+          <div class="badge-row">
+            <span class="techlahoma-badge">
+              <span class="dot"></span> Techlahoma Google Apps Starter
+            </span>
+            <span class="static-badge">Fully Static HTML</span>
+          </div>
+          <h1>Numeronym Generator</h1>
+          <p class="subtitle">
+            Instantly turn long words into sleek abbreviations like <strong>k8s</strong>, <strong>i18n</strong>, and <strong>a11y</strong>.
+          </p>
+        </div>
+      </header>
+
+      <main class="container">
+        <!-- Input & Controls Section -->
+        <section class="card input-card" aria-labelledby="input-heading">
+          <div class="card-header">
+            <h2 id="input-heading">Input Text</h2>
+            <div class="controls-inline">
+              <label for="min-length-select" class="control-label">
+                Min Length:
+              </label>
+              <select id="min-length-select" class="select-input">
+                <option value="3" selected>3+ letters (e.g. cat → c1t)</option>
+                <option value="4">4+ letters (e.g. code → c2e)</option>
+                <option value="5">5+ letters (e.g. hello → h3o)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-wrapper">
+            <textarea
+              id="input-text"
+              class="textarea-input"
+              rows="3"
+              placeholder="Type any word or phrase here... e.g. internationalization"
+              spellcheck="false"
+            >kubernetes</textarea>
+          </div>
+
+          <div class="presets-row">
+            <span class="presets-label">Quick Presets:</span>
+            <div class="preset-chips" id="preset-chips">
+              <button type="button" class="chip" data-preset="kubernetes">kubernetes</button>
+              <button type="button" class="chip" data-preset="internationalization">internationalization</button>
+              <button type="button" class="chip" data-preset="accessibility">accessibility</button>
+              <button type="button" class="chip" data-preset="localization">localization</button>
+              <button type="button" class="chip" data-preset="Techlahoma Google Apps Starter">Techlahoma Google Apps Starter</button>
+              <button type="button" class="chip" data-preset="antigravity">antigravity</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Result Output Card -->
+        <section class="card result-card" aria-labelledby="result-heading">
+          <div class="card-header">
+            <h2 id="result-heading">Generated Numeronym</h2>
+            <div class="stats-badge" id="stats-badge">1 word</div>
+          </div>
+
+          <div class="output-box-container">
+            <div id="numeronym-output" class="numeronym-output" tabindex="0" role="region" aria-live="polite">
+              k8s
+            </div>
+            <button type="button" id="copy-btn" class="btn btn-primary btn-copy" title="Copy to clipboard">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <title>Copy Icon</title>
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copy-btn-text">Copy</span>
+            </button>
+          </div>
+          <div id="copy-toast" class="copy-toast" aria-live="polite">Copied to clipboard!</div>
+        </section>
+
+        <!-- Visual Breakdown Explainer Card -->
+        <section class="card breakdown-card" aria-labelledby="breakdown-heading">
+          <div class="card-header">
+            <h2 id="breakdown-heading">Anatomy of the Numeronym</h2>
+            <span class="breakdown-tag" id="breakdown-tag">Single Word Analysis</span>
+          </div>
+
+          <div id="breakdown-container" class="breakdown-container">
+            <!-- Dynamic breakdown elements rendered via JS -->
+          </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="card history-card" aria-labelledby="history-heading">
+          <div class="card-header">
+            <h2 id="history-heading">Recent Numeronyms</h2>
+            <button type="button" id="clear-history-btn" class="btn-text">Clear History</button>
+          </div>
+          <div id="history-list" class="history-list">
+            <p class="empty-state">No recent history yet.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="container">
+          <p>
+            Built with ⚡ <strong>Techlahoma Google Apps Starter</strong> &bull; Firebase Static Ready
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

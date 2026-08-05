@@ -106,44 +106,49 @@ the [research](docs/research/google-public-engineering-conventions-2026-08-03.md
 
 ## Put it on Firebase Hosting
 
-Configure a globally unique Google Cloud project ID. Keep `-dev`, `-preview`, or `-prod` in the ID so the environment is obvious. Replace TODO values before running commands.
+Deploy your app workspace to Firebase Hosting with one simple command:
 
 ```sh
-# 1. Option A: Copy .env.example to .env and configure environment variables:
-#    cp .env.example .env
-#    (Set FIREBASE_PROJECT_ID & FIREBASE_DISPLAY_NAME in .env)
-#
-# Option B: Or pass flags explicitly:
-bun run google:config plan \
-  --project-id TODO-your-unique-project-id \
-  --display-name "TODO Your Shared Project Name"
-
-# 2. Write the root local project configuration file (google.project.json).
-bun run google:config apply \
-  --project-id TODO-your-unique-project-id \
-  --display-name "TODO Your Shared Project Name"
-
-# 3. Authenticate once. This opens Google's login flow and changes local CLI auth state.
-bun run firebase:login
-
-# 4. Preview and create the shared Google Cloud project.
-bun run google:provision plan
-bun run google:provision apply --confirm TODO-your-unique-project-id
-
-# 5. Provision Firebase Hosting sites for all discovered apps (or a specific app with --app APP).
-bun run google:sites plan
-bun run google:sites apply --confirm TODO-your-unique-project-id
-
-# 6. Deploy one selected app, or deploy all apps to their respective Hosting sites.
-bun run google:deploy plan --app welcome
-bun run google:deploy apply --app welcome --confirm TODO-your-unique-project-id
-
-# Or build and deploy all apps to their own sites without overwriting:
-bun run google:deploy-all plan
-bun run google:deploy-all apply --confirm TODO-your-unique-project-id
+bun run deploy
 ```
 
-The commands do not create or link a billing account. Root `google.project.json` is ignored, no `.firebaserc` is used, and every Firebase command receives an explicit project ID.
+Running without arguments opens an interactive terminal picker showing discovered app workspaces, active project settings, and destination URLs.
+
+You can also deploy directly by specifying an app slug or workspace directory:
+
+```sh
+bun run deploy numeronym-generator
+bun run deploy apps/numeronym-generator
+bun run deploy ./apps/numeronym-generator
+```
+
+Additional options:
+
+```sh
+bun run deploy --all                    # Build and deploy all discovered apps sequentially
+bun run deploy numeronym-generator --dry-run  # Preview deployment targets without mutating
+bun run deploy numeronym-generator --yes      # Deploy unattended without interactive confirmation
+bun run deploy numeronym-generator --json     # Output machine-readable JSON deployment receipts
+```
+
+### Protection and Safety
+
+- **Default Site Protection**: Deployments will never modify your primary default Hosting site (`projectId.web.app`). Each app is automatically assigned a dedicated secondary Hosting site.
+- **First-Run Setup**: Interactive execution guides login, connects an existing Firebase project, provisions secondary sites, and updates local configuration.
+- **Build Preflight**: Local builds run before remote deployment. For `--all`, every app is built before the first site is updated.
+- **Receipt & Live Verification**: Successful deployments query Firebase Hosting metadata, display the public URL and console links, and verify HTTP responsiveness.
+
+### Advanced lifecycle commands
+
+For advanced granular control or project teardown, low-level lifecycle commands remain available:
+
+```sh
+# Destroy a single Hosting site without touching the project
+bun run google:sites:destroy plan --app welcome
+
+# Destroy the whole shared project (destructive operation)
+bun run google:destroy plan
+```
 
 ## Tear the environment down
 
