@@ -95,12 +95,14 @@ export function makeConfig(options: {
   environment?: string | undefined;
   region?: string | undefined;
 }): GoogleProjectConfig {
+  const env = typeof process !== 'undefined' ? process.env : {};
   return validateConfig({
     schema_version: 1,
-    project_id: options.projectId,
-    display_name: options.displayName,
-    environment: options.environment ?? 'development',
-    region: options.region ?? 'us-central1',
+    project_id: options.projectId ?? env.FIREBASE_PROJECT_ID,
+    display_name: options.displayName ?? env.FIREBASE_DISPLAY_NAME,
+    environment:
+      options.environment ?? env.FIREBASE_ENVIRONMENT ?? 'development',
+    region: options.region ?? env.FIREBASE_REGION ?? 'us-central1',
     features: ['hosting'],
   });
 }

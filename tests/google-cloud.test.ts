@@ -44,6 +44,19 @@ describe('Google project configuration', () => {
       }),
     ).toThrow('features');
   });
+
+  test('reads values from environment variables if not provided in options', () => {
+    process.env.FIREBASE_PROJECT_ID = 'env-project-dev';
+    process.env.FIREBASE_DISPLAY_NAME = 'Env Project App';
+    try {
+      const envConfig = makeConfig({});
+      expect(envConfig.project_id).toBe('env-project-dev');
+      expect(envConfig.display_name).toBe('Env Project App');
+    } finally {
+      delete process.env.FIREBASE_PROJECT_ID;
+      delete process.env.FIREBASE_DISPLAY_NAME;
+    }
+  });
 });
 
 describe('plans make every effect and target explicit', () => {

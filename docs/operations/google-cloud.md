@@ -60,9 +60,13 @@ Google Cloud project IDs are globally unique and immutable. Use a lowercase ID t
 the application and environment, such as a real app slug followed by `-dev`. Do not put an account
 number, email address, customer name, or secret in it.
 
-Preview the local file first, replacing both TODO values before running the command:
+Preview the local file first. You can pass explicit CLI flags or rely on environment variables set in `.env` (copied from `.env.example`):
 
 ```sh
+# Copy environment template
+cp .env.example .env
+
+# Set your variables in .env, or pass them as CLI options:
 bun run google:config plan \
   --app welcome \
   --project-id TODO-replace-with-real-unique-id \
@@ -72,10 +76,7 @@ bun run google:config plan \
 Write the ignored local config only after the preview is correct:
 
 ```sh
-bun run google:config apply \
-  --app welcome \
-  --project-id TODO-replace-with-real-unique-id \
-  --display-name "TODO Replace With Real Name"
+bun run google:config apply --app welcome
 ```
 
 Use `--environment preview` or `--environment production` when applicable. The default is

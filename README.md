@@ -111,13 +111,17 @@ Choose the app workspace and a globally unique Google Cloud project ID. Keep `-d
 and every TODO value before running a command.
 
 ```sh
-# 1. Preview the ignored local configuration file after replacing both TODO values.
+# 1. Option A: Copy .env.example to .env and configure environment variables:
+#    cp .env.example .env
+#    (Set FIREBASE_PROJECT_ID & FIREBASE_DISPLAY_NAME in .env)
+#
+# Option B: Or pass flags explicitly:
 bun run google:config plan \
   --app example-crm \
   --project-id TODO-your-unique-project-id \
   --display-name "TODO Your App Name"
 
-# 2. Write the local file using the same real values.
+# 2. Write the local app configuration file.
 bun run google:config apply \
   --app example-crm \
   --project-id TODO-your-unique-project-id \
