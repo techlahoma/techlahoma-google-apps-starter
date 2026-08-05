@@ -22,5 +22,5 @@
 ## Cloud boundary
 
 - Local builds do not require Firebase authentication or provisioning.
-- Treat each app's `firebase.json` and ignored `google.project.json` as one deployment boundary.
-- Pass `--app <slug>` to every root Google lifecycle command.
+- Treat each app's `firebase.json` and its assigned Hosting site in root `google.project.json` as one deployment boundary.
+- Pass `--app <slug>` to single-app Google lifecycle commands (`google:deploy`, `google:sites:destroy`).

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "project_id": "techlahoma-apps-dev",
+  "display_name": "Techlahoma Apps Shared Dev",
+  "environment": "development",
+  "region": "us-central1",
+  "features": [
+    "hosting"
+  ],
+  "sites": {
+    "welcome": "welcome-a1b2c3"
+  }
+}

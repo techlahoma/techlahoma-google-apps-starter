@@ -1,3 +1,5 @@
+import {createHash} from 'node:crypto';
+
 export const CONFIG_FILENAME = 'google.project.json';
 
 export type Environment = 'development' | 'preview' | 'production';
@@ -9,23 +11,59 @@ export interface GoogleProjectConfig {
   environment: Environment;
   region: string;
   features: ['hosting'];
+  sites: Record<string, string>;
 }
 
 export interface CommandPlan {
   effect:
-    'local-write' | 'remote-write' | 'deploy' | 'destructive-remote-write';
+    | 'local-write'
+    | 'remote-write'
+    | 'deploy'
+    | 'destructive-remote-write';
   target: string;
   commands: string[][];
   notes: string[];
 }
 
 const PROJECT_ID_PATTERN = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/;
+const SITE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{2,28}[a-z0-9]$/;
 const REGION_PATTERN = /^[a-z]+-[a-z]+[0-9]$/;
 const ENVIRONMENTS = new Set<Environment>([
   'development',
   'preview',
   'production',
 ]);
+
+export function validateSiteId(siteId: string): string {
+  if (typeof siteId !== 'string' || !SITE_ID_PATTERN.test(siteId)) {
+    throw new Error(
+      `site_id "${siteId}" must be 4-30 lowercase letters, digits, or hyphens; start and end with a letter or digit`,
+    );
+  }
+  return siteId;
+}
+
+export function deriveSiteId(projectId: string, appSlug: string): string {
+  const hash = createHash('sha256')
+    .update(`${projectId}:${appSlug}`)
+    .digest('hex')
+    .slice(0, 6);
+
+  const cleanSlug = appSlug
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  const maxSlugLen = 30 - 1 - hash.length; // 23
+  let truncatedSlug = cleanSlug.slice(0, maxSlugLen).replace(/-$/, '');
+  if (truncatedSlug.length === 0) {
+    truncatedSlug = 'app';
+  }
+
+  const siteId = `${truncatedSlug}-${hash}`;
+  return validateSiteId(siteId);
+}
 
 export function validateConfig(value: unknown): GoogleProjectConfig {
   if (!value || typeof value !== 'object') {
@@ -79,6 +117,15 @@ export function validateConfig(value: unknown): GoogleProjectConfig {
     );
   }
 
+  const sites: Record<string, string> = {};
+  if (candidate.sites && typeof candidate.sites === 'object') {
+    for (const [appSlug, siteId] of Object.entries(candidate.sites)) {
+      if (typeof siteId === 'string') {
+        sites[appSlug] = validateSiteId(siteId);
+      }
+    }
+  }
+
   return {
     schema_version: 1,
     project_id: candidate.project_id,
@@ -86,43 +133,82 @@ export function validateConfig(value: unknown): GoogleProjectConfig {
     environment: candidate.environment as Environment,
     region: candidate.region,
     features: ['hosting'],
+    sites,
   };
 }
 
-export function makeConfig(options: {
-  projectId?: string | undefined;
-  displayName?: string | undefined;
-  environment?: string | undefined;
-  region?: string | undefined;
-}): GoogleProjectConfig {
+export function makeConfig(
+  options: {
+    projectId?: string | undefined;
+    displayName?: string | undefined;
+    environment?: string | undefined;
+    region?: string | undefined;
+    sites?: Record<string, string> | undefined;
+    apps?: string[] | undefined;
+  },
+  existingConfig?: GoogleProjectConfig | undefined,
+): GoogleProjectConfig {
   const env = typeof process !== 'undefined' ? process.env : {};
-  return validateConfig({
+  const projectId =
+    options.projectId ?? existingConfig?.project_id ?? env.FIREBASE_PROJECT_ID;
+  const displayName =
+    options.displayName ??
+    existingConfig?.display_name ??
+    env.FIREBASE_DISPLAY_NAME;
+  const environment =
+    options.environment ??
+    existingConfig?.environment ??
+    env.FIREBASE_ENVIRONMENT ??
+    'development';
+  const region =
+    options.region ??
+    existingConfig?.region ??
+    env.FIREBASE_REGION ??
+    'us-central1';
+
+  const initialConfig = validateConfig({
     schema_version: 1,
-    project_id: options.projectId ?? env.FIREBASE_PROJECT_ID,
-    display_name: options.displayName ?? env.FIREBASE_DISPLAY_NAME,
-    environment:
-      options.environment ?? env.FIREBASE_ENVIRONMENT ?? 'development',
-    region: options.region ?? env.FIREBASE_REGION ?? 'us-central1',
+    project_id: projectId,
+    display_name: displayName,
+    environment,
+    region,
     features: ['hosting'],
+    sites: options.sites ?? existingConfig?.sites ?? {},
   });
+
+  const sites = {...initialConfig.sites};
+  if (options.apps) {
+    for (const app of options.apps) {
+      if (!sites[app]) {
+        sites[app] = deriveSiteId(initialConfig.project_id, app);
+      }
+    }
+  }
+
+  return {
+    ...initialConfig,
+    sites,
+  };
 }
 
-export function appConfigPath(app: string): string {
-  return `apps/${app}/${CONFIG_FILENAME}`;
+export function rootConfigPath(): string {
+  return CONFIG_FILENAME;
 }
 
-export function configPlan(
-  config: GoogleProjectConfig,
-  app: string,
-): CommandPlan {
-  const configPath = appConfigPath(app);
+export function configPlan(config: GoogleProjectConfig): CommandPlan {
+  const configPath = rootConfigPath();
+  const siteMappings = Object.entries(config.sites)
+    .map(([app, site]) => `  - ${app} => ${site}`)
+    .join('\n');
+
   return {
     effect: 'local-write',
     target: configPath,
     commands: [],
     notes: [
-      `Write local configuration for ${config.project_id} and app ${app}.`,
+      `Write root configuration for shared Firebase project ${config.project_id}.`,
       `${configPath} is ignored by Git and contains no credentials.`,
+      siteMappings ? `Hosting site mappings:\n${siteMappings}` : 'No apps mapped.',
     ],
   };
 }
@@ -145,9 +231,40 @@ export function provisionPlan(
       ],
     ],
     notes: [
-      'Creates one Google Cloud project and adds Firebase.',
+      'Creates one shared Google Cloud project and adds Firebase.',
       'Does not link a billing account or enable paid application services.',
     ],
+  };
+}
+
+export function sitesPlan(
+  config: GoogleProjectConfig,
+  firebaseBinary: string,
+  apps: string[],
+  selectedApp?: string,
+): CommandPlan {
+  const targetApps = selectedApp ? [selectedApp] : apps;
+  const commands: string[][] = [];
+  const notes: string[] = [];
+
+  for (const app of targetApps) {
+    const siteId = config.sites[app] ?? deriveSiteId(config.project_id, app);
+    commands.push([
+      firebaseBinary,
+      'hosting:sites:create',
+      siteId,
+      '--project',
+      config.project_id,
+      '--non-interactive',
+    ]);
+    notes.push(`Provision Firebase Hosting site ${siteId} for app ${app}.`);
+  }
+
+  return {
+    effect: 'remote-write',
+    target: `Firebase Hosting site(s) in project ${config.project_id}`,
+    commands,
+    notes,
   };
 }
 
@@ -156,16 +273,17 @@ export function deployPlan(
   firebaseBinary: string,
   app: string,
 ): CommandPlan {
+  const siteId = config.sites[app] ?? deriveSiteId(config.project_id, app);
   return {
     effect: 'deploy',
-    target: `apps/${app} on Firebase Hosting project ${config.project_id}`,
+    target: `apps/${app} on Firebase Hosting site ${siteId} in project ${config.project_id}`,
     commands: [
       ['bun', 'run', 'build'],
       [
         firebaseBinary,
         'deploy',
         '--only',
-        'hosting',
+        `hosting:${siteId}`,
         '--project',
         config.project_id,
         '--non-interactive',
@@ -173,7 +291,67 @@ export function deployPlan(
     ],
     notes: [
       `Runs from apps/${app}.`,
-      'Builds locally, then deploys only the static Hosting surface.',
+      `Builds locally, then deploys to site ${siteId} on project ${config.project_id}.`,
+    ],
+  };
+}
+
+export function deployAllPlan(
+  config: GoogleProjectConfig,
+  firebaseBinary: string,
+  apps: string[],
+): CommandPlan {
+  const commands: string[][] = [];
+  const notes: string[] = [];
+
+  for (const app of apps) {
+    const siteId = config.sites[app] ?? deriveSiteId(config.project_id, app);
+    commands.push(['bun', 'run', '--cwd', `apps/${app}`, 'build']);
+    commands.push([
+      firebaseBinary,
+      'deploy',
+      '--only',
+      `hosting:${siteId}`,
+      '--project',
+      config.project_id,
+      '--non-interactive',
+    ]);
+    notes.push(
+      `Build and deploy app workspace apps/${app} to Hosting site ${siteId}.`,
+    );
+  }
+
+  return {
+    effect: 'deploy',
+    target: `All apps (${apps.join(', ')}) on Firebase Hosting project ${config.project_id}`,
+    commands,
+    notes,
+  };
+}
+
+export function sitesDestroyPlan(
+  config: GoogleProjectConfig,
+  firebaseBinary: string,
+  app: string,
+): CommandPlan {
+  const siteId = config.sites[app] ?? deriveSiteId(config.project_id, app);
+  return {
+    effect: 'destructive-remote-write',
+    target: `Firebase Hosting site ${siteId} for app ${app} in project ${config.project_id}`,
+    commands: [
+      [
+        firebaseBinary,
+        'hosting:sites:delete',
+        siteId,
+        '--project',
+        config.project_id,
+        '--force',
+        '--non-interactive',
+      ],
+    ],
+    notes: [
+      `Deletes Firebase Hosting site ${siteId} without deleting the shared project.`,
+      `Project ${config.project_id} remains intact.`,
     ],
   };
 }
@@ -189,7 +367,7 @@ export function destroyPlan(
       [gcloudBinary, 'projects', 'delete', config.project_id, '--quiet'],
     ],
     notes: [
-      'Deletes the whole environment, not selected resources.',
+      'Deletes the whole shared environment and all contained sites.',
       'Google Cloud normally retains a limited recovery window; do not rely on it as a backup.',
     ],
   };

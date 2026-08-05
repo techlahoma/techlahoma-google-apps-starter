@@ -1,17 +1,21 @@
 #!/usr/bin/env bun
 
-import {rename} from 'node:fs/promises';
+import {readdir, rename} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {
   CONFIG_FILENAME,
-  appConfigPath,
   type CommandPlan,
   configPlan,
+  deployAllPlan,
   deployPlan,
   destroyPlan,
+  deriveSiteId,
   makeConfig,
   provisionPlan,
   requireConfirmation,
+  rootConfigPath,
+  sitesDestroyPlan,
+  sitesPlan,
   validateConfig,
 } from './google-cloud-lib';
 
@@ -19,25 +23,31 @@ const ROOT_DIR = resolve(import.meta.dir, '..');
 const ROOT_FIREBASE_BINARY = './node_modules/.bin/firebase';
 const APP_FIREBASE_BINARY = '../../node_modules/.bin/firebase';
 
-const HELP = `Techlahoma Google Apps Starter cloud lifecycle
+const HELP = `Techlahoma Google Apps Starter shared cloud lifecycle
 
 Usage:
-  bun scripts/google-cloud.ts doctor --app APP
-  bun scripts/google-cloud.ts config plan --app APP --project-id ID --display-name NAME
-  bun scripts/google-cloud.ts config apply --app APP --project-id ID --display-name NAME
-  bun scripts/google-cloud.ts provision plan --app APP
-  bun scripts/google-cloud.ts provision apply --app APP --confirm ID
+  bun scripts/google-cloud.ts doctor [--app APP]
+  bun scripts/google-cloud.ts config plan --project-id ID --display-name NAME
+  bun scripts/google-cloud.ts config apply --project-id ID --display-name NAME
+  bun scripts/google-cloud.ts provision plan
+  bun scripts/google-cloud.ts provision apply --confirm ID
+  bun scripts/google-cloud.ts sites plan [--app APP]
+  bun scripts/google-cloud.ts sites apply --confirm ID [--app APP]
   bun scripts/google-cloud.ts deploy plan --app APP
   bun scripts/google-cloud.ts deploy apply --app APP --confirm ID
-  bun scripts/google-cloud.ts destroy plan --app APP
-  bun scripts/google-cloud.ts destroy apply --app APP --confirm ID
+  bun scripts/google-cloud.ts deploy-all plan
+  bun scripts/google-cloud.ts deploy-all apply --confirm ID
+  bun scripts/google-cloud.ts sites:destroy plan --app APP
+  bun scripts/google-cloud.ts sites:destroy apply --app APP --confirm ID
+  bun scripts/google-cloud.ts destroy plan
+  bun scripts/google-cloud.ts destroy apply --confirm ID
 
 Optional config flags:
   --environment development|preview|production
   --region us-central1
 
 Only "apply" mutates local or remote state. Remote apply commands require the
-exact project ID from the selected app's ignored ${CONFIG_FILENAME} file.`;
+exact project ID from the root ignored ${CONFIG_FILENAME} file.`;
 
 interface Flags {
   projectId?: string | undefined;
@@ -78,10 +88,33 @@ function parseFlags(args: string[], allowed: string[]): Flags {
   };
 }
 
+async function discoverApps(): Promise<string[]> {
+  const appsDir = join(ROOT_DIR, 'apps');
+  try {
+    const entries = await readdir(appsDir, {withFileTypes: true});
+    const apps: string[] = [];
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const pkgExists = await Bun.file(
+          join(appsDir, entry.name, 'package.json'),
+        ).exists();
+        const fbExists = await Bun.file(
+          join(appsDir, entry.name, 'firebase.json'),
+        ).exists();
+        if (pkgExists && fbExists) {
+          apps.push(entry.name);
+        }
+      }
+    }
+    return apps.sort();
+  } catch {
+    return [];
+  }
+}
+
 async function resolveApp(app: string | undefined): Promise<{
   slug: string;
   directory: string;
-  configPath: string;
 }> {
   if (!app || !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(app)) {
     throw new Error('Pass a valid app workspace with --app APP');
@@ -96,15 +129,15 @@ async function resolveApp(app: string | undefined): Promise<{
   return {
     slug: app,
     directory,
-    configPath: join(ROOT_DIR, appConfigPath(app)),
   };
 }
 
-async function readConfig(app: Awaited<ReturnType<typeof resolveApp>>) {
-  const file = Bun.file(app.configPath);
+async function readRootConfig() {
+  const configPath = join(ROOT_DIR, rootConfigPath());
+  const file = Bun.file(configPath);
   if (!(await file.exists())) {
     throw new Error(
-      `${appConfigPath(app.slug)} is missing. Run: bun run google:config apply --app ${app.slug} --project-id ID --display-name NAME`,
+      `${rootConfigPath()} is missing. Run: bun run google:config apply --project-id ID --display-name NAME`,
     );
   }
 
@@ -112,7 +145,7 @@ async function readConfig(app: Awaited<ReturnType<typeof resolveApp>>) {
     return validateConfig(JSON.parse(await file.text()));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Invalid ${appConfigPath(app.slug)}: ${message}`, {
+    throw new Error(`Invalid ${rootConfigPath()}: ${message}`, {
       cause: error,
     });
   }
@@ -148,15 +181,17 @@ async function executeCommands(
 
 async function doctor(args: string[]): Promise<void> {
   const flags = parseFlags(args, ['--app']);
-  const app = await resolveApp(flags.app);
+  const discoveredApps = await discoverApps();
   const firebaseFile = Bun.file(join(ROOT_DIR, ROOT_FIREBASE_BINARY));
   const firebasePackage = Bun.file(
     join(ROOT_DIR, 'node_modules/firebase-tools/package.json'),
   );
-  const configFile = Bun.file(app.configPath);
+  const configFile = Bun.file(join(ROOT_DIR, rootConfigPath()));
+
   let project: string | null = null;
   let configStatus = 'not configured';
   let firebaseVersion: string | null = null;
+  let sitesMap: Record<string, string> = {};
 
   if (await firebasePackage.exists()) {
     const packageData = JSON.parse(await firebasePackage.text()) as {
@@ -166,18 +201,32 @@ async function doctor(args: string[]): Promise<void> {
   }
 
   if (await configFile.exists()) {
-    const config = await readConfig(app);
+    const config = await readRootConfig();
     project = config.project_id;
     configStatus = 'valid';
+    sitesMap = config.sites;
+    for (const app of discoveredApps) {
+      if (!sitesMap[app]) {
+        sitesMap[app] = deriveSiteId(config.project_id, app);
+      }
+    }
+  }
+
+  if (flags.app) {
+    await resolveApp(flags.app);
   }
 
   console.log(
     JSON.stringify(
       {
         root: ROOT_DIR,
-        app: app.slug,
         config: configStatus,
         project,
+        apps: discoveredApps.map(app => ({
+          slug: app,
+          site_id: sitesMap[app] ?? null,
+        })),
+        selected_app: flags.app ?? null,
         firebase_cli: {
           installed: await firebaseFile.exists(),
           version: firebaseVersion,
@@ -197,39 +246,36 @@ async function doctor(args: string[]): Promise<void> {
 
 async function configure(action: string, args: string[]): Promise<void> {
   const flags = parseFlags(args, [
-    '--app',
     '--project-id',
     '--display-name',
     '--environment',
     '--region',
   ]);
-  const app = await resolveApp(flags.app);
-  const config = makeConfig(flags);
-  const plan = configPlan(config, app.slug);
+  const discoveredApps = await discoverApps();
+  const configPath = join(ROOT_DIR, rootConfigPath());
+  const existingFile = Bun.file(configPath);
+  let existingConfig;
+  if (await existingFile.exists()) {
+    try {
+      existingConfig = validateConfig(JSON.parse(await existingFile.text()));
+    } catch {
+      // Ignored if invalid when updating
+    }
+  }
+
+  const config = makeConfig({...flags, apps: discoveredApps}, existingConfig);
+  const plan = configPlan(config);
   printPlan(plan);
 
   if (action === 'plan') return;
-  if (action !== 'apply')
+  if (action !== 'apply') {
     throw new Error('Config action must be "plan" or "apply"');
-
-  const existingFile = Bun.file(app.configPath);
-  if (await existingFile.exists()) {
-    const existing = await readConfig(app);
-    if (JSON.stringify(existing) === JSON.stringify(config)) {
-      console.log(
-        `${appConfigPath(app.slug)} already matches the requested configuration.`,
-      );
-      return;
-    }
-    throw new Error(
-      `Refusing to replace existing ${appConfigPath(app.slug)}; review and remove it explicitly first`,
-    );
   }
 
-  const temporaryPath = `${app.configPath}.tmp`;
+  const temporaryPath = `${configPath}.tmp`;
   await Bun.write(temporaryPath, `${JSON.stringify(config, null, 2)}\n`);
-  await rename(temporaryPath, app.configPath);
-  console.log(`Wrote ${appConfigPath(app.slug)} for ${config.project_id}.`);
+  await rename(temporaryPath, configPath);
+  console.log(`Wrote ${rootConfigPath()} for project ${config.project_id}.`);
 }
 
 async function remoteAction(
@@ -241,16 +287,41 @@ async function remoteAction(
     throw new Error(`${command} action must be "plan" or "apply"`);
   }
 
-  const flags = parseFlags(args, ['--app', '--confirm']);
-  const app = await resolveApp(flags.app);
-  const config = await readConfig(app);
+  const allowedFlags = ['--confirm'];
+  if (['sites', 'deploy', 'sites:destroy'].includes(command)) {
+    allowedFlags.push('--app');
+  }
+
+  const flags = parseFlags(args, allowedFlags);
+  const config = await readRootConfig();
+  const discoveredApps = await discoverApps();
   const gcloud = Bun.which('gcloud') ?? 'gcloud';
-  const plan =
-    command === 'provision'
-      ? provisionPlan(config, APP_FIREBASE_BINARY)
-      : command === 'deploy'
-        ? deployPlan(config, APP_FIREBASE_BINARY, app.slug)
-        : destroyPlan(config, gcloud);
+
+  let plan: CommandPlan;
+  let workDir = ROOT_DIR;
+
+  if (command === 'provision') {
+    plan = provisionPlan(config, ROOT_FIREBASE_BINARY);
+  } else if (command === 'sites') {
+    if (flags.app) {
+      await resolveApp(flags.app);
+    }
+    plan = sitesPlan(config, ROOT_FIREBASE_BINARY, discoveredApps, flags.app);
+  } else if (command === 'deploy') {
+    const app = await resolveApp(flags.app);
+    workDir = app.directory;
+    plan = deployPlan(config, APP_FIREBASE_BINARY, app.slug);
+  } else if (command === 'deploy-all') {
+    plan = deployAllPlan(config, ROOT_FIREBASE_BINARY, discoveredApps);
+  } else if (command === 'sites:destroy' || command === 'site:destroy') {
+    const app = await resolveApp(flags.app);
+    plan = sitesDestroyPlan(config, ROOT_FIREBASE_BINARY, app.slug);
+  } else if (command === 'destroy') {
+    plan = destroyPlan(config, gcloud);
+  } else {
+    throw new Error(`Unknown command: ${command}`);
+  }
+
   printPlan(plan);
 
   if (action === 'plan') return;
@@ -266,7 +337,7 @@ async function remoteAction(
     throw new Error('gcloud CLI is required for whole-project teardown');
   }
 
-  await executeCommands(plan.commands, app.directory);
+  await executeCommands(plan.commands, workDir);
 }
 
 async function main(): Promise<void> {
@@ -285,7 +356,17 @@ async function main(): Promise<void> {
     await configure(action, args);
     return;
   }
-  if (['provision', 'deploy', 'destroy'].includes(command)) {
+  if (
+    [
+      'provision',
+      'sites',
+      'deploy',
+      'deploy-all',
+      'sites:destroy',
+      'site:destroy',
+      'destroy',
+    ].includes(command)
+  ) {
     await remoteAction(command, action, args);
     return;
   }

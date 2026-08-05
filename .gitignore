@@ -39,3 +39,4 @@ target/
 
 *.log
 *.tmp
+.aider*

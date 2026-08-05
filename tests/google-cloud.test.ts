@@ -1,30 +1,36 @@
 import {describe, expect, test} from 'bun:test';
 import {
-  appConfigPath,
   configPlan,
+  deployAllPlan,
   deployPlan,
   destroyPlan,
+  deriveSiteId,
   makeConfig,
   provisionPlan,
   requireConfirmation,
+  rootConfigPath,
+  sitesDestroyPlan,
+  sitesPlan,
   validateConfig,
+  validateSiteId,
 } from '../scripts/google-cloud-lib';
 
 const config = makeConfig({
   projectId: 'small-google-app-dev',
   displayName: 'Small Google App',
+  apps: ['welcome', 'example-crm'],
 });
 
 describe('Google project configuration', () => {
-  test('creates the static-only default', () => {
-    expect(config).toEqual({
-      schema_version: 1,
-      project_id: 'small-google-app-dev',
-      display_name: 'Small Google App',
-      environment: 'development',
-      region: 'us-central1',
-      features: ['hosting'],
-    });
+  test('creates shared project configuration with site mappings', () => {
+    expect(config.schema_version).toBe(1);
+    expect(config.project_id).toBe('small-google-app-dev');
+    expect(config.display_name).toBe('Small Google App');
+    expect(config.environment).toBe('development');
+    expect(config.region).toBe('us-central1');
+    expect(config.features).toEqual(['hosting']);
+    expect(config.sites['welcome']).toBeDefined();
+    expect(config.sites['example-crm']).toBeDefined();
   });
 
   test('rejects placeholders and malformed project IDs', () => {
@@ -59,20 +65,46 @@ describe('Google project configuration', () => {
   });
 });
 
-describe('plans make every effect and target explicit', () => {
-  test('local config plan contains no command', () => {
-    expect(configPlan(config, 'example-crm')).toEqual({
-      effect: 'local-write',
-      target: 'apps/example-crm/google.project.json',
-      commands: [],
-      notes: [
-        'Write local configuration for small-google-app-dev and app example-crm.',
-        'apps/example-crm/google.project.json is ignored by Git and contains no credentials.',
-      ],
-    });
+describe('site ID constraints and derivation', () => {
+  test('derives deterministic site IDs matching Firebase constraints', () => {
+    const siteId1 = deriveSiteId('small-google-app-dev', 'welcome');
+    const siteId2 = deriveSiteId('small-google-app-dev', 'welcome');
+    expect(siteId1).toBe(siteId2);
+    expect(siteId1.length).toBeGreaterThanOrEqual(4);
+    expect(siteId1.length).toBeLessThanOrEqual(30);
+    expect(siteId1).toMatch(/^[a-z0-9][a-z0-9-]{2,28}[a-z0-9]$/);
   });
 
-  test('provision creates Firebase without linking billing', () => {
+  test('handles long project IDs and long app slugs safely', () => {
+    const longProject = 'a-very-long-project-id-dev-12345';
+    const longSlug = 'super-long-app-workspace-slug-for-testing-purpose';
+    const siteId = deriveSiteId(longProject, longSlug);
+    expect(siteId.length).toBeLessThanOrEqual(30);
+    expect(siteId).toMatch(/^[a-z0-9][a-z0-9-]{2,28}[a-z0-9]$/);
+  });
+
+  test('validates valid and invalid site IDs', () => {
+    expect(validateSiteId('valid-site-123')).toBe('valid-site-123');
+    expect(() => validateSiteId('ab')).toThrow('site_id');
+    expect(() => validateSiteId('Invalid-Capital')).toThrow('site_id');
+    expect(() => validateSiteId('trailing-dash-')).toThrow('site_id');
+    expect(() => validateSiteId('-leading-dash')).toThrow('site_id');
+    expect(() =>
+      validateSiteId('this-site-id-is-way-too-long-to-be-valid-in-firebase'),
+    ).toThrow('site_id');
+  });
+});
+
+describe('plans make every effect and target explicit', () => {
+  test('root config plan targets google.project.json', () => {
+    const plan = configPlan(config);
+    expect(plan.effect).toBe('local-write');
+    expect(plan.target).toBe('google.project.json');
+    expect(plan.commands).toEqual([]);
+    expect(plan.notes.join(' ')).toContain('Write root configuration');
+  });
+
+  test('provision creates shared Firebase project without linking billing', () => {
     const plan = provisionPlan(config, './node_modules/.bin/firebase');
     expect(plan.effect).toBe('remote-write');
     expect(plan.commands).toEqual([
@@ -88,20 +120,84 @@ describe('plans make every effect and target explicit', () => {
     expect(plan.notes.join(' ')).toContain('Does not link a billing account');
   });
 
-  test('deploy targets Hosting and an explicit project', () => {
+  test('sites plan targets hosting site creation', () => {
+    const plan = sitesPlan(
+      config,
+      'firebase',
+      ['welcome', 'example-crm'],
+      'welcome',
+    );
+    const siteId = config.sites['welcome']!;
+    expect(plan.effect).toBe('remote-write');
+    expect(plan.commands).toEqual([
+      [
+        'firebase',
+        'hosting:sites:create',
+        siteId,
+        '--project',
+        'small-google-app-dev',
+        '--non-interactive',
+      ],
+    ]);
+  });
+
+  test('deploy targets specific app site and project', () => {
     const plan = deployPlan(config, 'firebase', 'example-crm');
+    const siteId = config.sites['example-crm']!;
     expect(plan.target).toBe(
-      'apps/example-crm on Firebase Hosting project small-google-app-dev',
+      `apps/example-crm on Firebase Hosting site ${siteId} in project small-google-app-dev`,
     );
     expect(plan.commands.at(-1)).toEqual([
       'firebase',
       'deploy',
       '--only',
-      'hosting',
+      `hosting:${siteId}`,
       '--project',
       'small-google-app-dev',
       '--non-interactive',
     ]);
+  });
+
+  test('deploy-all targets every app site sequentially', () => {
+    const plan = deployAllPlan(config, 'firebase', ['welcome', 'example-crm']);
+    expect(plan.effect).toBe('deploy');
+    expect(plan.commands.length).toBe(4); // 2 build + 2 deploy
+    expect(plan.commands[0]).toEqual([
+      'bun',
+      'run',
+      '--cwd',
+      'apps/welcome',
+      'build',
+    ]);
+    expect(plan.commands[1]).toEqual([
+      'firebase',
+      'deploy',
+      '--only',
+      `hosting:${config.sites['welcome']}`,
+      '--project',
+      'small-google-app-dev',
+      '--non-interactive',
+    ]);
+  });
+
+  test('sites:destroy deletes one hosting site without deleting project', () => {
+    const plan = sitesDestroyPlan(config, 'firebase', 'welcome');
+    const siteId = config.sites['welcome']!;
+    expect(plan.effect).toBe('destructive-remote-write');
+    expect(plan.commands).toEqual([
+      [
+        'firebase',
+        'hosting:sites:delete',
+        siteId,
+        '--project',
+        'small-google-app-dev',
+        '--force',
+        '--non-interactive',
+      ],
+    ]);
+    expect(plan.notes.join(' ')).toContain(
+      'Project small-google-app-dev remains intact',
+    );
   });
 
   test('destroy deletes the exact whole project', () => {
@@ -115,11 +211,9 @@ describe('plans make every effect and target explicit', () => {
   });
 });
 
-describe('app-scoped configuration', () => {
-  test('locates configuration inside the selected workspace', () => {
-    expect(appConfigPath('room-pulse')).toBe(
-      'apps/room-pulse/google.project.json',
-    );
+describe('root configuration path', () => {
+  test('locates configuration at repository root', () => {
+    expect(rootConfigPath()).toBe('google.project.json');
   });
 });
 

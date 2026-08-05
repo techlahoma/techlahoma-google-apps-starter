@@ -106,9 +106,7 @@ the [research](docs/research/google-public-engineering-conventions-2026-08-03.md
 
 ## Put it on Firebase Hosting
 
-Choose the app workspace and a globally unique Google Cloud project ID. Keep `-dev`, `-preview`, or
-`-prod` in the ID so the environment is obvious. The commands below use `example-crm`; replace it
-and every TODO value before running a command.
+Configure a globally unique Google Cloud project ID. Keep `-dev`, `-preview`, or `-prod` in the ID so the environment is obvious. Replace TODO values before running commands.
 
 ```sh
 # 1. Option A: Copy .env.example to .env and configure environment variables:
@@ -117,66 +115,71 @@ and every TODO value before running a command.
 #
 # Option B: Or pass flags explicitly:
 bun run google:config plan \
-  --app example-crm \
   --project-id TODO-your-unique-project-id \
-  --display-name "TODO Your App Name"
+  --display-name "TODO Your Shared Project Name"
 
-# 2. Write the local app configuration file.
+# 2. Write the root local project configuration file (google.project.json).
 bun run google:config apply \
-  --app example-crm \
   --project-id TODO-your-unique-project-id \
-  --display-name "TODO Your App Name"
+  --display-name "TODO Your Shared Project Name"
 
 # 3. Authenticate once. This opens Google's login flow and changes local CLI auth state.
 bun run firebase:login
 
-# 4. Preview the exact remote creation operation.
-bun run google:provision plan --app example-crm
+# 4. Preview and create the shared Google Cloud project.
+bun run google:provision plan
+bun run google:provision apply --confirm TODO-your-unique-project-id
 
-# 5. Create the project only after reviewing the plan.
-bun run google:provision apply --app example-crm --confirm TODO-your-unique-project-id
+# 5. Provision Firebase Hosting sites for all discovered apps (or a specific app with --app APP).
+bun run google:sites plan
+bun run google:sites apply --confirm TODO-your-unique-project-id
 
-# 6. Preview and then perform a Hosting-only deployment.
-bun run google:deploy plan --app example-crm
-bun run google:deploy apply --app example-crm --confirm TODO-your-unique-project-id
+# 6. Deploy one selected app, or deploy all apps to their respective Hosting sites.
+bun run google:deploy plan --app welcome
+bun run google:deploy apply --app welcome --confirm TODO-your-unique-project-id
+
+# Or build and deploy all apps to their own sites without overwriting:
+bun run google:deploy-all plan
+bun run google:deploy-all apply --confirm TODO-your-unique-project-id
 ```
 
-The commands do not create or link a billing account. Each `apps/<slug>/google.project.json` is
-ignored, no `.firebaserc` is used, and every Firebase command receives an explicit app and project.
+The commands do not create or link a billing account. Root `google.project.json` is ignored, no `.firebaserc` is used, and every Firebase command receives an explicit project ID.
 
 ## Tear the environment down
 
-The cleanest starter environment boundary is the whole Google Cloud project. Teardown therefore
-requires the Google Cloud CLI and deletes that exact project:
+Delete a single Hosting site without deleting the shared project:
 
 ```sh
-bun run google:destroy plan --app example-crm
-bun run google:destroy apply --app example-crm --confirm TODO-your-unique-project-id
+bun run google:sites:destroy plan --app welcome
+bun run google:sites:destroy apply --app welcome --confirm TODO-your-unique-project-id
 ```
 
-Deletion is destructive. Export anything durable first. Google may provide a limited recovery
-window, but the starter does not treat that window as a backup.
+To delete the entire shared Google Cloud project:
+
+```sh
+bun run google:destroy plan
+bun run google:destroy apply --confirm TODO-your-unique-project-id
+```
+
+Deletion is destructive. Export anything durable first. Google may provide a limited recovery window, but the starter does not treat that window as a backup.
 
 ## Complexity ladder
 
 | Level | Add when | Google products | Infrastructure approach |
 |---|---|---|---|
-| 0 — generated app | A static site or SPA is enough | Firebase Hosting | App-local config plus pinned root Firebase CLI |
+| 0 — generated app | A static site or SPA is enough | Firebase Hosting | Root shared config plus pinned root Firebase CLI |
 | 1 — app data | The product needs identity or shared records | Firebase Auth, Firestore, Emulator Suite | Add only the selected Firebase features and rules |
 | 2 — server work | A trusted API, job, or long-running request is necessary | Cloud Run, Cloud Tasks, Secret Manager | Billing and explicit service enablement become required |
 | 3 — platform | Multiple environments or services drift across a team | Google Cloud resources | Terraform/OpenTofu modules plus remote state and CI federation |
 
-Do not pre-install the next level. Each level has a real operational cost and a separate decision
-boundary.
+Do not pre-install the next level. Each level has a real operational cost and a separate decision boundary.
 
 ## Agent contract
 
-- Run `bun run google:doctor --app <slug>` for a local, read-only readiness report.
+- Run `bun run google:doctor` for a local, read-only readiness report.
 - Run `plan` before every `apply`.
-- Pass `--app <slug>` to every Google lifecycle command.
 - Never infer a project from Firebase or gcloud's global defaults.
-- Never link billing, enable APIs, create credentials, deploy, or delete a project without explicit
-  authority for that effect.
+- Never link billing, enable APIs, create credentials, deploy, or delete a project without explicit authority for that effect.
 - Prefer Application Default Credentials locally and Workload Identity Federation in CI; do not
   create long-lived service-account keys.
 

@@ -2,7 +2,7 @@
 
 - `Tease:` One operational source of truth for Techlahoma Google Apps Starter.
 - `Lede:` The project is an active, public Techlahoma Bun monorepo with generated app workspaces,
-  public-Google-aligned engineering conventions, and an app-scoped Firebase lifecycle; no Google
+  public-Google-aligned engineering conventions, and a shared Firebase project with per-app Hosting sites lifecycle; no Google
   Cloud project has been created or deployed.
 - `Why it matters:`
   - Humans and agents can begin locally without reconstructing Google Cloud dashboard state.
@@ -56,7 +56,7 @@
 - `bun install --frozen-lockfile` resolves the pinned toolchain.
 - `bash scripts/verify.sh` validates the starter contract, format, lint, types, tests, and build.
 - `bun run app:create plan` names the exact new app path without writing it.
-- `bun run google:doctor --app welcome` reports app-scoped readiness without a cloud request.
+- `bun run google:doctor` reports shared project and hosting site readiness without a cloud request.
 - Lifecycle plan commands name their effect, exact target, commands, and limitations.
 - Apply commands refuse a missing or mismatched `--confirm` value before a remote call.
 
@@ -96,8 +96,8 @@ See
 | App generator | `scripts/create-app.ts` and `scripts/create-app-lib.ts` |
 | Contribution workflow | `CONTRIBUTING.md` |
 | Hosting configuration | `apps/<slug>/firebase.json` |
-| Local target project | ignored `apps/<slug>/google.project.json` |
-| Project-config schema example | `apps/<slug>/google.project.example.json` |
+| Local target project | ignored `google.project.json` |
+| Project-config schema example | `google.project.example.json` |
 | Cloud lifecycle implementation | `scripts/google-cloud.ts` and `scripts/google-cloud-lib.ts` |
 | Engineering-convention research | `docs/research/google-public-engineering-conventions-2026-08-03.md` |
 | Cloud lifecycle research | `docs/research/firebase-gcp-agent-provisioning-2026-08-03.md` |
@@ -119,16 +119,22 @@ See
 | `bun run format` | local-write | TypeScript, JSON, HTML, and CSS source | local-edit authority | clean format check |
 | `bun run audit:dependencies` | read-only network query | locked dependency graph | none | current advisory report |
 | `bash scripts/verify.sh` | read-only except disposable build output | local checkout | none | exit status and output |
-| `bun run google:doctor --app APP` | read-only | selected app, local tools, and ignored config | none | JSON report |
-| `bun run google:config plan --app APP --project-id ID --display-name NAME` | read-only | proposed app config | none | JSON plan |
-| `bun run google:config apply --app APP --project-id ID --display-name NAME` | local-write | ignored app config | local-edit authority | written and validated file |
+| `bun run google:doctor [--app APP]` | read-only | shared project, app hosting sites, local tools, and ignored config | none | JSON report |
+| `bun run google:config plan --project-id ID --display-name NAME` | read-only | proposed shared project config | none | JSON plan |
+| `bun run google:config apply --project-id ID --display-name NAME` | local-write | ignored root `google.project.json` | local-edit authority | written and validated file |
 | `bun run firebase:login` | local auth plus browser flow | Firebase CLI credential store | explicit authentication intent | CLI login result |
-| `bun run google:provision plan --app APP` | read-only | app's named Google/Firebase project | none | JSON plan |
-| `bun run google:provision apply --app APP --confirm ID` | remote-write | app's named Google/Firebase project | explicit provisioning authority | CLI result plus project query |
-| `bun run google:deploy plan --app APP` | read-only | selected app and Firebase Hosting site | none | JSON plan |
-| `bun run google:deploy apply --app APP --confirm ID` | deploy | selected app and Firebase Hosting site | explicit deployment authority | CLI result plus live URL check |
-| `bun run google:destroy plan --app APP` | read-only | entire app environment project | none | JSON plan |
-| `bun run google:destroy apply --app APP --confirm ID` | destructive remote-write | entire app environment project | explicit deletion authority | gcloud result plus project-state query |
+| `bun run google:provision plan` | read-only | shared Google/Firebase project | none | JSON plan |
+| `bun run google:provision apply --confirm ID` | remote-write | shared Google/Firebase project | explicit provisioning authority | CLI result plus project query |
+| `bun run google:sites plan [--app APP]` | read-only | Firebase Hosting site(s) | none | JSON plan |
+| `bun run google:sites apply --confirm ID [--app APP]` | remote-write | Firebase Hosting site(s) | explicit site provisioning authority | CLI result plus site query |
+| `bun run google:deploy plan --app APP` | read-only | selected app and its Firebase Hosting site | none | JSON plan |
+| `bun run google:deploy apply --app APP --confirm ID` | deploy | selected app and its Firebase Hosting site | explicit deployment authority | CLI result plus live URL check |
+| `bun run google:deploy-all plan` | read-only | all apps and their Firebase Hosting sites | none | JSON plan |
+| `bun run google:deploy-all apply --confirm ID` | deploy | all apps and their Firebase Hosting sites | explicit deployment authority | CLI results plus live URL check |
+| `bun run google:sites:destroy plan --app APP` | read-only | selected app Firebase Hosting site | none | JSON plan |
+| `bun run google:sites:destroy apply --app APP --confirm ID` | destructive remote-write | selected app Firebase Hosting site | explicit site deletion authority | CLI result plus site query |
+| `bun run google:destroy plan` | read-only | entire shared environment project | none | JSON plan |
+| `bun run google:destroy apply --confirm ID` | destructive remote-write | entire shared environment project | explicit deletion authority | gcloud result plus project-state query |
 
 ## Environments and publication
 

@@ -201,8 +201,8 @@
   infrastructure framework until a concrete product requirement calls for it.
 - Use the pinned project-local Firebase CLI. Do not replace it with an unpinned
   `npx`, `bunx`, or global installation in repository commands.
-- Never create or commit `.firebaserc`. Resolve the selected app's ignored
-  `apps/<slug>/google.project.json`, pass `--app <slug>`, and pass the exact project ID to every
+- Never create or commit `.firebaserc`. Resolve the ignored root
+  `google.project.json`, pass explicit project and site IDs, and pass the exact project ID to every
   remote command.
 - Run a lifecycle `plan` before `apply`. Provision, deploy, billing linkage,
   credential creation, and whole-project deletion are separate external effects

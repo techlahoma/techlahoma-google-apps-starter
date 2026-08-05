@@ -26,7 +26,10 @@
     "google:doctor": "bun scripts/google-cloud.ts doctor",
     "google:config": "bun scripts/google-cloud.ts config",
     "google:provision": "bun scripts/google-cloud.ts provision",
+    "google:sites": "bun scripts/google-cloud.ts sites",
     "google:deploy": "bun scripts/google-cloud.ts deploy",
+    "google:deploy-all": "bun scripts/google-cloud.ts deploy-all",
+    "google:sites:destroy": "bun scripts/google-cloud.ts sites:destroy",
     "google:destroy": "bun scripts/google-cloud.ts destroy"
   },
   "devDependencies": {
