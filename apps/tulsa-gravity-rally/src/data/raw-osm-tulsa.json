@@ -1,0 +1,4052 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-08-06T18:32:31Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 60964202,
+  "nodes": [
+    763180900,
+    763180901,
+    763180902,
+    763180903,
+    11218875551,
+    763180905,
+    763180906,
+    763180907,
+    763180908,
+    763180909,
+    763180910,
+    763180911,
+    763180900
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "105",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West Reconciliation Way North",
+    "amenity": "theatre",
+    "building": "yes",
+    "name": "Tulsa Theater",
+    "name:etymology": "Tulsa",
+    "name:etymology:wikidata": "Q44989",
+    "old_name": "Brady Theater",
+    "old_name:etymology": "W. Tate Brady",
+    "old_name:etymology:wikidata": "Q7946015",
+    "wikidata": "Q4955223",
+    "wikipedia": "en:Tulsa Theater"
+  }
+},
+{
+  "type": "way",
+  "id": 60964214,
+  "nodes": [
+    763180997,
+    3758428859,
+    3221196969,
+    763181000,
+    763180998,
+    3304651684,
+    763180993,
+    763180994,
+    763180995,
+    3758428860,
+    763180996,
+    763180997
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "175",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East 2nd Street South",
+    "building": "office",
+    "name": "One Technology Center"
+  }
+},
+{
+  "type": "way",
+  "id": 60964215,
+  "nodes": [
+    763180999,
+    3554907908,
+    763181000,
+    3221196969,
+    3221196968,
+    763181001,
+    1254142676,
+    2523873845,
+    3143457151,
+    3143463741,
+    3143463256,
+    3308422601,
+    763181002,
+    763180999
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "2",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East 1st Street South",
+    "building": "retail",
+    "building:levels": "2",
+    "name": "Williams Center",
+    "roof:levels": "0",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 107780294,
+  "nodes": [
+    1238115468,
+    3221197061,
+    1238115482,
+    1238115460,
+    3221197057,
+    1238115537,
+    2980476937,
+    1238115468
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "11",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East 1st Street South",
+    "amenity": "parking",
+    "building": "yes",
+    "name": "Williams North Garage",
+    "parking": "multi-storey"
+  }
+},
+{
+  "type": "way",
+  "id": 206622510,
+  "nodes": [
+    2166561949,
+    2166561948,
+    2166561950,
+    2166561952,
+    2166561949
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "114",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boston Avenue East",
+    "building": "retail",
+    "building:levels": "1",
+    "disused:amenity": "restaurant",
+    "disused:cuisine": "italian",
+    "roof:levels": "0"
+  }
+},
+{
+  "type": "way",
+  "id": 206622513,
+  "nodes": [
+    2166561953,
+    12206217655,
+    2166561955,
+    11165430860,
+    11165430862,
+    2166561953
+  ],
+  "tags": {
+    "amenity": "bar",
+    "building": "retail",
+    "indoor_seating": "yes",
+    "name": "Club Majestic",
+    "outdoor_seating": "yes",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 219722776,
+  "nodes": [
+    2288597160,
+    13451261652,
+    2288597117,
+    2288597116,
+    2288597160
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "211",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West Archer Street North",
+    "building": "warehouse",
+    "name": "Justice Link",
+    "office": "ngo"
+  }
+},
+{
+  "type": "way",
+  "id": 219722777,
+  "nodes": [
+    13451261627,
+    2288597163,
+    2288597122,
+    2288597118,
+    13451261627
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "213",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West Archer Street North",
+    "building": "office",
+    "building:levels": "2",
+    "building:min_level": "0",
+    "name": "Miller",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 239292559,
+  "nodes": [
+    2470916525,
+    2470916526,
+    2569346920,
+    2569346899,
+    2569346905,
+    2470916527,
+    2470916528,
+    2569346903,
+    2569346901,
+    2569346893,
+    2470916525
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "1",
+    "layer": "1",
+    "name": "Matthews Warehouse"
+  }
+},
+{
+  "type": "way",
+  "id": 245142481,
+  "nodes": [
+    2523873847,
+    2523873848,
+    3221196968,
+    763181001,
+    1254142676,
+    2523873845,
+    2523873847
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "1",
+    "addr:postcode": "74172",
+    "addr:state": "OK",
+    "addr:street": "Williams Center",
+    "building": "office",
+    "building:colour": "silver",
+    "building:levels": "52",
+    "height": "203",
+    "layer": "1",
+    "name": "BOK Tower",
+    "roof:shape": "flat",
+    "start_date": "1978",
+    "wikidata": "Q3500463"
+  }
+},
+{
+  "type": "way",
+  "id": 250495300,
+  "nodes": [
+    2569336711,
+    2569336712,
+    2569336713,
+    2569336714,
+    2569336711
+  ],
+  "tags": {
+    "addr:housenumber": "20",
+    "addr:street": "North Boston Avenue East",
+    "building": "apartments",
+    "building:colour": "brown",
+    "building:levels": "6",
+    "name": "Tribune Lofts",
+    "roof:levels": "0",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 250495301,
+  "nodes": [
+    2569336715,
+    11711704461,
+    11711704460,
+    13150994524,
+    11711704464,
+    11711704462,
+    11711704463,
+    2569336717,
+    2569336718,
+    2569336719,
+    2569336720,
+    2569336721,
+    2569336722,
+    2569336729,
+    9395413840,
+    2569336715
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "name": "Metro at Brady",
+    "roof:levels": "0",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 250495304,
+  "nodes": [
+    2569336730,
+    2569336731,
+    2569336732,
+    2569336733,
+    2569336734,
+    2569336735,
+    2569336730
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 250495305,
+  "nodes": [
+    2569336736,
+    2569336737,
+    2569336738,
+    2569336739,
+    2569336736
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "107",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boulder Avenue West",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 250495306,
+  "nodes": [
+    2569336740,
+    2569336741,
+    10017166897,
+    10017166896,
+    10017166895,
+    10017166898,
+    2569336742,
+    2569336743,
+    8511702285,
+    8511702284,
+    2569336744,
+    2569336745,
+    2569336740
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "14",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West Reconciliation Way North",
+    "amenity": "restaurant",
+    "building": "yes",
+    "cuisine": "mexican",
+    "name": "Mexicali Border Cafe",
+    "phone": "+1 918 582 3383"
+  }
+},
+{
+  "type": "way",
+  "id": 250495307,
+  "nodes": [
+    2569336746,
+    2569336747,
+    2569336748,
+    2569336749,
+    2569336750,
+    2569336751,
+    2569336752,
+    13172125575,
+    2569336756,
+    2569336753,
+    2569336754,
+    2569336746
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "201",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street East",
+    "building": "yes",
+    "layer": "1",
+    "name": "Fox Building"
+  }
+},
+{
+  "type": "way",
+  "id": 250495308,
+  "nodes": [
+    2569336754,
+    2569336755,
+    2569336756,
+    2569336753,
+    2569336754
+  ],
+  "tags": {
+    "amenity": "restaurant",
+    "building": "yes",
+    "cuisine": "american",
+    "name": "The Tavern"
+  }
+},
+{
+  "type": "way",
+  "id": 250495309,
+  "nodes": [
+    3745934725,
+    2569336758,
+    2569336759,
+    2569336760,
+    3745934725
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 250495310,
+  "nodes": [
+    2569336758,
+    2569336761,
+    2569336762,
+    2569336759,
+    2569336758
+  ],
+  "tags": {
+    "addr:housenumber": "21",
+    "addr:street": "East Reconciliation Way North",
+    "amenity": "bar",
+    "building": "yes",
+    "indoor_seating": "yes",
+    "name": "Valkyrie",
+    "outdoor_seating": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 250495311,
+  "nodes": [
+    2569336761,
+    2569336763,
+    12941394199,
+    2569336764,
+    2569336762,
+    2569336761
+  ],
+  "tags": {
+    "building": "yes",
+    "name": "Glacier Chocolates",
+    "shop": "confectionery"
+  }
+},
+{
+  "type": "way",
+  "id": 250495312,
+  "nodes": [
+    2569336763,
+    3745932026,
+    2569336766,
+    2569336764,
+    2569336763
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "3",
+    "roof:levels": "0"
+  }
+},
+{
+  "type": "way",
+  "id": 250496654,
+  "nodes": [
+    2470916525,
+    2569346893,
+    2569346895,
+    2569346897,
+    2569346899,
+    2569346920,
+    2470916526,
+    2470916525
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "102",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East Reconciliation Way North",
+    "building": "yes",
+    "fee": "yes",
+    "name": "Woody Guthrie Center",
+    "phone": "+1 918 574 2710",
+    "tourism": "museum",
+    "website": "https://woodyguthriecenter.org/visit/"
+  }
+},
+{
+  "type": "way",
+  "id": 250496655,
+  "nodes": [
+    2569346893,
+    2569346901,
+    2569346897,
+    2569346895,
+    2569346893
+  ],
+  "tags": {
+    "amenity": "arts_centre",
+    "building": "yes",
+    "name": "108 Contemporary"
+  }
+},
+{
+  "type": "way",
+  "id": 250496656,
+  "nodes": [
+    2569346901,
+    2569346903,
+    2569346905,
+    2569346899,
+    2569346901
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "116",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East Reconciliation Way North",
+    "building": "yes",
+    "contact:facebook": "https://www.facebook.com/bobdylancenter",
+    "email": "info@bobdylancenter.com",
+    "museum": "art",
+    "name": "Bob Dylan Center",
+    "opening_hours": "We-Su 10:00-18:00",
+    "operator": "George Kaiser Family Foundation",
+    "operator:type": "private_non_profit",
+    "phone": "+1-918-392-3353",
+    "tourism": "museum",
+    "website": "https://bobdylancenter.com/",
+    "wikidata": "Q112118939",
+    "wikipedia": "en:Bob Dylan Center"
+  }
+},
+{
+  "type": "way",
+  "id": 250496657,
+  "nodes": [
+    2569346903,
+    2470916528,
+    2470916527,
+    2569346905,
+    2569346903
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "124",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East Reconciliation Way North",
+    "building": "yes",
+    "email": "info@buildintulsa.com",
+    "name": "Build in Tulsa",
+    "office": "association",
+    "website": "https://www.buildintulsa.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 250496661,
+  "nodes": [
+    1720270631,
+    1720270638,
+    3381669294,
+    3381669195,
+    2569346926,
+    2569346928,
+    3381669494,
+    3381669194,
+    3381669794,
+    3381664694,
+    3381669894,
+    3381669394,
+    1720270631
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "111",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street East",
+    "addr:unit": "E",
+    "air_conditioning": "yes",
+    "amenity": "restaurant",
+    "building": "yes",
+    "cuisine": "american",
+    "diet:gluten_free": "yes",
+    "diet:non-vegetarian": "yes",
+    "diet:vegan": "yes",
+    "indoor_seating": "yes",
+    "name": "Misfit Kitchen",
+    "opening_hours": "Tu-Su 10:00-22:00",
+    "outdoor_seating": "yes",
+    "smoking": "outside",
+    "website": "https://www.misfitkitchentulsa.com"
+  }
+},
+{
+  "type": "way",
+  "id": 250496662,
+  "nodes": [
+    1720270596,
+    3381669793,
+    3381669694,
+    2569346932,
+    3381669593,
+    3381669693,
+    3381669393,
+    3381669493,
+    3381669293,
+    1720270596
+  ],
+  "tags": {
+    "amenity": "restaurant",
+    "building": "yes",
+    "cuisine": "steak_house",
+    "indoor_seating": "yes",
+    "name": "Prhyme Downtown Steakhouse",
+    "outdoor_seating": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 250496663,
+  "nodes": [
+    3381669694,
+    2569346934,
+    2569346936,
+    2569346930,
+    3381669793,
+    3381669694
+  ],
+  "tags": {
+    "amenity": "bar",
+    "building": "yes",
+    "indoor_seating": "yes",
+    "name": "Mainline",
+    "outdoor_seating": "no",
+    "smoking": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 250496664,
+  "nodes": [
+    2569346928,
+    11688959924,
+    2569346938,
+    2569346940,
+    2569346926,
+    2569346928
+  ],
+  "tags": {
+    "building": "yes",
+    "name": "Wick and Flame Candle Bar",
+    "shop": "candles"
+  }
+},
+{
+  "type": "way",
+  "id": 250496665,
+  "nodes": [
+    2569336746,
+    2569346942,
+    2569346944,
+    2569336747,
+    2569336746
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "209",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street East",
+    "building": "yes",
+    "name": "3CG Studio",
+    "office": "recording_studio"
+  }
+},
+{
+  "type": "way",
+  "id": 250496668,
+  "nodes": [
+    2569346966,
+    2569346968,
+    2569346970,
+    2569346972,
+    11711704513,
+    2569346966
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "307",
+    "addr:postcode": "74120",
+    "addr:state": "OK",
+    "addr:street": "East Reconciliation Way North",
+    "amenity": "arts_centre",
+    "building": "yes",
+    "check_date": "2026-05-14",
+    "name": "Living Arts of Tulsa"
+  }
+},
+{
+  "type": "way",
+  "id": 251639468,
+  "nodes": [
+    2578256423,
+    2578256424,
+    2578256426,
+    3348914695,
+    7910145441,
+    3348914694,
+    2578256427,
+    2578256428,
+    3348914994,
+    3348914993,
+    2578256429,
+    2578256423
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "303",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boston Avenue East",
+    "amenity": "studio",
+    "building": "yes",
+    "building:colour": "white",
+    "building:material": "brick",
+    "building:use": "commercial",
+    "facebook": "https://www.facebook.com/NewsOn6",
+    "name": "Griffin Media",
+    "opening_hours": "Mo-Fr 08:30-17:30; PH off; Sa-Su \"Call for hours.\"",
+    "operator": "Griffin Communications",
+    "phone": "+1-918-732-6000",
+    "stations": "KOTV-DT, KQCW-DT, KOTV(AM), KRQV, KHTT, KVOO, KXBL",
+    "studio": "Radio and TV",
+    "website": "https://www.newson6.com/",
+    "wikidata": "Q6335295",
+    "wikipedia": "en:Griffin_Media"
+  }
+},
+{
+  "type": "way",
+  "id": 251639469,
+  "nodes": [
+    2578256430,
+    2628902355,
+    2628902363,
+    2628902361,
+    2628902358,
+    2628902365,
+    2628902351,
+    2578256433,
+    2578256430
+  ],
+  "tags": {
+    "building": "roof",
+    "layer": "1",
+    "name": "The Dock"
+  }
+},
+{
+  "type": "way",
+  "id": 251639470,
+  "nodes": [
+    2578256434,
+    2569336757,
+    2569336765,
+    2578256435,
+    2578256434
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "220",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boston Avenue East",
+    "building": "office",
+    "building:colour": "orange",
+    "building:levels": "1",
+    "roof:levels": "0",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 251639472,
+  "nodes": [
+    2578256436,
+    2578256437,
+    2578256438,
+    2578256439,
+    2578256436
+  ],
+  "tags": {
+    "building": "commercial",
+    "building:levels": "2",
+    "name": "Universal Ford Building"
+  }
+},
+{
+  "type": "way",
+  "id": 251639673,
+  "nodes": [
+    2578258496,
+    2578258497,
+    2578258498,
+    2578258502,
+    2578258499,
+    2578258496
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "224",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street West",
+    "amenity": "restaurant",
+    "building": "yes",
+    "name": "The Hunt Club"
+  }
+},
+{
+  "type": "way",
+  "id": 251639674,
+  "nodes": [
+    2578258500,
+    2578258496,
+    2578258499,
+    2578258502,
+    2578258503,
+    2578258504,
+    2578258500
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "8",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West Cameron Street North",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 251639675,
+  "nodes": [
+    10017166901,
+    10017166903,
+    2578258508,
+    2578258510,
+    2578258509,
+    2578258504,
+    2578258503,
+    10017166901
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 251639676,
+  "nodes": [
+    10017166899,
+    10017166900,
+    2578258516,
+    10017166905,
+    10017166906,
+    2578258517,
+    2578258518,
+    2578258507,
+    2578258508,
+    2578258510,
+    10017166899
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street West",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 251639677,
+  "nodes": [
+    2578258519,
+    2578258520,
+    2578258522,
+    2578258523,
+    2578258519
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "209",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boulder Avenue West",
+    "amenity": "bar",
+    "building": "yes",
+    "changing_table": "no",
+    "name": "Saturn Room",
+    "toilets:wheelchair": "yes",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 251639678,
+  "nodes": [
+    2578258526,
+    2578258530,
+    11218896940,
+    2578258525,
+    2578258526
+  ],
+  "tags": {
+    "addr:housenumber": "223",
+    "addr:street": "North Boulder Avenue West",
+    "building": "commercial"
+  }
+},
+{
+  "type": "way",
+  "id": 251640633,
+  "nodes": [
+    2578268515,
+    2578268516,
+    2578268517,
+    2578268518,
+    2578268515
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 251640634,
+  "nodes": [
+    2578268519,
+    2578268520,
+    2578268521,
+    2578268522,
+    2578268519
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "302",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boston Avenue East",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 251640635,
+  "nodes": [
+    2578268523,
+    2578268524,
+    2578268525,
+    2578268526,
+    2578268527,
+    2578268528,
+    2578268529,
+    2578268530,
+    2578268523
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "421",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boulder Avenue West",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 251640636,
+  "nodes": [
+    2578268531,
+    2578268532,
+    2578268533,
+    2578268534,
+    2578268531
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "224",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boulder Avenue West",
+    "building": "retail",
+    "building:levels": "1",
+    "roof:levels": "0"
+  }
+},
+{
+  "type": "way",
+  "id": 251640639,
+  "nodes": [
+    2578268541,
+    2578268542,
+    2578268543,
+    2578268544,
+    2578268541
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "123",
+    "addr:postcode": "74013",
+    "addr:state": "OK",
+    "addr:street": "North Martin Luther King, Junior Boulevard East",
+    "building": "yes",
+    "building:colour": "brown",
+    "name": "Wallace Design Collective",
+    "office": "engineer",
+    "website": "https://wallace.design/"
+  }
+},
+{
+  "type": "way",
+  "id": 251640640,
+  "nodes": [
+    2578268545,
+    2578268546,
+    2578268547,
+    2578268548,
+    2578268545
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "213",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East Archer Street North",
+    "building": "retail",
+    "building:colour": "grey",
+    "building:levels": "2",
+    "entrance": "shop",
+    "roof:levels": "1",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 257328407,
+  "nodes": [
+    2578256430,
+    2578256433,
+    2628902351,
+    2628902355,
+    2578256430
+  ],
+  "tags": {
+    "amenity": "toilets",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 257328409,
+  "nodes": [
+    2628902363,
+    2628902365,
+    2628902358,
+    2628902361,
+    2628902363
+  ],
+  "tags": {
+    "amenity": "fast_food",
+    "building": "retail",
+    "building:colour": "#eecfaf",
+    "building:levels": "1",
+    "indoor_seating": "yes",
+    "name": "En Fuego",
+    "outdoor_seating": "yes",
+    "roof:levels": "0",
+    "roof:shape": "flat",
+    "smoking": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 257328423,
+  "nodes": [
+    2628902430,
+    3221197071,
+    3221197068,
+    3221197070,
+    3221197074,
+    3221197077,
+    3221197073,
+    3221197076,
+    3221197079,
+    2628902432,
+    3758428867,
+    2628902434,
+    2628902436,
+    2628902430
+  ],
+  "tags": {
+    "amenity": "theatre",
+    "building": "roof",
+    "name": "Guthrie Amphitheater",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 259791849,
+  "nodes": [
+    2652487610,
+    2652487612,
+    2652487614,
+    2652487616,
+    2652487610
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "112",
+    "addr:state": "OK",
+    "addr:street": "North Cheyenne Avenue West",
+    "building": "warehouse",
+    "building:levels": "4",
+    "name": "OTASCO Warehouse",
+    "shop": "vacant"
+  }
+},
+{
+  "type": "way",
+  "id": 259791852,
+  "nodes": [
+    2652487632,
+    2652487634,
+    2652487635,
+    2652487637,
+    2652487632
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "22",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Cheyenne Avenue West",
+    "building": "yes",
+    "name": "Evan's Plating Works",
+    "shop": "trade"
+  }
+},
+{
+  "type": "way",
+  "id": 259791853,
+  "nodes": [
+    2652487635,
+    2652487639,
+    2652487641,
+    2652487642,
+    2652487637,
+    2652487635
+  ],
+  "tags": {
+    "building": "yes",
+    "shop": "vacant"
+  }
+},
+{
+  "type": "way",
+  "id": 259791854,
+  "nodes": [
+    2652487639,
+    2652487644,
+    2652487646,
+    2652487641,
+    2652487639
+  ],
+  "tags": {
+    "building": "yes",
+    "shop": "vacant"
+  }
+},
+{
+  "type": "way",
+  "id": 259791855,
+  "nodes": [
+    2652487644,
+    2652487612,
+    2652487610,
+    2652487646,
+    2652487644
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "14",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Cheyenne Avenue West",
+    "amenity": "restaurant",
+    "building": "yes",
+    "cuisine": "japanese;coffee_shop",
+    "name": "Natsukashii",
+    "website": "https://www.natsukashiitul.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 259791863,
+  "nodes": [
+    2652487692,
+    13451261615,
+    2652487697,
+    2652487698,
+    2652487700,
+    2652487703,
+    2652487705,
+    2652487707,
+    2652487692
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "106",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West Archer Street North",
+    "building": "fire_station",
+    "building:levels": "1",
+    "government": "public_service",
+    "name": "Facilities Maintenance",
+    "office": "government",
+    "operator": "City of Tulsa"
+  }
+},
+{
+  "type": "way",
+  "id": 324093534,
+  "nodes": [
+    763206094,
+    3308441777,
+    3308441779,
+    3308438220,
+    3308441784,
+    3308427580,
+    3308427581,
+    10017166908,
+    10017166907,
+    3308438470,
+    10017166909,
+    10017166910,
+    3308428673,
+    3308442367,
+    3308444972,
+    3308441783,
+    3308444968,
+    3308441775,
+    3308441778,
+    3308441773,
+    3308444965,
+    763206095,
+    763206094
+  ],
+  "tags": {
+    "building": "train_station",
+    "name": "Tulsa Union Station",
+    "wikidata": "Q7885657",
+    "wikipedia": "en:Tulsa Union Depot"
+  }
+},
+{
+  "type": "way",
+  "id": 331112131,
+  "nodes": [
+    3381669293,
+    3381669493,
+    3381669393,
+    3381669693,
+    3381669593,
+    2569346932,
+    3381669694,
+    2569346934,
+    3381669993,
+    3381669893,
+    3381670093,
+    3381670193,
+    2569346938,
+    11688959924,
+    2569346928,
+    3381669494,
+    3381669194,
+    3381669794,
+    3381664694,
+    3381669894,
+    3381669394,
+    1720270631,
+    1720270638,
+    3381669294,
+    3381669195,
+    2569346926,
+    2569346940,
+    2569346936,
+    2569346930,
+    3381669793,
+    1720270596,
+    3381669293
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "111",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street East",
+    "air_conditioning": "yes",
+    "alt_name": "Fairfield by Marriott",
+    "branch": "Tulsa Downtown Arts District",
+    "brand": "Fairfield Inn",
+    "brand:wikidata": "Q5430314",
+    "building": "yes",
+    "internet_access": "wlan",
+    "layer": "1",
+    "name": "Fairfield Inn",
+    "official_name": "Fairfield by Marriott",
+    "ref": "TULDT",
+    "tourism": "hotel",
+    "website": "https://www.marriott.com/tuldt",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 495941858,
+  "nodes": [
+    4876602732,
+    4876602733,
+    4876602734,
+    4876602735,
+    4876602736,
+    4876602737,
+    4876602732
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "324",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boulder Avenue West",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 495941859,
+  "nodes": [
+    4876602738,
+    4876602739,
+    4876602740,
+    4876602741,
+    4876602742,
+    4876602743,
+    4876602738
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "115",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West Cameron Street North",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 496168892,
+  "nodes": [
+    4878880108,
+    4878880109,
+    4878880110,
+    4878880111,
+    4878880112,
+    4878880113,
+    4878880108
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "119",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "West 1st Street South",
+    "building": "warehouse",
+    "building:colour": "beige",
+    "name": "JustStorage",
+    "shop": "storage_rental"
+  }
+},
+{
+  "type": "way",
+  "id": 1018636923,
+  "nodes": [
+    9395394409,
+    9395394410,
+    9395394411,
+    2569346913,
+    9395413821,
+    9395413820,
+    2569346911,
+    9395394412,
+    9395394413,
+    9395394409
+  ],
+  "tags": {
+    "building": "university",
+    "name": "Archer Building"
+  }
+},
+{
+  "type": "way",
+  "id": 1093697642,
+  "nodes": [
+    10017166899,
+    2578258512,
+    2578258513,
+    2578258514,
+    2578258515,
+    2578258516,
+    10017166900,
+    10017166899
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1093697643,
+  "nodes": [
+    10017166901,
+    2578258505,
+    10017166902,
+    10017166903,
+    10017166901
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street West",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1093697644,
+  "nodes": [
+    2578258508,
+    10017166904,
+    2578258518,
+    2578258507,
+    2578258508
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street West",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1093697645,
+  "nodes": [
+    10017166904,
+    2578258508,
+    10017166903,
+    10017166902,
+    10017166904
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Main Street West",
+    "amenity": "cafe",
+    "building": "yes",
+    "cuisine": "sandwich;bakery;coffee",
+    "description": "vegan featured",
+    "diet:vegan": "yes",
+    "name": "Chimera"
+  }
+},
+{
+  "type": "way",
+  "id": 1093697703,
+  "nodes": [
+    10017167134,
+    10017167434,
+    10017167197,
+    10017167217,
+    10017166906,
+    10017166905,
+    10017167134
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "microsoft/BuildingFootprints"
+  }
+},
+{
+  "type": "way",
+  "id": 1093697720,
+  "nodes": [
+    10017167264,
+    10017167089,
+    10017167252,
+    10017167093,
+    10017167264
+  ],
+  "tags": {
+    "building": "garages",
+    "building:levels": "1",
+    "source": "microsoft/BuildingFootprints"
+  }
+},
+{
+  "type": "way",
+  "id": 1204724835,
+  "nodes": [
+    11165430863,
+    11165430862,
+    11165430860,
+    11165430861,
+    11165430863
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:housenumber": "122",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boston Avenue East",
+    "amenity": "restaurant",
+    "building": "retail",
+    "name": "Amelia's Wood Fired Cuisine",
+    "website": "https://amelias.us/"
+  }
+},
+{
+  "type": "way",
+  "id": 1257263664,
+  "nodes": [
+    2578258530,
+    2578258526,
+    2578258527,
+    2578258528,
+    2578258529,
+    11218852441,
+    11688959936,
+    11688959934,
+    11688959935,
+    2578258530
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "211",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boulder Avenue West",
+    "building": "warehouse"
+  }
+},
+{
+  "type": "way",
+  "id": 1258474988,
+  "nodes": [
+    11699345099,
+    11699345096,
+    11699345097,
+    11699345095,
+    11699345094,
+    13451458664,
+    11699345098,
+    11699345099
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "110",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "North Boston Avenue East",
+    "building": "apartments",
+    "building:levels": "5",
+    "name": "The Flats",
+    "roof:levels": "0"
+  }
+},
+{
+  "type": "way",
+  "id": 1273180000,
+  "nodes": [
+    11822897315,
+    11822897833,
+    11822894032,
+    11822894031,
+    11822894030,
+    11822894033,
+    11822897536,
+    11822897777,
+    11822897315
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1324007434,
+  "nodes": [
+    12251999883,
+    12251999881,
+    12251999877,
+    12251999875,
+    12251999874,
+    12251999876,
+    12251999880,
+    12251999882,
+    12251999879,
+    12251999878,
+    12251999883
+  ],
+  "tags": {
+    "addr:city": "Tulsa",
+    "addr:country": "US",
+    "addr:housenumber": "221",
+    "addr:postcode": "74103",
+    "addr:state": "OK",
+    "addr:street": "East Reconciliation Way North",
+    "building": "office",
+    "building:levels": "11",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "node",
+  "id": 763180900,
+  "lat": 36.1578433,
+  "lon": -95.9954857
+},
+{
+  "type": "node",
+  "id": 763180901,
+  "lat": 36.1578541,
+  "lon": -95.9954545
+},
+{
+  "type": "node",
+  "id": 763180902,
+  "lat": 36.1578100,
+  "lon": -95.9954312
+},
+{
+  "type": "node",
+  "id": 763180903,
+  "lat": 36.1579289,
+  "lon": -95.9950852
+},
+{
+  "type": "node",
+  "id": 763180905,
+  "lat": 36.1579875,
+  "lon": -95.9950728
+},
+{
+  "type": "node",
+  "id": 763180906,
+  "lat": 36.1583917,
+  "lon": -95.9952860
+},
+{
+  "type": "node",
+  "id": 763180907,
+  "lat": 36.1583602,
+  "lon": -95.9953778
+},
+{
+  "type": "node",
+  "id": 763180908,
+  "lat": 36.1584046,
+  "lon": -95.9954012
+},
+{
+  "type": "node",
+  "id": 763180909,
+  "lat": 36.1583253,
+  "lon": -95.9956320
+},
+{
+  "type": "node",
+  "id": 763180910,
+  "lat": 36.1582799,
+  "lon": -95.9956081
+},
+{
+  "type": "node",
+  "id": 763180911,
+  "lat": 36.1582485,
+  "lon": -95.9956994
+},
+{
+  "type": "node",
+  "id": 763180999,
+  "lat": 36.1551096,
+  "lon": -95.9923079
+},
+{
+  "type": "node",
+  "id": 763181002,
+  "lat": 36.1544063,
+  "lon": -95.9919366
+},
+{
+  "type": "node",
+  "id": 763206095,
+  "lat": 36.1563193,
+  "lon": -95.9908456
+},
+{
+  "type": "node",
+  "id": 1238115460,
+  "lat": 36.1562183,
+  "lon": -95.9924226
+},
+{
+  "type": "node",
+  "id": 1238115468,
+  "lat": 36.1560798,
+  "lon": -95.9912544
+},
+{
+  "type": "node",
+  "id": 1238115482,
+  "lat": 36.1565396,
+  "lon": -95.9915000
+},
+{
+  "type": "node",
+  "id": 1238115537,
+  "lat": 36.1557585,
+  "lon": -95.9921770
+},
+{
+  "type": "node",
+  "id": 1720270596,
+  "lat": 36.1575491,
+  "lon": -95.9929075
+},
+{
+  "type": "node",
+  "id": 1720270631,
+  "lat": 36.1582367,
+  "lon": -95.9934667
+},
+{
+  "type": "node",
+  "id": 1720270638,
+  "lat": 36.1582933,
+  "lon": -95.9933000
+},
+{
+  "type": "node",
+  "id": 2166561948,
+  "lat": 36.1580503,
+  "lon": -95.9928033
+},
+{
+  "type": "node",
+  "id": 2166561949,
+  "lat": 36.1581498,
+  "lon": -95.9928568
+},
+{
+  "type": "node",
+  "id": 2166561950,
+  "lat": 36.1582072,
+  "lon": -95.9923497
+},
+{
+  "type": "node",
+  "id": 2166561952,
+  "lat": 36.1583084,
+  "lon": -95.9924059
+},
+{
+  "type": "node",
+  "id": 2166561953,
+  "lat": 36.1584044,
+  "lon": -95.9929933
+},
+{
+  "type": "node",
+  "id": 2166561955,
+  "lat": 36.1585639,
+  "lon": -95.9925444
+},
+{
+  "type": "node",
+  "id": 2288597116,
+  "lat": 36.1564252,
+  "lon": -95.9961584
+},
+{
+  "type": "node",
+  "id": 2288597117,
+  "lat": 36.1564791,
+  "lon": -95.9959930
+},
+{
+  "type": "node",
+  "id": 2288597118,
+  "lat": 36.1564903,
+  "lon": -95.9959504
+},
+{
+  "type": "node",
+  "id": 2288597122,
+  "lat": 36.1565749,
+  "lon": -95.9957133
+},
+{
+  "type": "node",
+  "id": 2288597160,
+  "lat": 36.1566014,
+  "lon": -95.9962466
+},
+{
+  "type": "node",
+  "id": 2288597163,
+  "lat": 36.1566994,
+  "lon": -95.9957796
+},
+{
+  "type": "node",
+  "id": 2470916525,
+  "lat": 36.1586493,
+  "lon": -95.9923123
+},
+{
+  "type": "node",
+  "id": 2470916526,
+  "lat": 36.1583377,
+  "lon": -95.9921502
+},
+{
+  "type": "node",
+  "id": 2470916527,
+  "lat": 36.1586621,
+  "lon": -95.9912158
+},
+{
+  "type": "node",
+  "id": 2470916528,
+  "lat": 36.1589732,
+  "lon": -95.9913802
+},
+{
+  "type": "node",
+  "id": 2523873845,
+  "lat": 36.1548589,
+  "lon": -95.9907585
+},
+{
+  "type": "node",
+  "id": 2523873847,
+  "lat": 36.1552742,
+  "lon": -95.9909777
+},
+{
+  "type": "node",
+  "id": 2569336711,
+  "lat": 36.1576091,
+  "lon": -95.9920495
+},
+{
+  "type": "node",
+  "id": 2569336712,
+  "lat": 36.1574580,
+  "lon": -95.9919677
+},
+{
+  "type": "node",
+  "id": 2569336713,
+  "lat": 36.1573027,
+  "lon": -95.9924078
+},
+{
+  "type": "node",
+  "id": 2569336714,
+  "lat": 36.1574539,
+  "lon": -95.9924896
+},
+{
+  "type": "node",
+  "id": 2569336715,
+  "lat": 36.1574046,
+  "lon": -95.9925909
+},
+{
+  "type": "node",
+  "id": 2569336717,
+  "lat": 36.1570780,
+  "lon": -95.9928782
+},
+{
+  "type": "node",
+  "id": 2569336718,
+  "lat": 36.1571565,
+  "lon": -95.9926543
+},
+{
+  "type": "node",
+  "id": 2569336719,
+  "lat": 36.1568973,
+  "lon": -95.9925149
+},
+{
+  "type": "node",
+  "id": 2569336720,
+  "lat": 36.1568218,
+  "lon": -95.9927301
+},
+{
+  "type": "node",
+  "id": 2569336721,
+  "lat": 36.1567140,
+  "lon": -95.9926721
+},
+{
+  "type": "node",
+  "id": 2569336722,
+  "lat": 36.1568591,
+  "lon": -95.9922583
+},
+{
+  "type": "node",
+  "id": 2569336729,
+  "lat": 36.1571640,
+  "lon": -95.9924222
+},
+{
+  "type": "node",
+  "id": 2569336730,
+  "lat": 36.1569156,
+  "lon": -95.9940206
+},
+{
+  "type": "node",
+  "id": 2569336731,
+  "lat": 36.1571796,
+  "lon": -95.9932540
+},
+{
+  "type": "node",
+  "id": 2569336732,
+  "lat": 36.1564278,
+  "lon": -95.9928568
+},
+{
+  "type": "node",
+  "id": 2569336733,
+  "lat": 36.1562965,
+  "lon": -95.9932382
+},
+{
+  "type": "node",
+  "id": 2569336734,
+  "lat": 36.1566040,
+  "lon": -95.9934007
+},
+{
+  "type": "node",
+  "id": 2569336735,
+  "lat": 36.1564713,
+  "lon": -95.9937859
+},
+{
+  "type": "node",
+  "id": 2569336736,
+  "lat": 36.1574361,
+  "lon": -95.9944707
+},
+{
+  "type": "node",
+  "id": 2569336737,
+  "lat": 36.1575979,
+  "lon": -95.9940021
+},
+{
+  "type": "node",
+  "id": 2569336738,
+  "lat": 36.1573568,
+  "lon": -95.9938744
+},
+{
+  "type": "node",
+  "id": 2569336739,
+  "lat": 36.1571950,
+  "lon": -95.9943430
+},
+{
+  "type": "node",
+  "id": 2569336740,
+  "lat": 36.1579128,
+  "lon": -95.9944393
+},
+{
+  "type": "node",
+  "id": 2569336741,
+  "lat": 36.1579898,
+  "lon": -95.9942134
+},
+{
+  "type": "node",
+  "id": 2569336742,
+  "lat": 36.1576476,
+  "lon": -95.9940344
+},
+{
+  "type": "node",
+  "id": 2569336743,
+  "lat": 36.1575698,
+  "lon": -95.9942626
+},
+{
+  "type": "node",
+  "id": 2569336744,
+  "lat": 36.1578850,
+  "lon": -95.9943445
+},
+{
+  "type": "node",
+  "id": 2569336745,
+  "lat": 36.1578617,
+  "lon": -95.9944127
+},
+{
+  "type": "node",
+  "id": 2569336746,
+  "lat": 36.1586976,
+  "lon": -95.9937344
+},
+{
+  "type": "node",
+  "id": 2569336747,
+  "lat": 36.1588480,
+  "lon": -95.9933044
+},
+{
+  "type": "node",
+  "id": 2569336748,
+  "lat": 36.1587537,
+  "lon": -95.9932538
+},
+{
+  "type": "node",
+  "id": 2569336749,
+  "lat": 36.1586912,
+  "lon": -95.9934328
+},
+{
+  "type": "node",
+  "id": 2569336750,
+  "lat": 36.1586519,
+  "lon": -95.9934117
+},
+{
+  "type": "node",
+  "id": 2569336751,
+  "lat": 36.1587171,
+  "lon": -95.9932252
+},
+{
+  "type": "node",
+  "id": 2569336752,
+  "lat": 36.1585978,
+  "lon": -95.9931612
+},
+{
+  "type": "node",
+  "id": 2569336753,
+  "lat": 36.1584448,
+  "lon": -95.9935988
+},
+{
+  "type": "node",
+  "id": 2569336754,
+  "lat": 36.1585735,
+  "lon": -95.9936678
+},
+{
+  "type": "node",
+  "id": 2569336755,
+  "lat": 36.1586367,
+  "lon": -95.9934748
+},
+{
+  "type": "node",
+  "id": 2569336756,
+  "lat": 36.1585112,
+  "lon": -95.9934087
+},
+{
+  "type": "node",
+  "id": 2569336757,
+  "lat": 36.1588681,
+  "lon": -95.9932370
+},
+{
+  "type": "node",
+  "id": 2569336758,
+  "lat": 36.1588903,
+  "lon": -95.9930796
+},
+{
+  "type": "node",
+  "id": 2569336759,
+  "lat": 36.1586644,
+  "lon": -95.9929592
+},
+{
+  "type": "node",
+  "id": 2569336760,
+  "lat": 36.1586143,
+  "lon": -95.9931032
+},
+{
+  "type": "node",
+  "id": 2569336761,
+  "lat": 36.1589138,
+  "lon": -95.9930119
+},
+{
+  "type": "node",
+  "id": 2569336762,
+  "lat": 36.1586879,
+  "lon": -95.9928915
+},
+{
+  "type": "node",
+  "id": 2569336763,
+  "lat": 36.1589413,
+  "lon": -95.9929327
+},
+{
+  "type": "node",
+  "id": 2569336764,
+  "lat": 36.1587154,
+  "lon": -95.9928123
+},
+{
+  "type": "node",
+  "id": 2569336765,
+  "lat": 36.1590198,
+  "lon": -95.9928008
+},
+{
+  "type": "node",
+  "id": 2569336766,
+  "lat": 36.1587640,
+  "lon": -95.9926723
+},
+{
+  "type": "node",
+  "id": 2569346893,
+  "lat": 36.1587369,
+  "lon": -95.9920662
+},
+{
+  "type": "node",
+  "id": 2569346895,
+  "lat": 36.1585642,
+  "lon": -95.9919781
+},
+{
+  "type": "node",
+  "id": 2569346897,
+  "lat": 36.1586506,
+  "lon": -95.9917233
+},
+{
+  "type": "node",
+  "id": 2569346899,
+  "lat": 36.1585122,
+  "lon": -95.9916447
+},
+{
+  "type": "node",
+  "id": 2569346901,
+  "lat": 36.1588224,
+  "lon": -95.9918151
+},
+{
+  "type": "node",
+  "id": 2569346903,
+  "lat": 36.1589199,
+  "lon": -95.9915379
+},
+{
+  "type": "node",
+  "id": 2569346905,
+  "lat": 36.1586074,
+  "lon": -95.9913700
+},
+{
+  "type": "node",
+  "id": 2569346911,
+  "lat": 36.1582922,
+  "lon": -95.9920842
+},
+{
+  "type": "node",
+  "id": 2569346913,
+  "lat": 36.1583395,
+  "lon": -95.9916745
+},
+{
+  "type": "node",
+  "id": 2569346920,
+  "lat": 36.1584758,
+  "lon": -95.9917467
+},
+{
+  "type": "node",
+  "id": 2569346926,
+  "lat": 36.1580988,
+  "lon": -95.9931430
+},
+{
+  "type": "node",
+  "id": 2569346928,
+  "lat": 36.1580223,
+  "lon": -95.9933678
+},
+{
+  "type": "node",
+  "id": 2569346930,
+  "lat": 36.1577443,
+  "lon": -95.9929587
+},
+{
+  "type": "node",
+  "id": 2569346932,
+  "lat": 36.1576625,
+  "lon": -95.9931927
+},
+{
+  "type": "node",
+  "id": 2569346934,
+  "lat": 36.1577592,
+  "lon": -95.9932260
+},
+{
+  "type": "node",
+  "id": 2569346936,
+  "lat": 36.1578356,
+  "lon": -95.9930077
+},
+{
+  "type": "node",
+  "id": 2569346938,
+  "lat": 36.1579372,
+  "lon": -95.9933234
+},
+{
+  "type": "node",
+  "id": 2569346940,
+  "lat": 36.1580137,
+  "lon": -95.9930986
+},
+{
+  "type": "node",
+  "id": 2569346942,
+  "lat": 36.1588190,
+  "lon": -95.9937999
+},
+{
+  "type": "node",
+  "id": 2569346944,
+  "lat": 36.1589662,
+  "lon": -95.9933722
+},
+{
+  "type": "node",
+  "id": 2578256433,
+  "lat": 36.1594395,
+  "lon": -95.9925834
+},
+{
+  "type": "node",
+  "id": 2578256434,
+  "lat": 36.1593629,
+  "lon": -95.9935009
+},
+{
+  "type": "node",
+  "id": 2578256436,
+  "lat": 36.1591885,
+  "lon": -95.9940062
+},
+{
+  "type": "node",
+  "id": 2578256437,
+  "lat": 36.1593392,
+  "lon": -95.9935678
+},
+{
+  "type": "node",
+  "id": 2578256438,
+  "lat": 36.1590104,
+  "lon": -95.9933944
+},
+{
+  "type": "node",
+  "id": 2578256439,
+  "lat": 36.1588597,
+  "lon": -95.9938327
+},
+{
+  "type": "node",
+  "id": 2578258496,
+  "lat": 36.1590119,
+  "lon": -95.9945350
+},
+{
+  "type": "node",
+  "id": 2578258497,
+  "lat": 36.1591137,
+  "lon": -95.9942503
+},
+{
+  "type": "node",
+  "id": 2578258498,
+  "lat": 36.1590540,
+  "lon": -95.9942175
+},
+{
+  "type": "node",
+  "id": 2578258499,
+  "lat": 36.1589521,
+  "lon": -95.9945022
+},
+{
+  "type": "node",
+  "id": 2578258500,
+  "lat": 36.1589611,
+  "lon": -95.9946896
+},
+{
+  "type": "node",
+  "id": 2578258502,
+  "lat": 36.1589866,
+  "lon": -95.9944026
+},
+{
+  "type": "node",
+  "id": 2578258503,
+  "lat": 36.1589199,
+  "lon": -95.9943665
+},
+{
+  "type": "node",
+  "id": 2578258504,
+  "lat": 36.1588336,
+  "lon": -95.9946203
+},
+{
+  "type": "node",
+  "id": 2578258505,
+  "lat": 36.1589836,
+  "lon": -95.9941890
+},
+{
+  "type": "node",
+  "id": 2578258507,
+  "lat": 36.1585513,
+  "lon": -95.9941491
+},
+{
+  "type": "node",
+  "id": 2578258508,
+  "lat": 36.1586263,
+  "lon": -95.9941877
+},
+{
+  "type": "node",
+  "id": 2578258509,
+  "lat": 36.1585257,
+  "lon": -95.9944619
+},
+{
+  "type": "node",
+  "id": 2578258510,
+  "lat": 36.1585365,
+  "lon": -95.9944376
+},
+{
+  "type": "node",
+  "id": 2578258512,
+  "lat": 36.1583328,
+  "lon": -95.9943326
+},
+{
+  "type": "node",
+  "id": 2578258513,
+  "lat": 36.1582954,
+  "lon": -95.9943412
+},
+{
+  "type": "node",
+  "id": 2578258514,
+  "lat": 36.1582024,
+  "lon": -95.9942883
+},
+{
+  "type": "node",
+  "id": 2578258515,
+  "lat": 36.1582782,
+  "lon": -95.9940741
+},
+{
+  "type": "node",
+  "id": 2578258516,
+  "lat": 36.1584247,
+  "lon": -95.9941525
+},
+{
+  "type": "node",
+  "id": 2578258517,
+  "lat": 36.1585034,
+  "lon": -95.9939305
+},
+{
+  "type": "node",
+  "id": 2578258518,
+  "lat": 36.1586065,
+  "lon": -95.9939908
+},
+{
+  "type": "node",
+  "id": 2578258519,
+  "lat": 36.1583855,
+  "lon": -95.9947910
+},
+{
+  "type": "node",
+  "id": 2578258520,
+  "lat": 36.1584835,
+  "lon": -95.9945126
+},
+{
+  "type": "node",
+  "id": 2578258522,
+  "lat": 36.1584240,
+  "lon": -95.9944805
+},
+{
+  "type": "node",
+  "id": 2578258523,
+  "lat": 36.1583260,
+  "lon": -95.9947588
+},
+{
+  "type": "node",
+  "id": 2578258525,
+  "lat": 36.1589151,
+  "lon": -95.9947939
+},
+{
+  "type": "node",
+  "id": 2578258526,
+  "lat": 36.1588249,
+  "lon": -95.9947461
+},
+{
+  "type": "node",
+  "id": 2578258527,
+  "lat": 36.1588414,
+  "lon": -95.9946985
+},
+{
+  "type": "node",
+  "id": 2578258528,
+  "lat": 36.1585807,
+  "lon": -95.9945603
+},
+{
+  "type": "node",
+  "id": 2578258529,
+  "lat": 36.1584617,
+  "lon": -95.9949046
+},
+{
+  "type": "node",
+  "id": 2578258530,
+  "lat": 36.1586997,
+  "lon": -95.9951155
+},
+{
+  "type": "node",
+  "id": 2578268531,
+  "lat": 36.1585380,
+  "lon": -95.9958714
+},
+{
+  "type": "node",
+  "id": 2578268532,
+  "lat": 36.1586890,
+  "lon": -95.9954331
+},
+{
+  "type": "node",
+  "id": 2578268533,
+  "lat": 36.1585633,
+  "lon": -95.9953667
+},
+{
+  "type": "node",
+  "id": 2578268534,
+  "lat": 36.1584123,
+  "lon": -95.9958050
+},
+{
+  "type": "node",
+  "id": 2578268541,
+  "lat": 36.1592134,
+  "lon": -95.9906652
+},
+{
+  "type": "node",
+  "id": 2578268545,
+  "lat": 36.1586235,
+  "lon": -95.9908990
+},
+{
+  "type": "node",
+  "id": 2578268548,
+  "lat": 36.1583033,
+  "lon": -95.9907283
+},
+{
+  "type": "node",
+  "id": 2628902430,
+  "lat": 36.1590409,
+  "lon": -95.9923622
+},
+{
+  "type": "node",
+  "id": 2628902432,
+  "lat": 36.1592711,
+  "lon": -95.9917067
+},
+{
+  "type": "node",
+  "id": 2628902434,
+  "lat": 36.1591645,
+  "lon": -95.9916492
+},
+{
+  "type": "node",
+  "id": 2628902436,
+  "lat": 36.1589343,
+  "lon": -95.9923047
+},
+{
+  "type": "node",
+  "id": 2652487610,
+  "lat": 36.1557641,
+  "lon": -95.9958105
+},
+{
+  "type": "node",
+  "id": 2652487612,
+  "lat": 36.1559190,
+  "lon": -95.9953653
+},
+{
+  "type": "node",
+  "id": 2652487614,
+  "lat": 36.1556125,
+  "lon": -95.9952017
+},
+{
+  "type": "node",
+  "id": 2652487616,
+  "lat": 36.1554576,
+  "lon": -95.9956469
+},
+{
+  "type": "node",
+  "id": 2652487632,
+  "lat": 36.1562486,
+  "lon": -95.9957624
+},
+{
+  "type": "node",
+  "id": 2652487634,
+  "lat": 36.1563124,
+  "lon": -95.9955738
+},
+{
+  "type": "node",
+  "id": 2652487635,
+  "lat": 36.1562471,
+  "lon": -95.9955377
+},
+{
+  "type": "node",
+  "id": 2652487637,
+  "lat": 36.1561811,
+  "lon": -95.9957274
+},
+{
+  "type": "node",
+  "id": 2652487639,
+  "lat": 36.1561699,
+  "lon": -95.9954946
+},
+{
+  "type": "node",
+  "id": 2652487641,
+  "lat": 36.1560139,
+  "lon": -95.9959379
+},
+{
+  "type": "node",
+  "id": 2652487642,
+  "lat": 36.1560930,
+  "lon": -95.9959805
+},
+{
+  "type": "node",
+  "id": 2652487644,
+  "lat": 36.1560493,
+  "lon": -95.9954295
+},
+{
+  "type": "node",
+  "id": 2652487646,
+  "lat": 36.1558932,
+  "lon": -95.9958727
+},
+{
+  "type": "node",
+  "id": 2652487692,
+  "lat": 36.1567082,
+  "lon": -95.9945027
+},
+{
+  "type": "node",
+  "id": 2652487697,
+  "lat": 36.1564492,
+  "lon": -95.9944668
+},
+{
+  "type": "node",
+  "id": 2652487698,
+  "lat": 36.1564271,
+  "lon": -95.9944550
+},
+{
+  "type": "node",
+  "id": 2652487700,
+  "lat": 36.1563617,
+  "lon": -95.9946435
+},
+{
+  "type": "node",
+  "id": 2652487703,
+  "lat": 36.1565825,
+  "lon": -95.9947609
+},
+{
+  "type": "node",
+  "id": 2652487705,
+  "lat": 36.1566381,
+  "lon": -95.9946006
+},
+{
+  "type": "node",
+  "id": 2652487707,
+  "lat": 36.1566686,
+  "lon": -95.9946168
+},
+{
+  "type": "node",
+  "id": 2980476937,
+  "lat": 36.1558109,
+  "lon": -95.9920265
+},
+{
+  "type": "node",
+  "id": 3143457151,
+  "lat": 36.1550120,
+  "lon": -95.9908393
+},
+{
+  "type": "node",
+  "id": 3143463256,
+  "lat": 36.1547234,
+  "lon": -95.9910152
+},
+{
+  "type": "node",
+  "id": 3143463741,
+  "lat": 36.1549164,
+  "lon": -95.9911171
+},
+{
+  "type": "node",
+  "id": 3221197057,
+  "lat": 36.1558082,
+  "lon": -95.9922035
+},
+{
+  "type": "node",
+  "id": 3221197061,
+  "lat": 36.1564806,
+  "lon": -95.9914685
+},
+{
+  "type": "node",
+  "id": 3221197068,
+  "lat": 36.1590024,
+  "lon": -95.9922342
+},
+{
+  "type": "node",
+  "id": 3221197070,
+  "lat": 36.1590552,
+  "lon": -95.9920839
+},
+{
+  "type": "node",
+  "id": 3221197071,
+  "lat": 36.1590726,
+  "lon": -95.9922720
+},
+{
+  "type": "node",
+  "id": 3221197073,
+  "lat": 36.1591174,
+  "lon": -95.9919069
+},
+{
+  "type": "node",
+  "id": 3221197074,
+  "lat": 36.1591254,
+  "lon": -95.9921217
+},
+{
+  "type": "node",
+  "id": 3221197076,
+  "lat": 36.1591692,
+  "lon": -95.9917595
+},
+{
+  "type": "node",
+  "id": 3221197077,
+  "lat": 36.1591875,
+  "lon": -95.9919447
+},
+{
+  "type": "node",
+  "id": 3221197079,
+  "lat": 36.1592393,
+  "lon": -95.9917973
+},
+{
+  "type": "node",
+  "id": 3308422601,
+  "lat": 36.1545924,
+  "lon": -95.9913959
+},
+{
+  "type": "node",
+  "id": 3308428673,
+  "lat": 36.1567416,
+  "lon": -95.9907903
+},
+{
+  "type": "node",
+  "id": 3308441773,
+  "lat": 36.1563596,
+  "lon": -95.9909016
+},
+{
+  "type": "node",
+  "id": 3308441775,
+  "lat": 36.1565183,
+  "lon": -95.9910835
+},
+{
+  "type": "node",
+  "id": 3308441778,
+  "lat": 36.1565468,
+  "lon": -95.9910021
+},
+{
+  "type": "node",
+  "id": 3308441783,
+  "lat": 36.1566362,
+  "lon": -95.9910134
+},
+{
+  "type": "node",
+  "id": 3308442367,
+  "lat": 36.1567484,
+  "lon": -95.9907939
+},
+{
+  "type": "node",
+  "id": 3308444965,
+  "lat": 36.1563698,
+  "lon": -95.9908726
+},
+{
+  "type": "node",
+  "id": 3308444968,
+  "lat": 36.1565969,
+  "lon": -95.9911257
+},
+{
+  "type": "node",
+  "id": 3308444972,
+  "lat": 36.1566660,
+  "lon": -95.9910293
+},
+{
+  "type": "node",
+  "id": 3381664694,
+  "lat": 36.1581363,
+  "lon": -95.9934272
+},
+{
+  "type": "node",
+  "id": 3381669194,
+  "lat": 36.1580536,
+  "lon": -95.9934011
+},
+{
+  "type": "node",
+  "id": 3381669195,
+  "lat": 36.1581439,
+  "lon": -95.9931665
+},
+{
+  "type": "node",
+  "id": 3381669293,
+  "lat": 36.1574922,
+  "lon": -95.9930704
+},
+{
+  "type": "node",
+  "id": 3381669294,
+  "lat": 36.1581279,
+  "lon": -95.9932137
+},
+{
+  "type": "node",
+  "id": 3381669393,
+  "lat": 36.1575243,
+  "lon": -95.9931023
+},
+{
+  "type": "node",
+  "id": 3381669394,
+  "lat": 36.1582055,
+  "lon": -95.9934504
+},
+{
+  "type": "node",
+  "id": 3381669493,
+  "lat": 36.1575286,
+  "lon": -95.9930899
+},
+{
+  "type": "node",
+  "id": 3381669494,
+  "lat": 36.1580585,
+  "lon": -95.9933867
+},
+{
+  "type": "node",
+  "id": 3381669593,
+  "lat": 36.1575869,
+  "lon": -95.9931522
+},
+{
+  "type": "node",
+  "id": 3381669693,
+  "lat": 36.1575917,
+  "lon": -95.9931384
+},
+{
+  "type": "node",
+  "id": 3381669694,
+  "lat": 36.1576679,
+  "lon": -95.9931770
+},
+{
+  "type": "node",
+  "id": 3381669793,
+  "lat": 36.1577285,
+  "lon": -95.9930037
+},
+{
+  "type": "node",
+  "id": 3381669794,
+  "lat": 36.1581314,
+  "lon": -95.9934417
+},
+{
+  "type": "node",
+  "id": 3381669893,
+  "lat": 36.1577854,
+  "lon": -95.9932578
+},
+{
+  "type": "node",
+  "id": 3381669894,
+  "lat": 36.1582018,
+  "lon": -95.9934613
+},
+{
+  "type": "node",
+  "id": 3381669993,
+  "lat": 36.1577907,
+  "lon": -95.9932432
+},
+{
+  "type": "node",
+  "id": 3381670093,
+  "lat": 36.1579284,
+  "lon": -95.9933361
+},
+{
+  "type": "node",
+  "id": 3381670193,
+  "lat": 36.1579336,
+  "lon": -95.9933214
+},
+{
+  "type": "node",
+  "id": 3554907908,
+  "lat": 36.1555449,
+  "lon": -95.9910431
+},
+{
+  "type": "node",
+  "id": 3745932026,
+  "lat": 36.1589900,
+  "lon": -95.9927927
+},
+{
+  "type": "node",
+  "id": 3745934725,
+  "lat": 36.1588403,
+  "lon": -95.9932236
+},
+{
+  "type": "node",
+  "id": 3758428867,
+  "lat": 36.1592510,
+  "lon": -95.9916959
+},
+{
+  "type": "node",
+  "id": 4876602732,
+  "lat": 36.1592951,
+  "lon": -95.9968567
+},
+{
+  "type": "node",
+  "id": 4876602733,
+  "lat": 36.1590093,
+  "lon": -95.9967085
+},
+{
+  "type": "node",
+  "id": 4876602734,
+  "lat": 36.1593138,
+  "lon": -95.9958079
+},
+{
+  "type": "node",
+  "id": 4876602736,
+  "lat": 36.1593578,
+  "lon": -95.9963766
+},
+{
+  "type": "node",
+  "id": 4876602737,
+  "lat": 36.1594425,
+  "lon": -95.9964206
+},
+{
+  "type": "node",
+  "id": 4876602738,
+  "lat": 36.1590698,
+  "lon": -95.9963643
+},
+{
+  "type": "node",
+  "id": 4876602739,
+  "lat": 36.1592859,
+  "lon": -95.9957302
+},
+{
+  "type": "node",
+  "id": 4876602740,
+  "lat": 36.1589815,
+  "lon": -95.9955711
+},
+{
+  "type": "node",
+  "id": 4876602741,
+  "lat": 36.1588983,
+  "lon": -95.9958153
+},
+{
+  "type": "node",
+  "id": 4876602742,
+  "lat": 36.1588137,
+  "lon": -95.9957711
+},
+{
+  "type": "node",
+  "id": 4876602743,
+  "lat": 36.1586808,
+  "lon": -95.9961609
+},
+{
+  "type": "node",
+  "id": 4878880108,
+  "lat": 36.1554341,
+  "lon": -95.9945595
+},
+{
+  "type": "node",
+  "id": 4878880109,
+  "lat": 36.1556729,
+  "lon": -95.9938574
+},
+{
+  "type": "node",
+  "id": 4878880110,
+  "lat": 36.1551699,
+  "lon": -95.9935949
+},
+{
+  "type": "node",
+  "id": 4878880111,
+  "lat": 36.1550003,
+  "lon": -95.9940936
+},
+{
+  "type": "node",
+  "id": 4878880112,
+  "lat": 36.1551953,
+  "lon": -95.9941953
+},
+{
+  "type": "node",
+  "id": 4878880113,
+  "lat": 36.1551261,
+  "lon": -95.9943988
+},
+{
+  "type": "node",
+  "id": 8511702284,
+  "lat": 36.1576509,
+  "lon": -95.9942221
+},
+{
+  "type": "node",
+  "id": 8511702285,
+  "lat": 36.1576269,
+  "lon": -95.9942925
+},
+{
+  "type": "node",
+  "id": 9395394409,
+  "lat": 36.1579429,
+  "lon": -95.9918754
+},
+{
+  "type": "node",
+  "id": 9395394410,
+  "lat": 36.1580957,
+  "lon": -95.9914277
+},
+{
+  "type": "node",
+  "id": 9395394411,
+  "lat": 36.1583729,
+  "lon": -95.9915781
+},
+{
+  "type": "node",
+  "id": 9395394412,
+  "lat": 36.1579643,
+  "lon": -95.9919515
+},
+{
+  "type": "node",
+  "id": 9395394413,
+  "lat": 36.1579807,
+  "lon": -95.9918949
+},
+{
+  "type": "node",
+  "id": 9395413820,
+  "lat": 36.1583186,
+  "lon": -95.9919940
+},
+{
+  "type": "node",
+  "id": 9395413821,
+  "lat": 36.1582408,
+  "lon": -95.9919595
+},
+{
+  "type": "node",
+  "id": 9395413840,
+  "lat": 36.1571524,
+  "lon": -95.9924553
+},
+{
+  "type": "node",
+  "id": 10017166895,
+  "lat": 36.1578659,
+  "lon": -95.9940874
+},
+{
+  "type": "node",
+  "id": 10017166896,
+  "lat": 36.1579646,
+  "lon": -95.9941391
+},
+{
+  "type": "node",
+  "id": 10017166897,
+  "lat": 36.1579469,
+  "lon": -95.9941910
+},
+{
+  "type": "node",
+  "id": 10017166898,
+  "lat": 36.1578482,
+  "lon": -95.9941393
+},
+{
+  "type": "node",
+  "id": 10017166899,
+  "lat": 36.1584122,
+  "lon": -95.9943735
+},
+{
+  "type": "node",
+  "id": 10017166900,
+  "lat": 36.1584797,
+  "lon": -95.9941819
+},
+{
+  "type": "node",
+  "id": 10017166901,
+  "lat": 36.1589257,
+  "lon": -95.9943505
+},
+{
+  "type": "node",
+  "id": 10017166902,
+  "lat": 36.1587894,
+  "lon": -95.9940870
+},
+{
+  "type": "node",
+  "id": 10017166903,
+  "lat": 36.1587304,
+  "lon": -95.9942436
+},
+{
+  "type": "node",
+  "id": 10017166904,
+  "lat": 36.1586832,
+  "lon": -95.9940311
+},
+{
+  "type": "node",
+  "id": 10017166905,
+  "lat": 36.1584466,
+  "lon": -95.9940908
+},
+{
+  "type": "node",
+  "id": 10017166906,
+  "lat": 36.1584867,
+  "lon": -95.9939775
+},
+{
+  "type": "node",
+  "id": 10017166909,
+  "lat": 36.1567460,
+  "lon": -95.9906957
+},
+{
+  "type": "node",
+  "id": 10017166910,
+  "lat": 36.1567702,
+  "lon": -95.9907087
+},
+{
+  "type": "node",
+  "id": 10017167089,
+  "lat": 36.1560380,
+  "lon": -95.9941650
+},
+{
+  "type": "node",
+  "id": 10017167093,
+  "lat": 36.1558810,
+  "lon": -95.9944480
+},
+{
+  "type": "node",
+  "id": 10017167134,
+  "lat": 36.1583968,
+  "lon": -95.9940661
+},
+{
+  "type": "node",
+  "id": 10017167197,
+  "lat": 36.1583390,
+  "lon": -95.9939689
+},
+{
+  "type": "node",
+  "id": 10017167217,
+  "lat": 36.1583571,
+  "lon": -95.9939130
+},
+{
+  "type": "node",
+  "id": 10017167252,
+  "lat": 36.1559330,
+  "lon": -95.9944750
+},
+{
+  "type": "node",
+  "id": 10017167264,
+  "lat": 36.1559870,
+  "lon": -95.9941380
+},
+{
+  "type": "node",
+  "id": 10017167434,
+  "lat": 36.1584159,
+  "lon": -95.9940071
+},
+{
+  "type": "node",
+  "id": 11165430860,
+  "lat": 36.1584430,
+  "lon": -95.9924788
+},
+{
+  "type": "node",
+  "id": 11165430861,
+  "lat": 36.1583786,
+  "lon": -95.9924438
+},
+{
+  "type": "node",
+  "id": 11165430862,
+  "lat": 36.1582844,
+  "lon": -95.9929292
+},
+{
+  "type": "node",
+  "id": 11165430863,
+  "lat": 36.1582200,
+  "lon": -95.9928947
+},
+{
+  "type": "node",
+  "id": 11218852441,
+  "lat": 36.1585593,
+  "lon": -95.9949564
+},
+{
+  "type": "node",
+  "id": 11218875551,
+  "lat": 36.1579749,
+  "lon": -95.9951094
+},
+{
+  "type": "node",
+  "id": 11218896940,
+  "lat": 36.1587878,
+  "lon": -95.9951622
+},
+{
+  "type": "node",
+  "id": 11688959924,
+  "lat": 36.1579545,
+  "lon": -95.9933324
+},
+{
+  "type": "node",
+  "id": 11688959934,
+  "lat": 36.1586938,
+  "lon": -95.9951347
+},
+{
+  "type": "node",
+  "id": 11688959935,
+  "lat": 36.1586976,
+  "lon": -95.9951233
+},
+{
+  "type": "node",
+  "id": 11688959936,
+  "lat": 36.1585287,
+  "lon": -95.9950471
+},
+{
+  "type": "node",
+  "id": 11699345094,
+  "lat": 36.1577657,
+  "lon": -95.9923488
+},
+{
+  "type": "node",
+  "id": 11699345095,
+  "lat": 36.1577962,
+  "lon": -95.9922512
+},
+{
+  "type": "node",
+  "id": 11699345096,
+  "lat": 36.1581655,
+  "lon": -95.9923478
+},
+{
+  "type": "node",
+  "id": 11699345097,
+  "lat": 36.1578180,
+  "lon": -95.9921813
+},
+{
+  "type": "node",
+  "id": 11699345098,
+  "lat": 36.1576807,
+  "lon": -95.9926207
+},
+{
+  "type": "node",
+  "id": 11699345099,
+  "lat": 36.1580282,
+  "lon": -95.9927872
+},
+{
+  "type": "node",
+  "id": 11711704460,
+  "lat": 36.1573534,
+  "lon": -95.9927357
+},
+{
+  "type": "node",
+  "id": 11711704461,
+  "lat": 36.1573817,
+  "lon": -95.9926557
+},
+{
+  "type": "node",
+  "id": 11711704462,
+  "lat": 36.1572576,
+  "lon": -95.9929427
+},
+{
+  "type": "node",
+  "id": 11711704463,
+  "lat": 36.1572238,
+  "lon": -95.9929566
+},
+{
+  "type": "node",
+  "id": 11711704464,
+  "lat": 36.1572853,
+  "lon": -95.9929313
+},
+{
+  "type": "node",
+  "id": 11822894033,
+  "lat": 36.1594981,
+  "lon": -95.9940158
+},
+{
+  "type": "node",
+  "id": 11822897315,
+  "lat": 36.1594834,
+  "lon": -95.9938610
+},
+{
+  "type": "node",
+  "id": 11822897536,
+  "lat": 36.1594748,
+  "lon": -95.9940853
+},
+{
+  "type": "node",
+  "id": 11822897777,
+  "lat": 36.1594180,
+  "lon": -95.9940561
+},
+{
+  "type": "node",
+  "id": 12206217655,
+  "lat": 36.1584320,
+  "lon": -95.9929157
+},
+{
+  "type": "node",
+  "id": 12251999876,
+  "lat": 36.1593865,
+  "lon": -95.9909058
+},
+{
+  "type": "node",
+  "id": 12941394199,
+  "lat": 36.1587416,
+  "lon": -95.9928263
+},
+{
+  "type": "node",
+  "id": 13150994524,
+  "lat": 36.1573261,
+  "lon": -95.9928130
+},
+{
+  "type": "node",
+  "id": 13172125575,
+  "lat": 36.1585539,
+  "lon": -95.9932866
+},
+{
+  "type": "node",
+  "id": 13451261615,
+  "lat": 36.1564790,
+  "lon": -95.9943808
+},
+{
+  "type": "node",
+  "id": 13451261627,
+  "lat": 36.1566180,
+  "lon": -95.9960175
+},
+{
+  "type": "node",
+  "id": 13451261652,
+  "lat": 36.1566553,
+  "lon": -95.9960812
+},
+{
+  "type": "node",
+  "id": 13451458664,
+  "lat": 36.1577130,
+  "lon": -95.9925173
+},
+{
+  "type": "node",
+  "id": 763180993,
+  "lat": 36.1559891,
+  "lon": -95.9898040
+},
+{
+  "type": "node",
+  "id": 763180994,
+  "lat": 36.1553290,
+  "lon": -95.9894489
+},
+{
+  "type": "node",
+  "id": 763180995,
+  "lat": 36.1553063,
+  "lon": -95.9895149
+},
+{
+  "type": "node",
+  "id": 763180996,
+  "lat": 36.1552160,
+  "lon": -95.9894672
+},
+{
+  "type": "node",
+  "id": 763180997,
+  "lat": 36.1550523,
+  "lon": -95.9899422
+},
+{
+  "type": "node",
+  "id": 763180998,
+  "lat": 36.1558100,
+  "lon": -95.9903432
+},
+{
+  "type": "node",
+  "id": 763181000,
+  "lat": 36.1557897,
+  "lon": -95.9903318
+},
+{
+  "type": "node",
+  "id": 763181001,
+  "lat": 36.1550330,
+  "lon": -95.9902527
+},
+{
+  "type": "node",
+  "id": 763206094,
+  "lat": 36.1564918,
+  "lon": -95.9903531
+},
+{
+  "type": "node",
+  "id": 1254142676,
+  "lat": 36.1549482,
+  "lon": -95.9904992
+},
+{
+  "type": "node",
+  "id": 2523873848,
+  "lat": 36.1554482,
+  "lon": -95.9904719
+},
+{
+  "type": "node",
+  "id": 2578268542,
+  "lat": 36.1593745,
+  "lon": -95.9901978
+},
+{
+  "type": "node",
+  "id": 2578268543,
+  "lat": 36.1590416,
+  "lon": -95.9900218
+},
+{
+  "type": "node",
+  "id": 2578268544,
+  "lat": 36.1588805,
+  "lon": -95.9904892
+},
+{
+  "type": "node",
+  "id": 2578268546,
+  "lat": 36.1589485,
+  "lon": -95.9899637
+},
+{
+  "type": "node",
+  "id": 2578268547,
+  "lat": 36.1586283,
+  "lon": -95.9897930
+},
+{
+  "type": "node",
+  "id": 3221196968,
+  "lat": 36.1551959,
+  "lon": -95.9903387
+},
+{
+  "type": "node",
+  "id": 3221196969,
+  "lat": 36.1552892,
+  "lon": -95.9900676
+},
+{
+  "type": "node",
+  "id": 3304651684,
+  "lat": 36.1559780,
+  "lon": -95.9898374
+},
+{
+  "type": "node",
+  "id": 3308427580,
+  "lat": 36.1566814,
+  "lon": -95.9904325
+},
+{
+  "type": "node",
+  "id": 3308427581,
+  "lat": 36.1566856,
+  "lon": -95.9904661
+},
+{
+  "type": "node",
+  "id": 3308438220,
+  "lat": 36.1565709,
+  "lon": -95.9903616
+},
+{
+  "type": "node",
+  "id": 3308438470,
+  "lat": 36.1567969,
+  "lon": -95.9905502
+},
+{
+  "type": "node",
+  "id": 3308441777,
+  "lat": 36.1565400,
+  "lon": -95.9903790
+},
+{
+  "type": "node",
+  "id": 3308441779,
+  "lat": 36.1565550,
+  "lon": -95.9903627
+},
+{
+  "type": "node",
+  "id": 3308441784,
+  "lat": 36.1566662,
+  "lon": -95.9904128
+},
+{
+  "type": "node",
+  "id": 3758428859,
+  "lat": 36.1550680,
+  "lon": -95.9899505
+},
+{
+  "type": "node",
+  "id": 3758428860,
+  "lat": 36.1552241,
+  "lon": -95.9894715
+},
+{
+  "type": "node",
+  "id": 10017166907,
+  "lat": 36.1567248,
+  "lon": -95.9905115
+},
+{
+  "type": "node",
+  "id": 10017166908,
+  "lat": 36.1567320,
+  "lon": -95.9904910
+},
+{
+  "type": "node",
+  "id": 2578256423,
+  "lat": 36.1600088,
+  "lon": -95.9928201
+},
+{
+  "type": "node",
+  "id": 2578256424,
+  "lat": 36.1600281,
+  "lon": -95.9927750
+},
+{
+  "type": "node",
+  "id": 2578256426,
+  "lat": 36.1599711,
+  "lon": -95.9927469
+},
+{
+  "type": "node",
+  "id": 2578256427,
+  "lat": 36.1601049,
+  "lon": -95.9920809
+},
+{
+  "type": "node",
+  "id": 2578256428,
+  "lat": 36.1606846,
+  "lon": -95.9923842
+},
+{
+  "type": "node",
+  "id": 2578256429,
+  "lat": 36.1603075,
+  "lon": -95.9929666
+},
+{
+  "type": "node",
+  "id": 2578256430,
+  "lat": 36.1595759,
+  "lon": -95.9926576
+},
+{
+  "type": "node",
+  "id": 2578256435,
+  "lat": 36.1595146,
+  "lon": -95.9930647
+},
+{
+  "type": "node",
+  "id": 2578268515,
+  "lat": 36.1598167,
+  "lon": -95.9941875
+},
+{
+  "type": "node",
+  "id": 2578268516,
+  "lat": 36.1599319,
+  "lon": -95.9938660
+},
+{
+  "type": "node",
+  "id": 2578268517,
+  "lat": 36.1598061,
+  "lon": -95.9937968
+},
+{
+  "type": "node",
+  "id": 2578268518,
+  "lat": 36.1596908,
+  "lon": -95.9941184
+},
+{
+  "type": "node",
+  "id": 2578268519,
+  "lat": 36.1599548,
+  "lon": -95.9938160
+},
+{
+  "type": "node",
+  "id": 2578268520,
+  "lat": 36.1600093,
+  "lon": -95.9936608
+},
+{
+  "type": "node",
+  "id": 2578268521,
+  "lat": 36.1596289,
+  "lon": -95.9934560
+},
+{
+  "type": "node",
+  "id": 2578268522,
+  "lat": 36.1595745,
+  "lon": -95.9936112
+},
+{
+  "type": "node",
+  "id": 2578268523,
+  "lat": 36.1602689,
+  "lon": -95.9959740
+},
+{
+  "type": "node",
+  "id": 2578268524,
+  "lat": 36.1604321,
+  "lon": -95.9954953
+},
+{
+  "type": "node",
+  "id": 2578268525,
+  "lat": 36.1600467,
+  "lon": -95.9952938
+},
+{
+  "type": "node",
+  "id": 2578268526,
+  "lat": 36.1599962,
+  "lon": -95.9954419
+},
+{
+  "type": "node",
+  "id": 2578268527,
+  "lat": 36.1599399,
+  "lon": -95.9954125
+},
+{
+  "type": "node",
+  "id": 2578268528,
+  "lat": 36.1598832,
+  "lon": -95.9955790
+},
+{
+  "type": "node",
+  "id": 2578268529,
+  "lat": 36.1599421,
+  "lon": -95.9956098
+},
+{
+  "type": "node",
+  "id": 2578268530,
+  "lat": 36.1598862,
+  "lon": -95.9957739
+},
+{
+  "type": "node",
+  "id": 2628902351,
+  "lat": 36.1595041,
+  "lon": -95.9924014
+},
+{
+  "type": "node",
+  "id": 2628902355,
+  "lat": 36.1596406,
+  "lon": -95.9924751
+},
+{
+  "type": "node",
+  "id": 2628902358,
+  "lat": 36.1596794,
+  "lon": -95.9919070
+},
+{
+  "type": "node",
+  "id": 2628902361,
+  "lat": 36.1598158,
+  "lon": -95.9919812
+},
+{
+  "type": "node",
+  "id": 2628902363,
+  "lat": 36.1597483,
+  "lon": -95.9921714
+},
+{
+  "type": "node",
+  "id": 2628902365,
+  "lat": 36.1596129,
+  "lon": -95.9920947
+},
+{
+  "type": "node",
+  "id": 3348914694,
+  "lat": 36.1600282,
+  "lon": -95.9922983
+},
+{
+  "type": "node",
+  "id": 3348914695,
+  "lat": 36.1601106,
+  "lon": -95.9923441
+},
+{
+  "type": "node",
+  "id": 3348914993,
+  "lat": 36.1604116,
+  "lon": -95.9926698
+},
+{
+  "type": "node",
+  "id": 3348914994,
+  "lat": 36.1605543,
+  "lon": -95.9927473
+},
+{
+  "type": "node",
+  "id": 4876602735,
+  "lat": 36.1595148,
+  "lon": -95.9959122
+},
+{
+  "type": "node",
+  "id": 7910145441,
+  "lat": 36.1600815,
+  "lon": -95.9923279
+},
+{
+  "type": "node",
+  "id": 11822894030,
+  "lat": 36.1595292,
+  "lon": -95.9940318
+},
+{
+  "type": "node",
+  "id": 11822894031,
+  "lat": 36.1595499,
+  "lon": -95.9939700
+},
+{
+  "type": "node",
+  "id": 11822894032,
+  "lat": 36.1595188,
+  "lon": -95.9939541
+},
+{
+  "type": "node",
+  "id": 11822897833,
+  "lat": 36.1595403,
+  "lon": -95.9938902
+},
+{
+  "type": "node",
+  "id": 12251999874,
+  "lat": 36.1596361,
+  "lon": -95.9910326
+},
+{
+  "type": "node",
+  "id": 12251999875,
+  "lat": 36.1596764,
+  "lon": -95.9909110
+},
+{
+  "type": "node",
+  "id": 12251999877,
+  "lat": 36.1598297,
+  "lon": -95.9909890
+},
+{
+  "type": "node",
+  "id": 12251999878,
+  "lat": 36.1600054,
+  "lon": -95.9915121
+},
+{
+  "type": "node",
+  "id": 12251999879,
+  "lat": 36.1600441,
+  "lon": -95.9915317
+},
+{
+  "type": "node",
+  "id": 12251999881,
+  "lat": 36.1596831,
+  "lon": -95.9914314
+},
+{
+  "type": "node",
+  "id": 12251999882,
+  "lat": 36.1603150,
+  "lon": -95.9907138
+},
+{
+  "type": "node",
+  "id": 12251999883,
+  "lat": 36.1599819,
+  "lon": -95.9915833
+},
+{
+  "type": "node",
+  "id": 2569346966,
+  "lat": 36.1599268,
+  "lon": -95.9901964
+},
+{
+  "type": "node",
+  "id": 2569346968,
+  "lat": 36.1600795,
+  "lon": -95.9897405
+},
+{
+  "type": "node",
+  "id": 2569346970,
+  "lat": 36.1598315,
+  "lon": -95.9896090
+},
+{
+  "type": "node",
+  "id": 2569346972,
+  "lat": 36.1596745,
+  "lon": -95.9900623
+},
+{
+  "type": "node",
+  "id": 11711704513,
+  "lat": 36.1599070,
+  "lon": -95.9901859
+},
+{
+  "type": "node",
+  "id": 12251999880,
+  "lat": 36.1595747,
+  "lon": -95.9903376
+}
+
+  ]
+}

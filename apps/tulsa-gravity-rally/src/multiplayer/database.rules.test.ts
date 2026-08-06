@@ -1,77 +1,40 @@
-import {describe, test, expect} from 'bun:test';
-import {readFileSync} from 'fs';
-import {resolve} from 'path';
-import {
-  validatePlayerJoinRule,
-  validateHostActionRule,
-  validatePlayerInputRule,
-} from './database-rules-validator';
+import {describe, expect, test} from 'bun:test';
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
 
-describe('Tulsa Gravity Rally - Realtime Database Security Rules', () => {
-  test('database.rules.json file exists and contains default-deny & valid JSON structure', () => {
-    const rulesPath = resolve(__dirname, '../../database.rules.json');
-    const content = readFileSync(rulesPath, 'utf8');
-    const rulesJson = JSON.parse(content);
+const RULES_PATH = resolve(__dirname, '../../database.rules.json');
 
-    expect(rulesJson.rules['.read']).toBe(false);
-    expect(rulesJson.rules['.write']).toBe(false);
-    expect(rulesJson.rules.rooms.$roomCode.status['.validate']).toBeDefined();
-    expect(
-      rulesJson.rules.rooms.$roomCode.players.$uid['.validate'],
-    ).toBeDefined();
+describe('Tulsa Gravity Rally Realtime Database rules contract', () => {
+  test('keeps global default-deny and separates host and player writes', () => {
+    const rules = readRules();
+    const roomRules = rules.rules.demos.tulsaGravityRally.v1.rooms.$roomCode;
+
+    expect(rules.rules['.read']).toBe(false);
+    expect(rules.rules['.write']).toBe(false);
+    expect(roomRules['.write']).toContain("child('hostUid').val() == auth.uid");
+    expect(roomRules.players.$uid['.write']).toContain('auth.uid == $uid');
+    expect(roomRules.inputs.$uid['.write']).toContain('auth.uid == $uid');
+    expect(roomRules.snapshot['.validate']).toContain("['t', 'cars']");
   });
 
-  test('Host action rule permits host UID and rejects non-host', () => {
-    const valid = validateHostActionRule('host-123', 'host-123', 'snapshot');
-    expect(valid.allowed).toBe(true);
+  test('binds allowlisted emoji, claimed slots, and monotonic input', () => {
+    const roomRules =
+      readRules().rules.demos.tulsaGravityRally.v1.rooms.$roomCode;
 
-    const invalid = validateHostActionRule(
-      'player-456',
-      'host-123',
-      'snapshot',
+    expect(roomRules.players.$uid['.validate']).toContain(
+      "child('emojiClaims')",
     );
-    expect(invalid.allowed).toBe(false);
-    expect(invalid.reason).toContain('Only room host UID can write');
-  });
-
-  test('Player join rule permits authenticated user with valid allowlist emoji', () => {
-    const valid = validatePlayerJoinRule('player-1', 'lobby', '🚀');
-    expect(valid.allowed).toBe(true);
-  });
-
-  test('Player join rule rejects invalid emoji', () => {
-    const invalid = validatePlayerJoinRule('player-1', 'lobby', '💩');
-    expect(invalid.allowed).toBe(false);
-    expect(invalid.reason).toBe('Emoji is not on allowlist');
-  });
-
-  test('Player join rule rejects joins when race has already started', () => {
-    const invalid = validatePlayerJoinRule('player-1', 'racing', '🚀');
-    expect(invalid.allowed).toBe(false);
-    expect(invalid.reason).toBe('Room is not in lobby state');
-  });
-
-  test('Input validation rule enforces steering and throttle numeric bounds', () => {
-    const valid = validatePlayerInputRule('player-1', 'player-1', 0.5, -0.8);
-    expect(valid.allowed).toBe(true);
-
-    const invalidSteering = validatePlayerInputRule(
-      'player-1',
-      'player-1',
-      5.0,
-      0,
+    expect(roomRules.players.$uid['.validate']).toContain(
+      "child('slots').child('11')",
     );
-    expect(invalidSteering.allowed).toBe(false);
-
-    const invalidThrottle = validatePlayerInputRule(
-      'player-1',
-      'player-1',
-      0,
-      -2.5,
+    expect(roomRules.players.$uid.color['.validate']).toContain('#607d8b');
+    expect(roomRules.inputs.$uid['.validate']).toContain(
+      "newData.child('sequence').val() > data.child('sequence').val()",
     );
-    expect(invalidThrottle.allowed).toBe(false);
-
-    const wrongPlayer = validatePlayerInputRule('player-2', 'player-1', 0, 0);
-    expect(wrongPlayer.allowed).toBe(false);
+    expect(roomRules.inputs.$uid.$other['.validate']).toBe(false);
   });
 });
+
+function readRules() {
+  return JSON.parse(readFileSync(RULES_PATH, 'utf8'));
+}

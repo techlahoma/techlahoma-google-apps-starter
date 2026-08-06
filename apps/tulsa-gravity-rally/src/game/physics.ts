@@ -1,9 +1,11 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import {
   DOWNTOWN_BUILDINGS,
+  MAP_WORLD_BOUNDS,
   ROOFTOP_RAMPS,
   type CheckpointLocation,
 } from '../data/tulsa-map';
+import {createExtrudedFootprintMesh} from '../data/building-geometry';
 
 export interface CarControlInput {
   steering: number;
@@ -36,17 +38,66 @@ export const CAR_SPECS = {
   halfWidth: 2.8,
   halfHeight: 1.1,
   halfLength: 7.0,
+  wheelRadius: 1.8,
   mass: 1200,
-  engineForce: 35000,
+  engineForce: 36000,
   brakeForce: 45000,
   steerAngleMax: 0.52,
-  suspensionRestLength: 1.2,
-  suspensionStiffness: 45000,
-  suspensionDamping: 3500,
-  boostImpulseUp: 18000,
-  boostImpulseForward: 28000,
+  suspensionRestLength: 1.4,
+  suspensionStiffness: 48000,
+  suspensionDamping: 3800,
+  boostImpulseUp: 6000,
+  boostImpulseForward: 12000,
   boostCooldownTime: 3.5,
+  inputTimeoutMs: 650,
 };
+
+const WHEEL_MOUNTS_LOCAL: [number, number, number][] = [
+  [
+    -CAR_SPECS.halfWidth * 0.9,
+    -CAR_SPECS.halfHeight * 0.55,
+    CAR_SPECS.halfLength * 0.72,
+  ],
+  [
+    CAR_SPECS.halfWidth * 0.9,
+    -CAR_SPECS.halfHeight * 0.55,
+    CAR_SPECS.halfLength * 0.72,
+  ],
+  [
+    -CAR_SPECS.halfWidth * 0.9,
+    -CAR_SPECS.halfHeight * 0.55,
+    -CAR_SPECS.halfLength * 0.72,
+  ],
+  [
+    CAR_SPECS.halfWidth * 0.9,
+    -CAR_SPECS.halfHeight * 0.55,
+    -CAR_SPECS.halfLength * 0.72,
+  ],
+];
+
+function rotateVectorByQuaternion(
+  v: [number, number, number],
+  q: {x: number; y: number; z: number; w: number},
+): [number, number, number] {
+  const x = v[0],
+    y = v[1],
+    z = v[2];
+  const qx = q.x,
+    qy = q.y,
+    qz = q.z,
+    qw = q.w;
+
+  const ix = qw * x + qy * z - qz * y;
+  const iy = qw * y + qz * x - qx * z;
+  const iz = qw * z + qx * y - qy * x;
+  const iw = -qx * x - qy * y - qz * z;
+
+  return [
+    ix * qw + iw * -qx + iy * -qz - iz * -qy,
+    iy * qw + iw * -qy + iz * -qx - ix * -qz,
+    iz * qw + iw * -qz + ix * -qy - iy * -qx,
+  ];
+}
 
 export class PhysicsEngine {
   public world!: RAPIER.World;
@@ -55,6 +106,10 @@ export class PhysicsEngine {
   private carColliders: Map<string, RAPIER.Collider> = new Map();
   private carStates: Map<string, CarState> = new Map();
   private carInputs: Map<string, CarControlInput> = new Map();
+  private carInputReceivedAt: Map<string, number> = new Map();
+  private carInvertedTimers: Map<string, number> = new Map();
+  private carSpawnPositions: Map<string, [number, number, number]> = new Map();
+  private accumulator = 0;
 
   public async init(): Promise<void> {
     if (this.initialized) return;
@@ -63,36 +118,39 @@ export class PhysicsEngine {
     const gravity = {x: 0.0, y: -11.8, z: 0.0};
     this.world = new RAPIER.World(gravity);
 
+    // Main Ground plane
+    const groundCenterX = (MAP_WORLD_BOUNDS.minX + MAP_WORLD_BOUNDS.maxX) / 2;
+    const groundCenterZ = (MAP_WORLD_BOUNDS.minZ + MAP_WORLD_BOUNDS.maxZ) / 2;
+    const groundHalfWidth =
+      (MAP_WORLD_BOUNDS.maxX - MAP_WORLD_BOUNDS.minX) / 2 + 90;
+    const groundHalfDepth =
+      (MAP_WORLD_BOUNDS.maxZ - MAP_WORLD_BOUNDS.minZ) / 2 + 90;
     const groundBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(
-      0,
+      groundCenterX,
       -0.5,
-      0,
+      groundCenterZ,
     );
     const groundBody = this.world.createRigidBody(groundBodyDesc);
-    const groundColliderDesc = RAPIER.ColliderDesc.cuboid(300, 0.5, 300);
+    const groundColliderDesc = RAPIER.ColliderDesc.cuboid(
+      groundHalfWidth,
+      0.5,
+      groundHalfDepth,
+    );
     this.world.createCollider(groundColliderDesc, groundBody);
 
     this.buildMapColliders();
-
     this.initialized = true;
   }
 
   private buildMapColliders(): void {
     for (const bldg of DOWNTOWN_BUILDINGS) {
-      const halfX = bldg.size[0] / 2;
-      const halfZ = bldg.size[1] / 2;
-      const halfY = bldg.height / 2;
-      const posX = bldg.center[0];
-      const posZ = bldg.center[1];
-      const posY = halfY;
-
-      const bodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(
-        posX,
-        posY,
-        posZ,
-      );
+      const mesh = createExtrudedFootprintMesh(bldg.footprint, bldg.height);
+      const bodyDesc = RAPIER.RigidBodyDesc.fixed();
       const body = this.world.createRigidBody(bodyDesc);
-      const colliderDesc = RAPIER.ColliderDesc.cuboid(halfX, halfY, halfZ);
+      const colliderDesc = RAPIER.ColliderDesc.trimesh(
+        mesh.vertices,
+        mesh.indices,
+      ).setFriction(0.82);
       this.world.createCollider(colliderDesc, body);
     }
 
@@ -139,8 +197,7 @@ export class PhysicsEngine {
     const bodyDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(spawnPos[0], spawnPos[1], spawnPos[2])
       .setLinearDamping(0.4)
-      .setAngularDamping(1.2)
-      .setAdditionalMass(CAR_SPECS.mass);
+      .setAngularDamping(1.2);
 
     const body = this.world.createRigidBody(bodyDesc);
     const colliderDesc = RAPIER.ColliderDesc.cuboid(
@@ -148,6 +205,7 @@ export class PhysicsEngine {
       CAR_SPECS.halfHeight,
       CAR_SPECS.halfLength,
     )
+      .setMass(CAR_SPECS.mass)
       .setFriction(0.6)
       .setRestitution(0.1);
 
@@ -155,6 +213,15 @@ export class PhysicsEngine {
 
     this.carBodies.set(id, body);
     this.carColliders.set(id, collider);
+
+    const initialWheelOffsets = WHEEL_MOUNTS_LOCAL.map(
+      mount =>
+        [mount[0], mount[1] - CAR_SPECS.suspensionRestLength, mount[2]] as [
+          number,
+          number,
+          number,
+        ],
+    );
 
     const initialState: CarState = {
       id,
@@ -170,28 +237,7 @@ export class PhysicsEngine {
       checkpointsCompleted: 0,
       lastCheckpointTime: 0,
       score: 0,
-      wheelPositions: [
-        [
-          -CAR_SPECS.halfWidth,
-          -CAR_SPECS.halfHeight,
-          CAR_SPECS.halfLength * 0.7,
-        ],
-        [
-          CAR_SPECS.halfWidth,
-          -CAR_SPECS.halfHeight,
-          CAR_SPECS.halfLength * 0.7,
-        ],
-        [
-          -CAR_SPECS.halfWidth,
-          -CAR_SPECS.halfHeight,
-          -CAR_SPECS.halfLength * 0.7,
-        ],
-        [
-          CAR_SPECS.halfWidth,
-          -CAR_SPECS.halfHeight,
-          -CAR_SPECS.halfLength * 0.7,
-        ],
-      ],
+      wheelPositions: initialWheelOffsets,
       wheelSuspensionLengths: [
         CAR_SPECS.suspensionRestLength,
         CAR_SPECS.suspensionRestLength,
@@ -209,6 +255,9 @@ export class PhysicsEngine {
       sequence: 0,
       timestamp: Date.now(),
     });
+    this.carInputReceivedAt.set(id, Date.now());
+    this.carInvertedTimers.set(id, 0);
+    this.carSpawnPositions.set(id, [...spawnPos]);
 
     return initialState;
   }
@@ -221,6 +270,9 @@ export class PhysicsEngine {
       this.carColliders.delete(id);
       this.carStates.delete(id);
       this.carInputs.delete(id);
+      this.carInputReceivedAt.delete(id);
+      this.carInvertedTimers.delete(id);
+      this.carSpawnPositions.delete(id);
     }
   }
 
@@ -240,6 +292,33 @@ export class PhysicsEngine {
       timestamp: input.timestamp || Date.now(),
     };
     this.carInputs.set(id, clampedInput);
+    this.carInputReceivedAt.set(id, Date.now());
+  }
+
+  public hasCar(id: string): boolean {
+    return this.carStates.has(id);
+  }
+
+  public getCarState(id: string): CarState | undefined {
+    return this.carStates.get(id);
+  }
+
+  public getCarStates(): Map<string, CarState> {
+    return this.carStates;
+  }
+
+  public resetRace(): void {
+    for (const [id, state] of this.carStates.entries()) {
+      state.lastCheckpointIndex = -1;
+      state.checkpointsCompleted = 0;
+      state.lastCheckpointTime = 0;
+      state.score = 0;
+      state.boostCooldown = 0;
+      this.resetCarToPosition(
+        id,
+        this.carSpawnPositions.get(id) ?? [0, 4.5, 20],
+      );
+    }
   }
 
   public step(
@@ -248,9 +327,25 @@ export class PhysicsEngine {
   ): Map<string, CarState> {
     if (!this.initialized) return this.carStates;
 
+    const fixedDt = 1 / 60;
+    this.accumulator += Math.min(dt, 0.1);
+
+    while (this.accumulator >= fixedDt) {
+      this.stepPhysicsSubstep(fixedDt, checkpoints);
+      this.accumulator -= fixedDt;
+    }
+
+    return this.carStates;
+  }
+
+  private stepPhysicsSubstep(
+    dt: number,
+    checkpoints: CheckpointLocation[],
+  ): void {
     const now = Date.now();
 
     for (const [id, body] of this.carBodies.entries()) {
+      const carCollider = this.carColliders.get(id);
       const input = this.carInputs.get(id) || {
         steering: 0,
         throttle: 0,
@@ -261,7 +356,8 @@ export class PhysicsEngine {
       };
       const state = this.carStates.get(id)!;
 
-      const isStale = now - input.timestamp > 500;
+      const receivedAt = this.carInputReceivedAt.get(id) ?? 0;
+      const isStale = now - receivedAt > CAR_SPECS.inputTimeoutMs;
       const activeThrottle = isStale ? 0 : input.throttle;
       const activeSteering = isStale ? 0 : input.steering;
       const activeBrake = isStale ? false : input.brake;
@@ -271,46 +367,165 @@ export class PhysicsEngine {
       const rot = body.rotation();
       const linvel = body.linvel();
 
-      if (pos.y < -15) {
+      if (
+        pos.y < -10 ||
+        pos.x < MAP_WORLD_BOUNDS.minX - 80 ||
+        pos.x > MAP_WORLD_BOUNDS.maxX + 80 ||
+        pos.z < MAP_WORLD_BOUNDS.minZ - 80 ||
+        pos.z > MAP_WORLD_BOUNDS.maxZ + 80
+      ) {
         this.resetCarToCheckpoint(id, checkpoints, state.lastCheckpointIndex);
         continue;
       }
 
-      const isGrounded =
-        pos.y <= 1.5 || (pos.y > 8.0 && Math.abs(linvel.y) < 1.5);
-      state.isGrounded = isGrounded;
+      // Check if inverted
+      const upY = 1 - 2 * (rot.x * rot.x + rot.z * rot.z);
+      if (upY < 0.2) {
+        const invTime = (this.carInvertedTimers.get(id) || 0) + dt;
+        this.carInvertedTimers.set(id, invTime);
+        if (invTime > 2.0) {
+          this.resetCarToCheckpoint(id, checkpoints, state.lastCheckpointIndex);
+          this.carInvertedTimers.set(id, 0);
+          continue;
+        }
+      } else {
+        this.carInvertedTimers.set(id, 0);
+      }
 
+      // 4 Wheel Raycast Suspension Calculation
+      let groundedWheelsCount = 0;
+      const currentWheelPositions: [number, number, number][] = [];
+      const currentSuspensionLengths: number[] = [];
+      const suspensionDown = rotateVectorByQuaternion([0, -1, 0], rot);
+      const suspensionUp = suspensionDown.map(value => -value) as [
+        number,
+        number,
+        number,
+      ];
+      const suspensionRayLength =
+        CAR_SPECS.suspensionRestLength + CAR_SPECS.wheelRadius;
+
+      for (let i = 0; i < 4; i++) {
+        const mountLocal = WHEEL_MOUNTS_LOCAL[i]!;
+        const worldMountOffset = rotateVectorByQuaternion(mountLocal, rot);
+        const rayOrigin = {
+          x: pos.x + worldMountOffset[0],
+          y: pos.y + worldMountOffset[1],
+          z: pos.z + worldMountOffset[2],
+        };
+        const rayDir = {
+          x: suspensionDown[0],
+          y: suspensionDown[1],
+          z: suspensionDown[2],
+        };
+        const ray = new RAPIER.Ray(rayOrigin, rayDir);
+
+        // Raycast excluding own car collider
+        const hit = this.world.castRayAndGetNormal(
+          ray,
+          suspensionRayLength,
+          true,
+          undefined,
+          undefined,
+          carCollider,
+        );
+
+        if (
+          hit &&
+          hit.timeOfImpact > 0.05 &&
+          hit.timeOfImpact <= suspensionRayLength
+        ) {
+          groundedWheelsCount++;
+          const hitDist = hit.timeOfImpact;
+          const suspensionLength = Math.max(
+            0,
+            Math.min(
+              CAR_SPECS.suspensionRestLength,
+              hitDist - CAR_SPECS.wheelRadius,
+            ),
+          );
+          const compression = CAR_SPECS.suspensionRestLength - suspensionLength;
+          const springForce = CAR_SPECS.suspensionStiffness * compression;
+          const mountVelocity = body.velocityAtPoint(rayOrigin);
+          const velocityAlongUp =
+            mountVelocity.x * suspensionUp[0] +
+            mountVelocity.y * suspensionUp[1] +
+            mountVelocity.z * suspensionUp[2];
+          const dampingForce = CAR_SPECS.suspensionDamping * velocityAlongUp;
+          const totalSuspensionForce = Math.max(0, springForce - dampingForce);
+
+          body.applyImpulseAtPoint(
+            {
+              x: suspensionUp[0] * totalSuspensionForce * dt,
+              y: suspensionUp[1] * totalSuspensionForce * dt,
+              z: suspensionUp[2] * totalSuspensionForce * dt,
+            },
+            rayOrigin,
+            true,
+          );
+          currentSuspensionLengths.push(suspensionLength);
+          currentWheelPositions.push([
+            mountLocal[0],
+            mountLocal[1] - suspensionLength,
+            mountLocal[2],
+          ]);
+        } else {
+          currentSuspensionLengths.push(CAR_SPECS.suspensionRestLength);
+          currentWheelPositions.push([
+            mountLocal[0],
+            mountLocal[1] - CAR_SPECS.suspensionRestLength,
+            mountLocal[2],
+          ]);
+        }
+      }
+
+      state.isGrounded = groundedWheelsCount >= 2;
+      state.wheelPositions = currentWheelPositions;
+      state.wheelSuspensionLengths = currentSuspensionLengths;
+
+      // Orientation vectors
       const forwardX = 2 * (rot.x * rot.z + rot.w * rot.y);
       const forwardZ = 1 - 2 * (rot.x * rot.x + rot.y * rot.y);
-
       const rightX = 1 - 2 * (rot.y * rot.y + rot.z * rot.z);
       const rightZ = 2 * (rot.x * rot.y - rot.w * rot.z);
 
+      // Steering Torque
       if (Math.abs(activeSteering) > 0.05) {
-        body.applyTorqueImpulse({x: 0, y: -activeSteering * 450, z: 0}, true);
+        body.applyTorqueImpulse({x: 0, y: -activeSteering * 750, z: 0}, true);
       }
 
+      // Engine Acceleration
       if (activeThrottle !== 0) {
         const force =
-          activeThrottle * CAR_SPECS.engineForce * (isGrounded ? 1.0 : 0.2);
+          activeThrottle *
+          CAR_SPECS.engineForce *
+          (state.isGrounded ? 1.0 : 0.2);
         body.applyImpulse(
           {x: forwardX * force * dt, y: 0, z: forwardZ * force * dt},
           true,
         );
       }
 
+      // Braking
       if (activeBrake) {
         body.setLinearDamping(2.5);
       } else {
         body.setLinearDamping(0.4);
       }
 
+      // Tire Lateral Friction damping
       const lateralVel = linvel.x * rightX + linvel.z * rightZ;
+      const lateralGrip = Math.min(1, 8 * dt) * body.mass();
       body.applyImpulse(
-        {x: -lateralVel * rightX * 12.0, y: 0, z: -lateralVel * rightZ * 12.0},
+        {
+          x: -lateralVel * rightX * lateralGrip,
+          y: 0,
+          z: -lateralVel * rightZ * lateralGrip,
+        },
         true,
       );
 
+      // Boost handling
       if (state.boostCooldown > 0) {
         state.boostCooldown = Math.max(0, state.boostCooldown - dt);
       }
@@ -327,6 +542,11 @@ export class PhysicsEngine {
         );
       }
 
+      // Clamp vertical velocity to prevent launch into orbit
+      if (linvel.y > 20.0) {
+        body.setLinvel({x: linvel.x, y: 20.0, z: linvel.z}, true);
+      }
+
       const speed = Math.sqrt(
         linvel.x * linvel.x + linvel.y * linvel.y + linvel.z * linvel.z,
       );
@@ -340,7 +560,6 @@ export class PhysicsEngine {
     }
 
     this.world.step();
-    return this.carStates;
   }
 
   private evaluateCheckpoints(
@@ -379,13 +598,24 @@ export class PhysicsEngine {
     const state = this.carStates.get(id);
     if (!body || !state) return;
 
-    let resetPos: [number, number, number] = [0, 2.5, 20];
+    let resetPos: [number, number, number] = [0, 4.5, 20];
     if (index >= 0 && index < checkpoints.length) {
       const cp = checkpoints[index];
       if (cp) {
-        resetPos = [cp.position[0], cp.position[1] + 2.0, cp.position[2]];
+        resetPos = [cp.position[0], cp.position[1] + 4.5, cp.position[2]];
       }
     }
+
+    this.resetCarToPosition(id, resetPos);
+  }
+
+  private resetCarToPosition(
+    id: string,
+    resetPos: [number, number, number],
+  ): void {
+    const body = this.carBodies.get(id);
+    const state = this.carStates.get(id);
+    if (!body || !state) return;
 
     body.setTranslation({x: resetPos[0], y: resetPos[1], z: resetPos[2]}, true);
     body.setLinvel({x: 0, y: 0, z: 0}, true);
@@ -395,5 +625,7 @@ export class PhysicsEngine {
     state.position = resetPos;
     state.velocity = [0, 0, 0];
     state.rotation = [0, 0, 0, 1];
+    state.isGrounded = false;
+    this.carInputReceivedAt.set(id, Date.now());
   }
 }

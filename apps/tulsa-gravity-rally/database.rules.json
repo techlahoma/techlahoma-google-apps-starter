@@ -2,44 +2,138 @@
   "rules": {
     ".read": false,
     ".write": false,
-    "rooms": {
-      "$roomCode": {
-        ".read": "auth != null && (data.child('players/' + auth.uid).exists() || data.child('hostUid').val() === auth.uid || !data.exists())",
-        ".write": false,
-        "metadata": {
-          ".read": "auth != null",
-          ".write": "auth != null && (!data.exists() || data.child('hostUid').val() === auth.uid)",
-          ".validate": "newData.hasChildren(['roomCode', 'hostUid', 'status', 'createdAt'])"
-        },
-        "hostUid": {
-          ".write": "auth != null && !data.exists()"
-        },
-        "status": {
-          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid",
-          ".validate": "newData.val() === 'lobby' || newData.val() === 'countdown' || newData.val() === 'racing' || newData.val() === 'ended'"
-        },
-        "course": {
-          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
-        },
-        "snapshot": {
-          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
-        },
-        "scoring": {
-          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
-        },
-        "results": {
-          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
-        },
-        "players": {
-          "$uid": {
-            ".write": "auth != null && auth.uid === $uid && (root.child('rooms/' + $roomCode + '/status').val() === 'lobby' || data.exists())",
-            ".validate": "newData.hasChildren(['emoji', 'color', 'joinedAt']) && (newData.child('emoji').val() === '🦬' || newData.child('emoji').val() === '🚀' || newData.child('emoji').val() === '🐢' || newData.child('emoji').val() === '🦊' || newData.child('emoji').val() === '🐙' || newData.child('emoji').val() === '🌵' || newData.child('emoji').val() === '🌈' || newData.child('emoji').val() === '🎈' || newData.child('emoji').val() === '🍕' || newData.child('emoji').val() === '🎮' || newData.child('emoji').val() === '⚡' || newData.child('emoji').val() === '🛰️')"
-          }
-        },
-        "inputs": {
-          "$uid": {
-            ".write": "auth != null && auth.uid === $uid && root.child('rooms/' + $roomCode + '/players/' + auth.uid).exists()",
-            ".validate": "newData.hasChildren(['steering', 'throttle', 'brake', 'boost', 'sequence', 'timestamp']) && newData.child('steering').val() >= -1.0 && newData.child('steering').val() <= 1.0 && newData.child('throttle').val() >= -1.0 && newData.child('throttle').val() <= 1.0"
+    "demos": {
+      "tulsaGravityRally": {
+        "v1": {
+          "rooms": {
+            "$roomCode": {
+              ".read": "auth != null && (!data.exists() || data.child('expiresAt').val() > now)",
+              ".write": "auth != null && ((!data.exists() && newData.child('hostUid').val() == auth.uid) || (data.exists() && data.child('hostUid').val() == auth.uid))",
+              ".validate": "!newData.exists() || newData.hasChildren(['roomCode', 'hostUid', 'status', 'courseId', 'remainingSeconds', 'expiresAt'])",
+              "roomCode": {
+                ".validate": "newData.isString() && newData.val() == $roomCode && newData.val().matches(/^[A-HJ-NP-Z2-9]{6}$/)"
+              },
+              "hostUid": {
+                ".validate": "newData.isString() && newData.val() == auth.uid && (!data.exists() || newData.val() == data.val())"
+              },
+              "status": {
+                ".validate": "newData.val() == 'lobby' || newData.val() == 'countdown' || newData.val() == 'racing' || newData.val() == 'ended'"
+              },
+              "courseId": {
+                ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 80"
+              },
+              "remainingSeconds": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 75"
+              },
+              "expiresAt": {
+                ".validate": "newData.isNumber() && newData.val() > now && newData.val() <= now + 7201000"
+              },
+              "players": {
+                "$uid": {
+                  ".write": "auth != null && auth.uid == $uid && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('status').val() == 'lobby' && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('expiresAt').val() > now",
+                  ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'emojiId', 'emoji', 'color', 'slot', 'joinedAt']) && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('emojiClaims').child(newData.child('emojiId').val()).val() == auth.uid && ((newData.child('slot').val() == 0 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('0').val() == auth.uid) || (newData.child('slot').val() == 1 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('1').val() == auth.uid) || (newData.child('slot').val() == 2 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('2').val() == auth.uid) || (newData.child('slot').val() == 3 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('3').val() == auth.uid) || (newData.child('slot').val() == 4 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('4').val() == auth.uid) || (newData.child('slot').val() == 5 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('5').val() == auth.uid) || (newData.child('slot').val() == 6 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('6').val() == auth.uid) || (newData.child('slot').val() == 7 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('7').val() == auth.uid) || (newData.child('slot').val() == 8 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('8').val() == auth.uid) || (newData.child('slot').val() == 9 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('9').val() == auth.uid) || (newData.child('slot').val() == 10 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('10').val() == auth.uid) || (newData.child('slot').val() == 11 && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('slots').child('11').val() == auth.uid)))",
+                  "uid": { ".validate": "newData.val() == $uid" },
+                  "emojiId": {
+                    ".validate": "newData.val() == 'bison' || newData.val() == 'rocket' || newData.val() == 'turtle' || newData.val() == 'fox' || newData.val() == 'octopus' || newData.val() == 'cactus' || newData.val() == 'rainbow' || newData.val() == 'balloon' || newData.val() == 'pizza' || newData.val() == 'gamepad' || newData.val() == 'lightning' || newData.val() == 'satellite'"
+                  },
+                  "emoji": {
+                    ".validate": "(newData.parent().child('emojiId').val() == 'bison' && newData.val() == '🦬') || (newData.parent().child('emojiId').val() == 'rocket' && newData.val() == '🚀') || (newData.parent().child('emojiId').val() == 'turtle' && newData.val() == '🐢') || (newData.parent().child('emojiId').val() == 'fox' && newData.val() == '🦊') || (newData.parent().child('emojiId').val() == 'octopus' && newData.val() == '🐙') || (newData.parent().child('emojiId').val() == 'cactus' && newData.val() == '🌵') || (newData.parent().child('emojiId').val() == 'rainbow' && newData.val() == '🌈') || (newData.parent().child('emojiId').val() == 'balloon' && newData.val() == '🎈') || (newData.parent().child('emojiId').val() == 'pizza' && newData.val() == '🍕') || (newData.parent().child('emojiId').val() == 'gamepad' && newData.val() == '🎮') || (newData.parent().child('emojiId').val() == 'lightning' && newData.val() == '⚡') || (newData.parent().child('emojiId').val() == 'satellite' && newData.val() == '🛰️')"
+                  },
+                  "color": {
+                    ".validate": "(newData.parent().child('emojiId').val() == 'bison' && newData.val() == '#c85a32') || (newData.parent().child('emojiId').val() == 'rocket' && newData.val() == '#ff5722') || (newData.parent().child('emojiId').val() == 'turtle' && newData.val() == '#4caf50') || (newData.parent().child('emojiId').val() == 'fox' && newData.val() == '#ff9800') || (newData.parent().child('emojiId').val() == 'octopus' && newData.val() == '#e91e63') || (newData.parent().child('emojiId').val() == 'cactus' && newData.val() == '#8bc34a') || (newData.parent().child('emojiId').val() == 'rainbow' && newData.val() == '#00bcd4') || (newData.parent().child('emojiId').val() == 'balloon' && newData.val() == '#f44336') || (newData.parent().child('emojiId').val() == 'pizza' && newData.val() == '#ffc107') || (newData.parent().child('emojiId').val() == 'gamepad' && newData.val() == '#9c27b0') || (newData.parent().child('emojiId').val() == 'lightning' && newData.val() == '#ffeb3b') || (newData.parent().child('emojiId').val() == 'satellite' && newData.val() == '#607d8b')"
+                  },
+                  "slot": {
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 12 && newData.val() % 1 == 0"
+                  },
+                  "joinedAt": {
+                    ".validate": "newData.isNumber() && newData.val() <= now + 1000 && newData.val() > now - 7201000"
+                  },
+                  "$other": { ".validate": false }
+                }
+              },
+              "slots": {
+                "$slot": {
+                  ".write": "auth != null && ($slot == '0' || $slot == '1' || $slot == '2' || $slot == '3' || $slot == '4' || $slot == '5' || $slot == '6' || $slot == '7' || $slot == '8' || $slot == '9' || $slot == '10' || $slot == '11') && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('status').val() == 'lobby' && ((!data.exists() && newData.val() == auth.uid) || (data.val() == auth.uid && (!newData.exists() || newData.val() == auth.uid)))",
+                  ".validate": "!newData.exists() || (newData.isString() && newData.val() == auth.uid)"
+                }
+              },
+              "emojiClaims": {
+                "$emojiId": {
+                  ".write": "auth != null && ($emojiId == 'bison' || $emojiId == 'rocket' || $emojiId == 'turtle' || $emojiId == 'fox' || $emojiId == 'octopus' || $emojiId == 'cactus' || $emojiId == 'rainbow' || $emojiId == 'balloon' || $emojiId == 'pizza' || $emojiId == 'gamepad' || $emojiId == 'lightning' || $emojiId == 'satellite') && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('status').val() == 'lobby' && ((!data.exists() && newData.val() == auth.uid) || (data.val() == auth.uid && (!newData.exists() || newData.val() == auth.uid)))",
+                  ".validate": "!newData.exists() || (newData.isString() && newData.val() == auth.uid)"
+                }
+              },
+              "inputs": {
+                "$uid": {
+                  ".write": "auth != null && auth.uid == $uid && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('players').child($uid).child('uid').val() == auth.uid && root.child('demos/tulsaGravityRally/v1/rooms').child($roomCode).child('expiresAt').val() > now",
+                  ".validate": "!newData.exists() || (newData.hasChildren(['steering', 'throttle', 'brake', 'boost', 'sequence', 'timestamp']) && (!data.exists() || newData.child('sequence').val() > data.child('sequence').val()))",
+                  "steering": {
+                    ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 1"
+                  },
+                  "throttle": {
+                    ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 1"
+                  },
+                  "brake": { ".validate": "newData.isBoolean()" },
+                  "boost": { ".validate": "newData.isBoolean()" },
+                  "sequence": {
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+                  },
+                  "timestamp": {
+                    ".validate": "newData.isNumber() && newData.val() >= now - 30000 && newData.val() <= now + 30000"
+                  },
+                  "$other": { ".validate": false }
+                }
+              },
+              "snapshot": {
+                ".validate": "newData.hasChildren(['t', 'cars'])",
+                "t": {
+                  ".validate": "newData.isNumber() && newData.val() >= now - 30000 && newData.val() <= now + 30000"
+                },
+                "cars": {
+                  "$carId": {
+                    ".validate": "newData.hasChildren(['p', 'r', 's', 'c'])",
+                    "p": {
+                      ".validate": "newData.hasChildren(['0', '1', '2'])",
+                      "0": {
+                        ".validate": "newData.isNumber() && newData.val() >= -2000 && newData.val() <= 2000"
+                      },
+                      "1": {
+                        ".validate": "newData.isNumber() && newData.val() >= -200 && newData.val() <= 1000"
+                      },
+                      "2": {
+                        ".validate": "newData.isNumber() && newData.val() >= -2000 && newData.val() <= 2000"
+                      },
+                      "$other": { ".validate": false }
+                    },
+                    "r": {
+                      ".validate": "newData.hasChildren(['0', '1', '2', '3'])",
+                      "0": {
+                        ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 1"
+                      },
+                      "1": {
+                        ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 1"
+                      },
+                      "2": {
+                        ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 1"
+                      },
+                      "3": {
+                        ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 1"
+                      },
+                      "$other": { ".validate": false }
+                    },
+                    "s": {
+                      ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
+                    },
+                    "c": {
+                      ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100 && newData.val() % 1 == 0"
+                    },
+                    "$other": { ".validate": false }
+                  }
+                },
+                "$other": { ".validate": false }
+              },
+              "$other": { ".validate": false }
+            }
           }
         }
       }

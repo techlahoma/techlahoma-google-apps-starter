@@ -1,6 +1,4 @@
 import './style.css';
-import {HostViewController} from './ui/host-view';
-import {PlayerViewController} from './ui/player-view';
 
 async function bootstrap() {
   const appContainer = document.getElementById('app');
@@ -10,9 +8,11 @@ async function bootstrap() {
 
   if (path.startsWith('/room/')) {
     const roomCode = path.replace('/room/', '').trim();
+    const {PlayerViewController} = await import('./ui/player-view');
     const playerView = new PlayerViewController();
     await playerView.mount(appContainer, roomCode);
   } else {
+    const {HostViewController} = await import('./ui/host-view');
     const hostView = new HostViewController();
     await hostView.mount(appContainer);
   }

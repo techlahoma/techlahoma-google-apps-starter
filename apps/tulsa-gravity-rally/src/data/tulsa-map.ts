@@ -1,8 +1,50 @@
-// Tulsa Map Data & OpenStreetMap Derived Geometry Pipeline
-// Center: 12 N Cheyenne Ave, Tulsa, OK 74103 (36.1578° N, -95.9930° W)
+import generatedMapData from './tulsa-map-generated.json';
+import type {TransformedBuilding, TransformedStreet} from './transform-osm';
+
+const METERS_PER_DEG_LAT = 111_320;
+
+interface GeneratedTulsaMapData {
+  schemaVersion: number;
+  generator: string;
+  sourceHashes: {
+    shadowWalkSha256: string;
+    focusedRefreshSha256: string;
+  };
+  origin: {
+    lat: number;
+    lon: number;
+    address: string;
+    sourceBuilding: string;
+    sourceId: string;
+  };
+  sources: {
+    shadowWalk: {
+      source: string;
+      sourceUrl: string;
+      license: string;
+      fetchedAt: string;
+      osmBaseTimestamp: string | null;
+      bounds: {south: number; north: number; west: number; east: number};
+    };
+    focusedRefresh: {
+      fetchedAt: string;
+      generator: string;
+    };
+  };
+  buildings: TransformedBuilding[];
+  streets: TransformedStreet[];
+}
+
+const GENERATED_MAP = generatedMapData as unknown as GeneratedTulsaMapData;
+const TULSA_ORIGIN = GENERATED_MAP.origin;
+const TULSA_SOURCE_METADATA = GENERATED_MAP.sources;
+const metersPerDegLon =
+  METERS_PER_DEG_LAT * Math.cos((TULSA_ORIGIN.lat * Math.PI) / 180);
 
 export interface MapMetadata {
   retrievalDate: string;
+  shadowWalkRetrievalDate: string;
+  focusedRefreshDate: string;
   centerAddress: string;
   centerCoordinates: {lat: number; lon: number};
   boundingBox: {south: number; north: number; west: number; east: number};
@@ -11,381 +53,273 @@ export interface MapMetadata {
   licenseUrl: string;
   limitations: string;
   disclaimer: string;
+  sourceHashes: {
+    shadowWalkSha256: string;
+    focusedRefreshSha256: string;
+  };
 }
 
-export interface BuildingFootprint {
-  id: string;
-  name: string;
-  type:
-    | 'gradient'
-    | 'warehouse'
-    | 'office'
-    | 'brick_commercial'
-    | 'parking_structure';
-  center: [number, number]; // [x, z] relative to Gradient (0,0)
-  size: [number, number]; // [width, depth]
-  height: number; // in meters
-  levels: number;
-  isEstimatedHeight: boolean;
-  address?: string;
-  color: string;
-  roofAccessible: boolean;
-}
-
-export interface StreetSegment {
-  id: string;
-  name: string;
-  start: [number, number];
-  end: [number, number];
-  width: number;
-}
+export type BuildingFootprint = TransformedBuilding;
+export type StreetSegment = TransformedStreet;
 
 export interface RampDefinition {
   id: string;
   name: string;
-  start: [number, number, number]; // [x, y, z]
-  end: [number, number, number]; // [x, y, z]
+  start: [number, number, number];
+  end: [number, number, number];
   width: number;
 }
 
 export interface CheckpointLocation {
   id: string;
   name: string;
-  position: [number, number, number]; // [x, y, z]
+  position: [number, number, number];
   radius: number;
   isRooftop: boolean;
   reachabilityTag: 'street' | 'ramped_roof' | 'boost_jump' | 'gradient_beacon';
 }
 
+export interface WorldBounds {
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+}
+
 export const TULSA_MAP_METADATA: MapMetadata = {
   retrievalDate: '2026-08-06',
-  centerAddress: '12 N Cheyenne Ave, Tulsa, OK 74103',
-  centerCoordinates: {lat: 36.1578, lon: -95.993},
-  boundingBox: {south: 36.154, north: 36.161, west: -95.998, east: -95.988},
-  sourceUrl: 'https://www.openstreetmap.org',
+  shadowWalkRetrievalDate: TULSA_SOURCE_METADATA.shadowWalk.fetchedAt.slice(
+    0,
+    10,
+  ),
+  focusedRefreshDate: TULSA_SOURCE_METADATA.focusedRefresh.fetchedAt.slice(
+    0,
+    10,
+  ),
+  centerAddress: TULSA_ORIGIN.address,
+  centerCoordinates: {lat: TULSA_ORIGIN.lat, lon: TULSA_ORIGIN.lon},
+  boundingBox: TULSA_SOURCE_METADATA.shadowWalk.bounds,
+  sourceUrl: TULSA_SOURCE_METADATA.shadowWalk.sourceUrl,
   attribution: 'Map data © OpenStreetMap contributors',
   licenseUrl: 'https://www.openstreetmap.org/copyright',
   limitations:
-    'Low-poly 3D geometry derived from 2D OSM footprints. Heights missing from raw OSM records are deterministically estimated.',
+    'Footprints and streets reuse the Tulsa Shadow Walk OSM snapshot, overlaid with a focused 2026-08-06 building refresh. Untagged heights remain deterministic estimates.',
   disclaimer:
-    'The 3D Gradient landmark model is an artistic game proxy, not an architectural reproduction.',
+    'Gradient is anchored to the OSM OTASCO Warehouse footprint; its game lighting, signs, ramps, and roof access are artistic demo treatments rather than an architectural reproduction.',
+  sourceHashes: GENERATED_MAP.sourceHashes,
 };
 
-// Gradient Landmark (12 N Cheyenne Ave, Tulsa, OK 74103)
-export const GRADIENT_LANDMARK: BuildingFootprint = {
-  id: 'bldg-gradient-main',
-  name: 'Gradient',
-  type: 'gradient',
-  center: [0, 0],
-  size: [36, 26],
-  height: 18,
-  levels: 5,
-  isEstimatedHeight: false,
-  address: '12 N Cheyenne Ave, Tulsa, OK 74103',
-  color: '#c85a32', // warm brick red
-  roofAccessible: true,
-};
+export const DOWNTOWN_BUILDINGS: BuildingFootprint[] = GENERATED_MAP.buildings;
 
-// Surrounding 6-8 Block Downtown Tulsa Buildings (Derived from OSM Footprints)
-export const DOWNTOWN_BUILDINGS: BuildingFootprint[] = [
-  GRADIENT_LANDMARK,
-  {
-    id: 'bldg-cheyenne-north',
-    name: 'Cheyenne Tech Studio',
-    type: 'brick_commercial',
-    center: [-45, 10],
-    size: [28, 32],
-    height: 14,
-    levels: 4,
-    isEstimatedHeight: true,
-    color: '#a84e32',
-    roofAccessible: true,
-  },
-  {
-    id: 'bldg-cheyenne-south',
-    name: 'Brady Arts Warehouse',
-    type: 'warehouse',
-    center: [-45, -55],
-    size: [35, 40],
-    height: 10,
-    levels: 3,
-    isEstimatedHeight: false,
-    color: '#8b4513',
-    roofAccessible: true,
-  },
-  {
-    id: 'bldg-main-east',
-    name: 'Main Street Office Block',
-    type: 'office',
-    center: [50, 0],
-    size: [30, 45],
-    height: 24,
-    levels: 7,
-    isEstimatedHeight: true,
-    color: '#4a6572',
-    roofAccessible: false,
-  },
-  {
-    id: 'bldg-1st-south',
-    name: 'Downtown Garage & Market',
-    type: 'parking_structure',
-    center: [5, -60],
-    size: [42, 30],
-    height: 12,
-    levels: 4,
-    isEstimatedHeight: true,
-    color: '#b0bec5',
-    roofAccessible: true,
-  },
-  {
-    id: 'bldg-archer-north',
-    name: 'Archer Historic Lofts',
-    type: 'brick_commercial',
-    center: [0, 65],
-    size: [40, 25],
-    height: 16,
-    levels: 5,
-    isEstimatedHeight: true,
-    color: '#bf360c',
-    roofAccessible: true,
-  },
-  {
-    id: 'bldg-denver-west',
-    name: 'Denver Plaza Tower',
-    type: 'office',
-    center: [-95, 5],
-    size: [38, 38],
-    height: 35,
-    levels: 10,
-    isEstimatedHeight: false,
-    color: '#37474f',
-    roofAccessible: false,
-  },
-  {
-    id: 'bldg-boston-east',
-    name: 'Boston Ave Bank Annex',
-    type: 'office',
-    center: [100, 60],
-    size: [32, 35],
-    height: 28,
-    levels: 8,
-    isEstimatedHeight: true,
-    color: '#546e7a',
-    roofAccessible: false,
-  },
-  {
-    id: 'bldg-reconciliation-north',
-    name: 'Reconciliation Way Depot',
-    type: 'warehouse',
-    center: [-50, 80],
-    size: [45, 28],
-    height: 9,
-    levels: 2,
-    isEstimatedHeight: true,
-    color: '#795548',
-    roofAccessible: true,
-  },
-  {
-    id: 'bldg-2nd-south',
-    name: 'South Cheyenne Center',
-    type: 'brick_commercial',
-    center: [-10, -110],
-    size: [50, 32],
-    height: 15,
-    levels: 4,
-    isEstimatedHeight: true,
-    color: '#8d6e63',
-    roofAccessible: true,
-  },
-];
+export const DOWNTOWN_STREETS: StreetSegment[] = GENERATED_MAP.streets;
 
-// Major Street Grid around Gradient
-export const DOWNTOWN_STREETS: StreetSegment[] = [
-  {
-    id: 'st-cheyenne',
-    name: 'N Cheyenne Ave',
-    start: [-22, -140],
-    end: [-22, 120],
-    width: 14,
-  },
-  {
-    id: 'st-main',
-    name: 'N Main St',
-    start: [28, -140],
-    end: [28, 120],
-    width: 14,
-  },
-  {
-    id: 'st-denver',
-    name: 'N Denver Ave',
-    start: [-70, -140],
-    end: [-70, 120],
-    width: 14,
-  },
-  {
-    id: 'st-boston',
-    name: 'N Boston Ave',
-    start: [78, -140],
-    end: [78, 120],
-    width: 14,
-  },
-  {
-    id: 'st-1st',
-    name: 'W 1st St',
-    start: [-120, -35],
-    end: [120, -35],
-    width: 14,
-  },
-  {
-    id: 'st-archer',
-    name: 'W Archer St',
-    start: [-120, 35],
-    end: [120, 35],
-    width: 14,
-  },
-  {
-    id: 'st-reconciliation',
-    name: 'E Reconciliation Way',
-    start: [-120, 95],
-    end: [120, 95],
-    width: 14,
-  },
-  {
-    id: 'st-2nd',
-    name: 'W 2nd St',
-    start: [-120, -88],
-    end: [120, -88],
-    width: 14,
-  },
-];
+export const GRADIENT_LANDMARK = requiredBuilding('osm-259791849');
 
-// Rooftop Ramps (connecting streets & low-rise roofs)
+export const LANDMARK_BUILDINGS = DOWNTOWN_BUILDINGS.filter(
+  building => building.label !== undefined,
+);
+
+export const MAP_WORLD_BOUNDS: WorldBounds = buildingWorldBounds(
+  DOWNTOWN_BUILDINGS,
+  55,
+);
+
 export const ROOFTOP_RAMPS: RampDefinition[] = [
-  {
-    id: 'ramp-cheyenne-gradient',
-    name: 'Gradient Front Ramp',
-    start: [-20, 0.2, 0],
-    end: [-10, 18.2, 0],
-    width: 8,
-  },
-  {
-    id: 'ramp-gradient-garage',
-    name: 'Gradient-to-Garage Skyway',
-    start: [5, 18.2, -13],
-    end: [5, 12.2, -45],
-    width: 7,
-  },
-  {
-    id: 'ramp-archer-loft',
-    name: 'Archer Street Loft Ramp',
-    start: [0, 0.2, 38],
-    end: [0, 16.2, 53],
-    width: 8,
-  },
-  {
-    id: 'ramp-cheyenne-studio',
-    name: 'Cheyenne Studio Ramp',
-    start: [-30, 0.2, 10],
-    end: [-40, 14.2, 10],
-    width: 7,
-  },
-  {
-    id: 'ramp-brady-warehouse',
-    name: 'Brady Warehouse Banked Ramp',
-    start: [-26, 0.2, -55],
-    end: [-38, 10.2, -55],
-    width: 8,
-  },
+  rampToRoof(
+    'ramp-gradient-east',
+    'Gradient Cheyenne climb',
+    GRADIENT_LANDMARK,
+    'east',
+    11,
+  ),
+  rampToRoof(
+    'ramp-tulsa-theater-south',
+    'Tulsa Theater roof run',
+    requiredBuilding('osm-60964202'),
+    'south',
+    12,
+  ),
+  rampToRoof(
+    'ramp-bok-center-east',
+    'BOK Center stadium climb',
+    requiredBuilding('osm-60964213'),
+    'east',
+    14,
+  ),
+  rampToRoof(
+    'ramp-union-station-west',
+    'Union Station platform ramp',
+    requiredBuilding('osm-324093534'),
+    'west',
+    12,
+  ),
 ];
 
-// All Checkpoint Candidates for Course Generation
+const centerOfUniverse = latLonToLocalMeters(36.1568177, -95.9914961);
+const guthrieGreen = latLonToLocalMeters(36.1597, -95.9913);
+const bokCenter = requiredBuilding('osm-60964213');
+const tulsaTheater = requiredBuilding('osm-60964202');
+const unionStation = requiredBuilding('osm-324093534');
+const bokTower = requiredBuilding('osm-245142481');
+
 export const ALL_CHECKPOINTS: CheckpointLocation[] = [
+  {
+    id: 'cp-gradient-street',
+    name: 'Gradient Cheyenne Start',
+    position: [...ROOFTOP_RAMPS[0]!.start],
+    radius: 8,
+    isRooftop: false,
+    reachabilityTag: 'street',
+  },
   {
     id: 'cp-gradient-beacon',
     name: 'Gradient Rooftop Beacon',
-    position: [0, 19.5, 0],
-    radius: 6,
+    position: [
+      GRADIENT_LANDMARK.center[0],
+      GRADIENT_LANDMARK.height + 2,
+      GRADIENT_LANDMARK.center[1],
+    ],
+    radius: 8,
     isRooftop: true,
     reachabilityTag: 'gradient_beacon',
   },
+  roofCheckpoint('cp-tulsa-theater', 'Tulsa Theater Roof', tulsaTheater),
+  roofCheckpoint('cp-bok-center', 'BOK Center Roof Loop', bokCenter, 12),
+  roofCheckpoint('cp-union-station', 'Union Station Roof', unionStation, 9),
   {
-    id: 'cp-cheyenne-1st',
-    name: 'Cheyenne & 1st Intersection',
-    position: [-22, 1.5, -35],
-    radius: 6,
+    id: 'cp-center-universe',
+    name: 'Center of the Universe',
+    position: [centerOfUniverse[0], 1.5, centerOfUniverse[1]],
+    radius: 9,
     isRooftop: false,
     reachabilityTag: 'street',
   },
   {
-    id: 'cp-garage-roof',
-    name: 'Garage Rooftop Apex',
-    position: [5, 13.5, -60],
-    radius: 6,
-    isRooftop: true,
-    reachabilityTag: 'ramped_roof',
-  },
-  {
-    id: 'cp-main-archer',
-    name: 'Main & Archer Gateway',
-    position: [28, 1.5, 35],
-    radius: 6,
+    id: 'cp-guthrie-green',
+    name: 'Guthrie Green',
+    position: [guthrieGreen[0], 1.5, guthrieGreen[1]],
+    radius: 10,
     isRooftop: false,
     reachabilityTag: 'street',
   },
   {
-    id: 'cp-archer-loft-roof',
-    name: 'Archer Loft Sky Jump',
-    position: [0, 17.5, 65],
-    radius: 6,
-    isRooftop: true,
-    reachabilityTag: 'ramped_roof',
-  },
-  {
-    id: 'cp-studio-roof',
-    name: 'Cheyenne Studio Roof',
-    position: [-45, 15.5, 10],
-    radius: 6,
-    isRooftop: true,
-    reachabilityTag: 'ramped_roof',
-  },
-  {
-    id: 'cp-denver-1st',
-    name: 'Denver & 1st Corner',
-    position: [-70, 1.5, -35],
-    radius: 6,
+    id: 'cp-bok-tower-plaza',
+    name: 'BOK Tower Plaza',
+    position: [bokTower.center[0] - 30, 1.5, bokTower.center[1] + 35],
+    radius: 10,
     isRooftop: false,
     reachabilityTag: 'street',
   },
   {
-    id: 'cp-reconciliation-way',
-    name: 'Reconciliation Way Straight',
-    position: [0, 1.5, 95],
-    radius: 6,
-    isRooftop: false,
-    reachabilityTag: 'street',
-  },
-  {
-    id: 'cp-brady-roof',
-    name: 'Brady Warehouse Roof',
-    position: [-45, 11.5, -55],
-    radius: 6,
-    isRooftop: true,
-    reachabilityTag: 'ramped_roof',
-  },
-  {
-    id: 'cp-2nd-cheyenne',
-    name: '2nd & Cheyenne Plaza',
-    position: [-22, 1.5, -88],
-    radius: 6,
-    isRooftop: false,
-    reachabilityTag: 'street',
-  },
-  {
-    id: 'cp-skyline-gap',
-    name: 'Skyline Boost Jump',
-    position: [25, 20.0, 10],
-    radius: 7,
+    id: 'cp-gradient-boost-gap',
+    name: 'Gradient Neon Boost Gap',
+    position: [
+      GRADIENT_LANDMARK.center[0] - 28,
+      GRADIENT_LANDMARK.height + 8,
+      GRADIENT_LANDMARK.center[1] - 18,
+    ],
+    radius: 9,
     isRooftop: true,
     reachabilityTag: 'boost_jump',
   },
 ];
+
+function latLonToLocalMeters(lat: number, lon: number): [number, number] {
+  return [
+    round1((lon - TULSA_ORIGIN.lon) * metersPerDegLon),
+    round1(-(lat - TULSA_ORIGIN.lat) * METERS_PER_DEG_LAT),
+  ];
+}
+
+function requiredBuilding(sourceId: string): BuildingFootprint {
+  const building = DOWNTOWN_BUILDINGS.find(
+    candidate => candidate.sourceId === sourceId,
+  );
+  if (!building) {
+    throw new Error(`Tulsa model is missing required building ${sourceId}.`);
+  }
+  return building;
+}
+
+function buildingWorldBounds(
+  buildings: BuildingFootprint[],
+  padding: number,
+): WorldBounds {
+  const points = buildings.flatMap(building => building.footprint);
+  return {
+    minX: Math.min(...points.map(point => point[0])) - padding,
+    maxX: Math.max(...points.map(point => point[0])) + padding,
+    minZ: Math.min(...points.map(point => point[1])) - padding,
+    maxZ: Math.max(...points.map(point => point[1])) + padding,
+  };
+}
+
+function rampToRoof(
+  id: string,
+  name: string,
+  building: BuildingFootprint,
+  side: 'north' | 'south' | 'east' | 'west',
+  width: number,
+): RampDefinition {
+  const minX = Math.min(...building.footprint.map(point => point[0]));
+  const maxX = Math.max(...building.footprint.map(point => point[0]));
+  const minZ = Math.min(...building.footprint.map(point => point[1]));
+  const maxZ = Math.max(...building.footprint.map(point => point[1]));
+  const approach = Math.max(28, building.height * 1.9);
+  const roofY = building.height + 0.6;
+
+  switch (side) {
+    case 'north':
+      return {
+        id,
+        name,
+        start: [building.center[0], 0.4, minZ - approach],
+        end: [building.center[0], roofY, minZ + 4],
+        width,
+      };
+    case 'south':
+      return {
+        id,
+        name,
+        start: [building.center[0], 0.4, maxZ + approach],
+        end: [building.center[0], roofY, maxZ - 4],
+        width,
+      };
+    case 'west':
+      return {
+        id,
+        name,
+        start: [minX - approach, 0.4, building.center[1]],
+        end: [minX + 4, roofY, building.center[1]],
+        width,
+      };
+    case 'east':
+      return {
+        id,
+        name,
+        start: [maxX + approach, 0.4, building.center[1]],
+        end: [maxX - 4, roofY, building.center[1]],
+        width,
+      };
+  }
+}
+
+function roofCheckpoint(
+  id: string,
+  name: string,
+  building: BuildingFootprint,
+  radius = 8,
+): CheckpointLocation {
+  return {
+    id,
+    name,
+    position: [building.center[0], building.height + 2, building.center[1]],
+    radius,
+    isRooftop: true,
+    reachabilityTag: 'ramped_roof',
+  };
+}
+
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
+}

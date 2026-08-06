@@ -76,17 +76,17 @@ export class PlayerViewController {
           </div>
 
           <div style="margin:16px 0;">
-            <button id="boost-touch-btn" class="boost-btn">🚀 GRAVITY BOOST</button>
+            <button id="boost-touch-btn" class="boost-btn" aria-label="Boost Car">🚀 GRAVITY BOOST</button>
           </div>
 
           <div class="controls-container">
             <div class="dpad-group">
-              <button id="steer-left-btn" class="touch-btn">◀</button>
-              <button id="steer-right-btn" class="touch-btn">▶</button>
+              <button id="steer-left-btn" class="touch-btn" aria-label="Steer Left">◀</button>
+              <button id="steer-right-btn" class="touch-btn" aria-label="Steer Right">▶</button>
             </div>
             <div class="pedal-group">
-              <button id="brake-btn" class="touch-btn" style="background:rgba(255,0,85,0.2); border-color:var(--accent-red);">🛑</button>
-              <button id="gas-btn" class="touch-btn" style="background:rgba(0,245,212,0.2); border-color:var(--accent-cyan);">⚡</button>
+              <button id="brake-btn" class="touch-btn" aria-label="Brake" style="background:rgba(255,0,85,0.2); border-color:var(--accent-red);">🛑</button>
+              <button id="gas-btn" class="touch-btn" aria-label="Accelerate Gas" style="background:rgba(0,245,212,0.2); border-color:var(--accent-cyan);">⚡</button>
             </div>
           </div>
         </div>
@@ -103,9 +103,9 @@ export class PlayerViewController {
 
     grid.innerHTML = EMOJI_ALLOWLIST.map(
       opt => `
-      <div class="emoji-card" data-id="${opt.id}" data-emoji="${opt.emoji}" data-color="${opt.color}">
+      <button class="emoji-card" data-id="${opt.id}" data-emoji="${opt.emoji}" data-color="${opt.color}" aria-label="Select ${opt.label}">
         <span>${opt.emoji}</span>
-      </div>
+      </button>
     `,
     ).join('');
 
@@ -123,7 +123,12 @@ export class PlayerViewController {
     if (errorEl) errorEl.textContent = '';
 
     try {
-      await joinRoom(this.roomCode, this.playerUid, opt.emoji, opt.color);
+      if (!this.playerUid) {
+        const user = await initFirebase();
+        this.playerUid = user.uid;
+      }
+
+      await joinRoom(this.roomCode, this.playerUid, opt.id);
       this.selectedEmoji = opt;
 
       const pickerScreen = document.getElementById('emoji-picker-screen');
@@ -138,6 +143,7 @@ export class PlayerViewController {
       if (statusBadge) {
         statusBadge.textContent = 'Connected';
         statusBadge.style.color = '#00f5d4';
+        statusBadge.style.background = 'rgba(0,245,212,0.15)';
       }
     } catch (err) {
       if (errorEl) errorEl.textContent = `${err}`;
@@ -187,15 +193,16 @@ export class PlayerViewController {
     if (statusBadge) {
       statusBadge.textContent = 'Error';
       statusBadge.style.color = '#ff0055';
+      statusBadge.style.background = 'rgba(255,0,85,0.15)';
     }
     const picker = document.getElementById('emoji-picker-screen');
     if (picker) {
-      picker.innerHTML = `<div class="glass-panel" style="padding:24px; text-align:center; color:var(--accent-red); font-weight:700;">${msg}</div>`;
+      picker.innerHTML = `<div class="glass-panel player-error-panel" style="padding:24px; text-align:center; color:var(--accent-red); font-weight:700;">${msg}</div>`;
     }
   }
 
   private bindTouchControls(): void {
-    const bindBtn = (
+    const bindPointerBtn = (
       id: string,
       onPress: () => void,
       onRelease: () => void,
@@ -203,51 +210,71 @@ export class PlayerViewController {
       const el = document.getElementById(id);
       if (!el) return;
 
-      const pressHandler = (e: Event) => {
+      const downHandler = (e: PointerEvent) => {
         e.preventDefault();
+        try {
+          el.setPointerCapture(e.pointerId);
+        } catch {
+          // Ignore
+        }
         el.classList.add('active');
         onPress();
         this.emitInput();
       };
 
-      const releaseHandler = (e: Event) => {
+      const upHandler = (e: PointerEvent) => {
         e.preventDefault();
+        try {
+          el.releasePointerCapture(e.pointerId);
+        } catch {
+          // Ignore
+        }
         el.classList.remove('active');
         onRelease();
         this.emitInput();
       };
 
-      el.addEventListener('touchstart', pressHandler);
-      el.addEventListener('touchend', releaseHandler);
-      el.addEventListener('mousedown', pressHandler);
-      el.addEventListener('mouseup', releaseHandler);
+      el.addEventListener('pointerdown', downHandler as EventListener);
+      el.addEventListener('pointerup', upHandler as EventListener);
+      el.addEventListener('pointercancel', upHandler as EventListener);
     };
 
-    bindBtn(
+    bindPointerBtn(
       'steer-left-btn',
       () => (this.currentInput.steering = -1.0),
       () => (this.currentInput.steering = 0),
     );
-    bindBtn(
+    bindPointerBtn(
       'steer-right-btn',
       () => (this.currentInput.steering = 1.0),
       () => (this.currentInput.steering = 0),
     );
-    bindBtn(
+    bindPointerBtn(
       'gas-btn',
       () => (this.currentInput.throttle = 1.0),
       () => (this.currentInput.throttle = 0),
     );
-    bindBtn(
+    bindPointerBtn(
       'brake-btn',
       () => (this.currentInput.brake = true),
       () => (this.currentInput.brake = false),
     );
-    bindBtn(
+    bindPointerBtn(
       'boost-touch-btn',
       () => (this.currentInput.boost = true),
       () => (this.currentInput.boost = false),
     );
+
+    const neutralizeAll = () => {
+      this.currentInput.steering = 0;
+      this.currentInput.throttle = 0;
+      this.currentInput.brake = false;
+      this.currentInput.boost = false;
+      this.emitInput();
+    };
+
+    window.addEventListener('blur', neutralizeAll);
+    window.addEventListener('pagehide', neutralizeAll);
   }
 
   private emitInput(): void {

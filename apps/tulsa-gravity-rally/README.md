@@ -1,25 +1,66 @@
 # Tulsa Gravity Rally
 
-- `Tease:` A generated app workspace ready for one focused vertical slice.
-- `Lede:` This app lives at `apps/tulsa-gravity-rally` and inherits the Techlahoma Google Apps Starter's shared toolchain and agent contract.
-- `Why it matters:` It can be built, tested, and launched independently without changing another demo app.
-- `Go deeper:` Run `bun run dev` here, or `bun run --cwd apps/tulsa-gravity-rally dev` from the repository root.
+- `Tease:` Scan, pick an emoji, and race a giant car through downtown Tulsa.
+- `Lede:` The projector renders real OpenStreetMap building footprints around Gradient, while Firebase Anonymous Auth and Realtime Database synchronize a 12-player lobby, phone controls, and host-authoritative telemetry.
+- `Why it matters:` One QR code turns a room screen into a shared GDG demo without installing an app or exposing unrestricted database writes.
+- `Go deeper:` Open the live host below, read the map provenance, or reuse the recorded generation and repair prompts.
 
-## Commands
+## Live demo
+
+- **Host/projector:** [tulsa-gravity-rally.web.app/host](https://tulsa-gravity-rally.web.app/host)
+- **Join:** scan the host QR code or open its generated `/room/{code}` URL on a phone.
+- **Firebase boundary:** dedicated secondary Hosting site `tulsa-gravity-rally` in project `sam-carlton-creative`; the project default site and the older hashed rally site are not deployment targets.
+
+The HTTPS host, deep room rewrite, Anonymous Auth, room creation, QR join, emoji claim, sustained phone input, host telemetry, and race start were live-verified with isolated browser contexts on 2026-08-06.
+
+## Local demo
+
+Start the repository-pinned Auth and Database emulators from this app directory:
 
 ```sh
-bun run dev
-bun run check
+../../node_modules/.bin/firebase emulators:start \
+  --only auth,database \
+  --project demo-tulsa-gravity-rally \
+  --config firebase.json
 ```
 
-Firebase Hosting configuration is app-local. Root cloud commands must receive
-`--app tulsa-gravity-rally` so they cannot deploy a different workspace accidentally.
+In another terminal:
 
-## Deployment
+```sh
+VITE_USE_EMULATOR=true bun run dev --host 0.0.0.0
+```
 
-Live app: [tulsa-gravity-rally-e4f71f.web.app](https://tulsa-gravity-rally-e4f71f.web.app) returned HTTP 200 on 2026-08-06. This is the secondary Hosting site mapped to `tulsa-gravity-rally` in the root project configuration.
+Open the host through the computer's LAN address when testing with a physical phone. A `localhost` QR URL is reachable only from the same device.
 
-A successful page response proves that the static app is present; it does not by itself prove that Anonymous Auth, Realtime Database, multiplayer, or the current uncommitted repair work is live.
+## Verification
+
+```sh
+bun run check
+FIREBASE_DATABASE_EMULATOR_HOST=127.0.0.1:9000 bun run verify:rules
+VITE_USE_EMULATOR=true bun run app:verify --app tulsa-gravity-rally
+RALLY_LIVE_BASE_URL=https://tulsa-gravity-rally.web.app \
+  bun apps/tulsa-gravity-rally/e2e/live-verification.ts
+```
+
+`verify:rules` bundles the Node-only Firebase rules test SDK before running official Emulator Suite assertions. The live verifier launches a host and an isolated phone context against the deployed HTTPS site.
+
+## Map provenance and limitations
+
+The base model is the ODbL-licensed OpenStreetMap snapshot curated for Tulsa Shadow Walk, overlaid with a focused downtown building refresh dated 2026-08-06. Polygon footprints preserve recognizable exterior outlines; tagged heights and levels are used when available, and missing heights are deterministic game estimates.
+
+The immutable source snapshots remain under `src/data/` for provenance. `bun run generate:map` deterministically rebuilds the compact browser payload and records both source SHA-256 hashes; the full Shadow Walk export is not shipped in the runtime bundle.
+
+Gradient is anchored to OSM way `259791849`, named `OTASCO Warehouse` in the source. The Gradient name, neon treatment, ramps, roof access, and game-scale vehicle physics are artistic demo elements, not an architectural reproduction.
+
+## Deployment and AI boundaries
+
+Firebase Hosting and Realtime Database rules are app-local. Root deployment commands must name `tulsa-gravity-rally` and resolve the explicit secondary site so another site cannot be overwritten.
+
+Gemini course generation is not active in the public build. Deterministic course presets remain the reliable path until Firebase AI Logic and App Check receive a separately reviewed public configuration.
+
+## Prompt history
+
+The initial one-shot prompt is preserved below. The more prescriptive continuation that diagnosed the failed first implementation is preserved in [REPAIR_PROMPT.md](REPAIR_PROMPT.md). These prompts record the build's provenance; the verified implementation and current repository instructions remain authoritative.
 
 ## Generation prompt
 

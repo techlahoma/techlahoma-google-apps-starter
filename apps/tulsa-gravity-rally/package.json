@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate:map": "bun e2e/generate-map-data.ts",
     "build": "vite build",
     "preview": "vite preview",
     "test": "bun test src",
     "typecheck": "tsc --noEmit",
-    "check": "bun run typecheck && bun run test && bun run build"
+    "typecheck:e2e": "tsc --noEmit -p tsconfig.e2e.json",
+    "verify:rules:bundle": "bun build e2e/database-rules.verify.ts --target=node --external @firebase/app --outfile=test-results/database-rules.verify.mjs",
+    "verify:rules": "bun run verify:rules:bundle && node test-results/database-rules.verify.mjs",
+    "check": "bun run typecheck && bun run typecheck:e2e && bun run test && bun run build"
   },
   "devDependencies": {
     "@firebase/app": "^0.16.0",

@@ -100,6 +100,7 @@ kit may require a Notion session:
 
 - [GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f)
 - [Public event handout in this repository](docs/events/README.md)
+- [Play Tulsa Gravity Rally](https://tulsa-gravity-rally.web.app/host) — scan the in-game QR code to join from a phone
 - [Complete README resource directory](#gdg-tulsa-builder-kit)
 
 The working presentation is intentionally not linked here until its Google Drive sharing setting is
@@ -324,6 +325,8 @@ The same links are maintained in the
 ### Start here
 
 - [Techlahoma Google Apps Starter repository](https://github.com/techlahoma/techlahoma-google-apps-starter)
+- [Tulsa Gravity Rally live demo](https://tulsa-gravity-rally.web.app/host)
+- [Tulsa Gravity Rally source, verification, and prompts](apps/tulsa-gravity-rally/README.md)
 - [Public event handout and resource hub](docs/events/README.md)
 - [Download Google Antigravity for macOS or Windows](https://antigravity.google/download)
 - [Copy-ready Antigravity demo prompts](docs/events/antigravity-one-shot-prompts.md)
