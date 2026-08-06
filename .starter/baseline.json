@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "starter": {
-    "source": "ThatGuySam/project-starter",
+    "source": "techlahoma/techlahoma-google-apps-starter",
     "version": "2.0.0",
     "source_revision": null
   },
@@ -31,7 +31,7 @@
     {
       "path": ".github/CODEOWNERS",
       "policy": "merge",
-      "base_sha256": "3b8d299c705d97150d0fb5061db584978f3e7d28976de6766d2255ecc6caab09"
+      "base_sha256": "7ab024251fad3e0c5e21975b53df90496c2fa6a03f8b709497524b3908496fe7"
     },
     {
       "path": ".github/ISSUE_TEMPLATE/bug-report.yml",
@@ -56,7 +56,7 @@
     {
       "path": ".github/rulesets/main.json",
       "policy": "managed",
-      "base_sha256": "4df48bf76bd369278e86be435bf9817d1db561f41284906ab42bbea04719622b"
+      "base_sha256": "dfee8e196989c6c991af5cd57efcda8fdbcca3430bf1a9a449d90e5d53d8c104"
     },
     {
       "path": ".github/workflows/guardrails.yml",
@@ -81,12 +81,12 @@
     {
       "path": "PROJECT.md",
       "policy": "merge",
-      "base_sha256": "e31a750c8c9d4c27771daf3aeb6de7caef78c681b7f4f8ae0b1ef68f3715a5f0"
+      "base_sha256": "0717001dd6226b67d69e100a2389044993b47120475880fb9a9d7357f6e90de8"
     },
     {
       "path": "README.md",
       "policy": "merge",
-      "base_sha256": "fb8881bfda07aef33195e0271cc5d80e00a140a8f58b036750b16ef2fb190720"
+      "base_sha256": "fa3f53e1845ff6abe3369bfaf62e521976636e78ba5ea71d9eee650d248371bb"
     },
     {
       "path": "SECURITY.md",
@@ -111,7 +111,7 @@
     {
       "path": "docs/operations/repository-settings.md",
       "policy": "managed",
-      "base_sha256": "b94d011b708c653640ce437e7142c4b717bb7db6e3f12f0ec51256616294c978"
+      "base_sha256": "bfe8004f7bb6f1fdfb4c5bae94311d519c456a15aa860b20abaf51779685bfcd"
     },
     {
       "path": "docs/starter/README.md",
@@ -141,7 +141,7 @@
     {
       "path": "docs/starter/research/bun-anthony-fu-community-templates-2026-07-30.md",
       "policy": "managed",
-      "base_sha256": "687ff3e369e3d05f45cded081f5a9206ecd51bf21b6763e2c11f8609bdab060b"
+      "base_sha256": "beb4f6051d22d517a3945067aee3f66ce0c23bd577bcee12d19b7a9e3b1295f1"
     },
     {
       "path": "docs/templates/automation-contract.md",

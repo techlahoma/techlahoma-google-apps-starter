@@ -8,8 +8,10 @@
 ## Commands
 
 ```sh
-bun run dev
-bun run check
+bun run dev              # Launch local Vite dev server
+bun run check            # Run typecheck, unit tests, and production build
+bun run app:browser:verify --app __APP_SLUG__  # Run Playwright browser verification
+bun run app:verify --app __APP_SLUG__          # Run completion verification (requires app.contract.json status: complete)
 ```
 
 Firebase Hosting configuration is app-local. Root cloud commands must receive

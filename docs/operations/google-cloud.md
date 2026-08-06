@@ -97,14 +97,14 @@ To delete one Hosting site without deleting the shared project:
 
 ```sh
 bun run google:sites:destroy plan --app welcome
-bun run google:sites:destroy apply --app welcome --confirm TODO-replace-with-real-unique-id
+bun run google:sites:destroy apply --app welcome --confirm YOUR_PROJECT_ID
 ```
 
 To delete the entire shared Google Cloud project:
 
 ```sh
 bun run google:destroy plan
-bun run google:destroy apply --confirm TODO-replace-with-real-unique-id
+bun run google:destroy apply --confirm YOUR_PROJECT_ID
 ```
 
 ## Adding complexity intentionally

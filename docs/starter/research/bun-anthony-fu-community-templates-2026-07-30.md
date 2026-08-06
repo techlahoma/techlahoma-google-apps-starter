@@ -21,7 +21,7 @@ Date: 2026-07-30
 
 Research the current Bun install model, Anthony Fu's current personal projects
 and boilerplates, and relevant issue-template conventions. Select durable
-patterns for `ThatGuySam/project-starter`; do not copy floating workflow
+patterns for `techlahoma/techlahoma-google-apps-starter`; do not copy floating workflow
 references, pnpm-specific choices, or public-release automation into the core.
 
 ## Local evidence

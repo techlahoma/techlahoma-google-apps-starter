@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "name": "changed-app-verification",
+        "command": "bun run agent:finish --changed"
+      }
+    ]
+  }
+}

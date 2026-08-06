@@ -17,10 +17,11 @@ Complete the requested local demo in one uninterrupted pass. Do not turn the req
 6. Make all artifact-specific edits inside that new `apps/<slug>/` workspace. Change root files only when the prompt explicitly requests a shared monorepo capability.
 7. Build the smallest complete vertical slice that delivers the requested meaningful interaction. Keep Level 0 demos static and local-first unless shared state is essential.
 8. Use red-green-refactor for meaningful behavior and keep application logic independently testable.
-9. Run `bun run --cwd apps/<slug> check`, then the repository verification, and fix failures within scope.
-10. Launch `bun run --cwd apps/<slug> dev -- --host 127.0.0.1` on an available local port and keep it running.
-11. Use available browser or computer-use tools to exercise the main flow, a second meaningful input, and an empty or failure state. Check the console and responsive layout.
-12. Return the app path and local URL, what works, tests and browser checks actually completed, evidence paths, and one honest limitation.
+9. Update `apps/<slug>/app.contract.json` to `"status": "complete"`, set capabilities, and create browser spec `apps/<slug>/e2e/smoke.spec.ts`.
+10. Run `bun run --cwd apps/<slug> check`, then `bun run app:verify --app <slug>`, and fix failures within scope.
+11. Launch `bun run --cwd apps/<slug> dev -- --host 127.0.0.1` on an available local port and keep it running.
+12. Run `bun run app:browser:verify --app <slug>` to verify browser layout, console cleanliness, and responsiveness.
+13. Return the app path and local URL, what works, tests and browser checks actually completed, evidence paths, and one honest limitation.
 
 ## Build constraints
 

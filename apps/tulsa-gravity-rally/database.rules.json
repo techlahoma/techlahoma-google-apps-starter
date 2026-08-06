@@ -1,0 +1,48 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$roomCode": {
+        ".read": "auth != null && (data.child('players/' + auth.uid).exists() || data.child('hostUid').val() === auth.uid || !data.exists())",
+        ".write": false,
+        "metadata": {
+          ".read": "auth != null",
+          ".write": "auth != null && (!data.exists() || data.child('hostUid').val() === auth.uid)",
+          ".validate": "newData.hasChildren(['roomCode', 'hostUid', 'status', 'createdAt'])"
+        },
+        "hostUid": {
+          ".write": "auth != null && !data.exists()"
+        },
+        "status": {
+          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid",
+          ".validate": "newData.val() === 'lobby' || newData.val() === 'countdown' || newData.val() === 'racing' || newData.val() === 'ended'"
+        },
+        "course": {
+          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
+        },
+        "snapshot": {
+          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
+        },
+        "scoring": {
+          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
+        },
+        "results": {
+          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
+        },
+        "players": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && (root.child('rooms/' + $roomCode + '/status').val() === 'lobby' || data.exists())",
+            ".validate": "newData.hasChildren(['emoji', 'color', 'joinedAt']) && (newData.child('emoji').val() === '🦬' || newData.child('emoji').val() === '🚀' || newData.child('emoji').val() === '🐢' || newData.child('emoji').val() === '🦊' || newData.child('emoji').val() === '🐙' || newData.child('emoji').val() === '🌵' || newData.child('emoji').val() === '🌈' || newData.child('emoji').val() === '🎈' || newData.child('emoji').val() === '🍕' || newData.child('emoji').val() === '🎮' || newData.child('emoji').val() === '⚡' || newData.child('emoji').val() === '🛰️')"
+          }
+        },
+        "inputs": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('rooms/' + $roomCode + '/players/' + auth.uid).exists()",
+            ".validate": "newData.hasChildren(['steering', 'throttle', 'brake', 'boost', 'sequence', 'timestamp']) && newData.child('steering').val() >= -1.0 && newData.child('steering').val() <= 1.0 && newData.child('throttle').val() >= -1.0 && newData.child('throttle').val() <= 1.0"
+          }
+        }
+      }
+    }
+  }
+}

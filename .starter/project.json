@@ -11,7 +11,7 @@
   "repository": {
     "expected_visibility": "public",
     "expected_default_branch": "main",
-    "required_ruleset": "Sam project baseline",
+    "required_ruleset": "Techlahoma starter baseline",
     "ruleset_mode": "preferred"
   }
 }

@@ -3,12 +3,12 @@
 - `Tease:` Real-time WebGL2 gravitational ray tracer visualizing a Schwarzschild black hole.
 - `Lede:` `apps/gargantua` renders realistic light bending, a Keplerian accretion disk, and relativistic Doppler shifts in interactive 3D WebGL2.
 - `Why it matters:` Demonstrates high-performance WebGL2 physics visualization and interactive shader computation within the monorepo workspace.
-- `Go deeper:` Explore shader implementation in `src/shaders.ts` and view the live demo at https://gargantua-c4d86a.web.app.
+- `Go deeper:` Explore the shader implementation in [`src/shaders.ts`](./src/shaders.ts); add the verified live-demo URL after deployment setup.
 
 Real-time WebGL2 gravitational ray tracer visualizing a Schwarzschild black hole with realistic light bending, Keplerian accretion disk, and relativistic effects. 
 
-Live Demo
-https://gargantua-c4d86a.web.app
+Live demo: not configured in the reusable starter. After an authorized deployment, replace this
+note with the verified Firebase Hosting URL.
 
 ---
 
@@ -30,24 +30,13 @@ The result must be impressive to senior software and graphics engineers. That me
 - verification must test rendered behavior rather than only TypeScript state helpers;
 - the default first frame must already be an excellent composition.
 
-Build, verify, and deploy it in one uninterrupted pass. Do not stop for ordinary implementation questions. Stop only for a genuine safety boundary or failed acceptance gate.
+Build and verify it in one uninterrupted pass. Deployment is a separate effect and requires explicit authorization for the exact Firebase project and Hosting site.
 
-# Existing failed experiment
+# Optional previous experiment
 
-The previous attempt is archived for diagnosis only:
-
-- Branch: `codex/gargantua-first-pass`
-- Commit: `a6715f1`
-- Live URL: https://gargantua-c4d86a.web.app/
-
-Inspect the deployed page and inspect relevant archived files with commands such as:
-
-- `git show codex/gargantua-first-pass:apps/gargantua/src/shaders.ts`
-- `git show codex/gargantua-first-pass:apps/gargantua/src/renderer.ts`
-- `git show codex/gargantua-first-pass:apps/gargantua/src/main.ts`
-- `git show codex/gargantua-first-pass:apps/gargantua/src/state.ts`
-
-Do not check out, merge, cherry-pick, or copy the archived implementation wholesale.
+If the fork has an earlier attempt, record its branch or commit and deployed URL in local notes.
+Inspect it explicitly with `git show YOUR_REFERENCE:apps/gargantua/PATH` and the fork's own live URL.
+Do not assume a reference from another clone exists, and do not copy an archived implementation wholesale.
 
 Treat it as a negative reference. Confirm these known defects before designing the replacement:
 
@@ -413,17 +402,14 @@ Inspect:
 
 # Firebase deployment authority
 
-Only after every local gate passes:
+This reusable prompt does not authorize deployment. Only after every local gate passes and the
+operator explicitly authorizes the exact Firebase project and secondary Hosting site:
 
 1. Run `bun run deploy gargantua --dry-run`.
-2. The dry run must resolve to the existing secondary site:
-   `gargantua-c4d86a`
-3. The destination must be:
-   `https://gargantua-c4d86a.web.app/`
-4. The default Firebase Hosting site must remain protected.
-5. No other app or secondary site may be targeted.
-
-Replacing the content on `gargantua-c4d86a` with this improved Gargantua build is authorized.
+2. Confirm the dry run resolves the project and site from the fork's ignored `google.project.json`.
+3. Record the exact secondary-site ID and proposed Hosting URL.
+4. Confirm the default Firebase Hosting site remains protected.
+5. Confirm no other app or secondary site is targeted.
 
 This prompt does not authorize:
 
@@ -436,7 +422,7 @@ This prompt does not authorize:
 - deleting any site or cloud resource;
 - committing or pushing source code.
 
-If the dry run does not identify exactly `gargantua-c4d86a`, stop without deploying.
+If the dry run does not identify the explicitly authorized secondary site, stop without deploying.
 
 After deployment:
 
@@ -547,8 +533,8 @@ bun run --cwd apps/gargantua dev
 
 ## 🏗 Architecture & Code Structure
 
-- [`src/shaders.ts`](file:///Users/athena/Code/google-dev-group/apps/gargantua/src/shaders.ts): GLSL WebGL2 fragment shader containing ray-marching routines, Schwarzschild geodesic math, Keplerian noise functions, Doppler shift, and starfield generation.
-- [`src/renderer.ts`](file:///Users/athena/Code/google-dev-group/apps/gargantua/src/renderer.ts): WebGL2 context manager, shader compiler, uniform update loop, and FPS frame time monitoring.
-- [`src/controls.ts`](file:///Users/athena/Code/google-dev-group/apps/gargantua/src/controls.ts): Pointer, touch, and scroll event listeners for camera orbit and smooth distance transitions.
-- [`src/ui.ts`](file:///Users/athena/Code/google-dev-group/apps/gargantua/src/ui.ts): Interactive control panel, mode selectors, quality switches, HUD stats, and educational modal.
-- [`src/state.ts`](file:///Users/athena/Code/google-dev-group/apps/gargantua/src/state.ts): Central state management with subscriber dispatching for smooth UI and renderer sync.
+- [`src/shaders.ts`](./src/shaders.ts): GLSL WebGL2 fragment shader containing ray-marching routines, Schwarzschild geodesic math, Keplerian noise functions, Doppler shift, and starfield generation.
+- [`src/renderer.ts`](./src/renderer.ts): WebGL2 context manager, shader compiler, uniform update loop, and FPS frame time monitoring.
+- [`src/controls.ts`](./src/controls.ts): Pointer, touch, and scroll event listeners for camera orbit and smooth distance transitions.
+- [`src/ui.ts`](./src/ui.ts): Interactive control panel, mode selectors, quality switches, HUD stats, and educational modal.
+- [`src/state.ts`](./src/state.ts): Central state management with subscriber dispatching for smooth UI and renderer sync.

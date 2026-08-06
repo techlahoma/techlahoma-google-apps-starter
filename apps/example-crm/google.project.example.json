@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "project_id": "TODO-your-unique-project-id",
-  "display_name": "TODO Your App Name",
+  "project_id": "REPLACE_WITH_PROJECT_ID",
+  "display_name": "Replace with project display name",
   "environment": "development",
   "region": "us-central1",
   "features": ["hosting"]

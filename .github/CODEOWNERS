@@ -1,11 +1,13 @@
-# Default ownership for the private starter and generated repositories.
-* @ThatGuySam
-
-# Make durable policy and automation ownership explicit.
-/AGENTS.md @ThatGuySam
-/PROJECT.md @ThatGuySam
-/.starter/ @ThatGuySam
-/.github/ @ThatGuySam
-/docs/ @ThatGuySam
-/profiles/ @ThatGuySam
-/scripts/ @ThatGuySam
+# Fork setup: replace the example owner below with a GitHub user or
+# organization team that has write access to the repository, then uncomment
+# the rules. Keeping the examples commented prevents a fork from assigning
+# reviews to an unrelated account.
+#
+# * @YOUR-GITHUB-USERNAME
+# /AGENTS.md @YOUR-GITHUB-USERNAME
+# /PROJECT.md @YOUR-GITHUB-USERNAME
+# /.starter/ @YOUR-GITHUB-USERNAME
+# /.github/ @YOUR-GITHUB-USERNAME
+# /docs/ @YOUR-GITHUB-USERNAME
+# /profiles/ @YOUR-GITHUB-USERNAME
+# /scripts/ @YOUR-GITHUB-USERNAME

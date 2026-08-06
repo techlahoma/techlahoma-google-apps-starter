@@ -53,6 +53,30 @@ bun run dev
 The root `dev` command launches the known-good `apps/welcome` workspace. It runs without a Google
 account.
 
+## Fork setup
+
+Local development works without changing any account-specific values. Before enabling repository
+ownership or Firebase deployment in a fork, replace these examples with values owned by that fork:
+
+1. Update the repository identity and expected branch-ruleset name in `.starter/project.json`.
+2. Replace `@YOUR-GITHUB-USERNAME` in `.github/CODEOWNERS` with a GitHub user or organization team
+   that has write access, then uncomment the ownership rules you want GitHub to enforce.
+3. Create the ignored local Firebase binding with the fork's immutable project ID and display name:
+
+   ```sh
+   bun run google:config plan --project-id YOUR_PROJECT_ID --display-name "Your Project Name"
+   bun run google:config apply --project-id YOUR_PROJECT_ID --display-name "Your Project Name"
+   ```
+
+4. Run `bun run google:doctor` and a deployment `--dry-run` before any remote change. After an
+   authorized deployment, replace the app README's unconfigured live-demo note with the verified
+   Hosting URL.
+
+The tracked `.env.example` and `google.project.example.json` files are templates. Their uppercase
+`REPLACE_WITH_*` values are deliberately invalid so setup fails until they are replaced. Do not
+commit the real `.env`, `google.project.json`, Firebase CLI authentication, ADC credentials, or
+service-account keys.
+
 Create another app without touching the existing workspaces:
 
 ```sh
@@ -63,7 +87,18 @@ bun run --cwd apps/example-crm dev
 
 `plan` is read-only. `apply` refuses an existing target and creates the app from
 `templates/vite-app`. The repository keeps one lockfile while each app owns its source, tests,
-package metadata, TypeScript config, and Firebase Hosting config.
+package metadata, TypeScript config, `app.contract.json`, and Firebase Hosting config.
+
+### App verification workflow
+
+Distinguish between app compilation (`check`) and app completion (`verify`):
+
+```sh
+bun run --cwd apps/example-crm check            # App typecheck, unit tests, and production build
+bun run app:browser:verify --app example-crm   # Shared Playwright browser verification
+bun run app:verify --app example-crm           # Full completion check (contract, markers, policy, tests, browser)
+bun run agent:finish --changed                 # Verify all changed app workspaces
+```
 
 ## One-prompt demo builds
 
@@ -156,14 +191,14 @@ Delete a single Hosting site without deleting the shared project:
 
 ```sh
 bun run google:sites:destroy plan --app welcome
-bun run google:sites:destroy apply --app welcome --confirm TODO-your-unique-project-id
+bun run google:sites:destroy apply --app welcome --confirm YOUR_PROJECT_ID
 ```
 
 To delete the entire shared Google Cloud project:
 
 ```sh
 bun run google:destroy plan
-bun run google:destroy apply --confirm TODO-your-unique-project-id
+bun run google:destroy apply --confirm YOUR_PROJECT_ID
 ```
 
 Deletion is destructive. Export anything durable first. Google may provide a limited recovery window, but the starter does not treat that window as a backup.

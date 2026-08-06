@@ -20,7 +20,7 @@ bun scripts/project-starter.ts settings plan \
 
 The plan reports:
 
-- whether the `Sam project baseline` ruleset would be created or updated;
+- whether the `Techlahoma starter baseline` ruleset would be created or updated;
 - whether rulesets are unavailable for the current repository or GitHub plan;
 - whether Actions already defaults to read-only permissions.
 

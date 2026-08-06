@@ -34,6 +34,19 @@ jobs:
       - name: Verify repository contract
         run: bash scripts/verify.sh
 
+      - name: Install Playwright Chromium
+        run: bunx playwright install chromium
+
+      - name: Verify completed apps browser specs
+        run: bun run app:verify --app numeronym-generator
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: browser-test-results
+          path: apps/*/test-results/
+
   secrets:
     name: secrets
     runs-on: ubuntu-latest

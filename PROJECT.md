@@ -2,8 +2,8 @@
 
 - `Tease:` One operational source of truth for Techlahoma Google Apps Starter.
 - `Lede:` The project is an active, public Techlahoma Bun monorepo with generated app workspaces,
-  public-Google-aligned engineering conventions, and a shared Firebase project with per-app Hosting sites lifecycle; no Google
-  Cloud project has been created or deployed.
+  public-Google-aligned engineering conventions, and a shared Firebase project with per-app Hosting
+  sites lifecycle; no account binding, credentials, or canonical live deployment URL is committed.
 - `Why it matters:`
   - Humans and agents can begin locally without reconstructing Google Cloud dashboard state.
   - Local edits, authentication, provisioning, deployment, deletion, and live verification remain
@@ -116,6 +116,9 @@ See
 | `bun run app:create plan --name APP --title TITLE` | read-only | proposed `apps/APP` workspace | none | JSON plan |
 | `bun run app:create apply --name APP --title TITLE` | local-write | new `apps/APP` workspace | local-edit authority | generated files and app check |
 | `bun run --cwd apps/APP dev` | local runtime | selected app | none | local page loads |
+| `bun run app:browser:verify --app APP` | read-only except test artifacts | selected app | none | Playwright browser checks & screenshots |
+| `bun run app:verify --app APP` | read-only except test artifacts | selected app | none | contract, policy, build, and browser receipt |
+| `bun run agent:finish --changed` | read-only except test artifacts | changed `apps/<slug>` workspaces | none | completion receipts for changed apps |
 | `bun run format` | local-write | TypeScript, JSON, HTML, and CSS source | local-edit authority | clean format check |
 | `bun run audit:dependencies` | read-only network query | locked dependency graph | none | current advisory report |
 | `bash scripts/verify.sh` | read-only except disposable build output | local checkout | none | exit status and output |
@@ -168,10 +171,11 @@ The machine-readable active-profile list is `.starter/project.json`.
 
 ## Handoff
 
-- Changed locally: no
-- Committed locally: yes
-- Pushed: yes
-- Deployed: no
+- Changed locally: yes; fork-specific identities, Firebase examples, and machine-local links were
+  replaced with reusable setup values
+- Committed locally: no
+- Pushed: no
+- Deployed: no; this cleanup made no cloud-side changes
 - Live-verified: no
-- Remaining risk or gap: authenticated provisioning, deployment, and deletion are intentionally
-  untested because no cloud-side effects were authorized
+- Remaining risk or gap: each fork must set its own GitHub ownership, repository ruleset, ignored
+  Firebase project binding, and post-deployment live URL

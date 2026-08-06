@@ -27,6 +27,7 @@ import {
   sep,
 } from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {validateAppContract} from './app-contract-lib';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Manifests are validated at their use sites.
 type JsonObject = Record<string, any>;
@@ -699,6 +700,99 @@ function verifyProfileManifests(report: Report): void {
   }
 }
 
+function verifyAppContracts(report: Report): void {
+  const contractPaths = [
+    join(ROOT, 'templates', 'vite-app', 'app.contract.json'),
+    ...filesMatching(
+      join(ROOT, 'apps'),
+      path => basename(path) === 'app.contract.json',
+    ),
+  ];
+  for (const path of contractPaths) {
+    if (!existsSync(path)) continue;
+    try {
+      const data = loadJson(path);
+      const contract = validateAppContract(data);
+      const appDir = dirname(path);
+      const specPath = join(appDir, contract.browserSpec);
+      if (!existsSync(specPath)) {
+        report.error(
+          `${relative(path)} declares browserSpec "${contract.browserSpec}" which does not exist`,
+        );
+      }
+    } catch (error) {
+      report.error(
+        `${relative(path)} is invalid app contract: ${errorMessage(error)}`,
+      );
+    }
+  }
+}
+
+function verifyAntigravityConfig(report: Report): void {
+  const hooksPath = join(ROOT, '.agents', 'hooks.json');
+  if (existsSync(hooksPath)) {
+    try {
+      const data = loadJson(hooksPath);
+      if (
+        !data ||
+        typeof data !== 'object' ||
+        !data.hooks ||
+        typeof data.hooks !== 'object'
+      ) {
+        report.error('.agents/hooks.json must contain a "hooks" object');
+      }
+    } catch (error) {
+      report.error(
+        `.agents/hooks.json is invalid JSON: ${errorMessage(error)}`,
+      );
+    }
+  }
+
+  const skills = filesMatching(
+    join(ROOT, '.agents', 'skills'),
+    path => basename(path) === 'SKILL.md',
+  );
+  for (const path of skills) {
+    const content = readFileSync(path, 'utf8');
+    if (
+      !content.startsWith('---') ||
+      !content.includes('name:') ||
+      !content.includes('description:')
+    ) {
+      report.error(
+        `${relative(path)} is missing YAML frontmatter with name and description`,
+      );
+    }
+  }
+}
+
+function verifyMachineLocalPaths(report: Report): void {
+  const markdownFiles = [
+    join(ROOT, 'README.md'),
+    join(ROOT, 'PROJECT.md'),
+    join(ROOT, 'AGENTS.md'),
+    ...filesMatching(join(ROOT, 'docs'), path => extname(path) === '.md'),
+    ...filesMatching(join(ROOT, 'apps'), path => extname(path) === '.md'),
+    ...filesMatching(join(ROOT, '.agents'), path => extname(path) === '.md'),
+  ];
+
+  for (const path of markdownFiles) {
+    if (!existsSync(path)) continue;
+    const content = readFileSync(path, 'utf8');
+    if (
+      content.includes('file:///Users/') ||
+      content.includes('file:///home/')
+    ) {
+      report.error(`${relative(path)} contains machine-local file:/// URL`);
+    }
+    if (/\/(?:Users|home)\/[a-zA-Z0-9_-]+\//.test(content)) {
+      report.error(
+        `${relative(path)} contains absolute user home directory path`,
+      );
+    }
+  }
+}
+
 export function verifyRepository(): Report {
   const report = new Report();
   verifyRequiredPaths(report);
@@ -715,6 +809,9 @@ export function verifyRepository(): Report {
   verifyBaselineManifest(report);
   verifyActiveProfiles(report, config);
   verifyProfileManifests(report);
+  verifyAppContracts(report);
+  verifyAntigravityConfig(report);
+  verifyMachineLocalPaths(report);
   if (config?.initialized) {
     for (const path of [join(ROOT, 'README.md'), join(ROOT, 'PROJECT.md')]) {
       const content = readFileSync(path, 'utf8');

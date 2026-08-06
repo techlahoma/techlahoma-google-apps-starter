@@ -88,6 +88,10 @@
 
 - The repository root is the shared control plane; runnable demos belong under `apps/<slug>/`.
 - Use `bun run app:create plan` followed by `app:create apply` to create a workspace additively.
+- Newly generated apps receive `app.contract.json` with lifecycle status `scaffold`.
+- Every completed app owns its `app.contract.json` (status: `complete`) and browser smoke spec (for example, `apps/<slug>/e2e/smoke.spec.ts`).
+- Distinguish app `check` (typecheck, unit tests, build) from app `verify` (`bun run app:verify --app <slug>`).
+- Run `bun run agent:finish --changed` or `bun run app:verify --app <slug>` before reporting an app complete.
 - Never place a generated app in the root or overwrite an existing `apps/<slug>` directory.
 - Keep app dependencies declared in that app package and preserve the single root lockfile.
 - Read `apps/AGENTS.md` before changing an app workspace.

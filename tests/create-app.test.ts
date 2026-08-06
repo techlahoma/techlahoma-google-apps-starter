@@ -1,4 +1,6 @@
 import {describe, expect, test} from 'bun:test';
+import {resolve} from 'node:path';
+import {loadJson} from '../scripts/project-starter';
 import {
   makeAppPlan,
   renderAppTemplate,
@@ -40,5 +42,13 @@ describe('app workspace generator', () => {
         title: 'Room Pulse',
       }),
     ).toBe('Room Pulse at apps/room-pulse');
+  });
+
+  test('app.contract.json exists in template and is valid scaffold', () => {
+    const templateContract = loadJson(
+      resolve(import.meta.dir, '../templates/vite-app/app.contract.json'),
+    );
+    expect(templateContract.status).toBe('scaffold');
+    expect(templateContract.schemaVersion).toBe(1);
   });
 });

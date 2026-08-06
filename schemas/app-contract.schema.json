@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://techlahoma.org/schemas/app-contract.schema.json",
+  "title": "Techlahoma App Workspace Contract",
+  "description": "Lifecycle, capabilities, and required verification proof for a monorepo app workspace.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "status",
+    "capabilities",
+    "browserSpec",
+    "requiredProof"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["scaffold", "complete"]
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "static",
+          "browser",
+          "firebase-emulator",
+          "authentication",
+          "database"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "browserSpec": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requiredProof": {
+      "type": "object",
+      "required": [
+        "primaryFlow",
+        "failureOrEmptyPath",
+        "phoneWidth",
+        "cleanBrowserConsole"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "primaryFlow": {
+          "type": "boolean"
+        },
+        "failureOrEmptyPath": {
+          "type": "boolean"
+        },
+        "phoneWidth": {
+          "type": "boolean"
+        },
+        "cleanBrowserConsole": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
