@@ -31,8 +31,12 @@ This starter is the public build workspace for Techlahoma's **Intro to Google De
 workshop with GDG Tulsa. These attendee-safe resources are public:
 
 - [Event handout and resource hub](docs/events/README.md)
+- [Download Google Antigravity for macOS or Windows](https://antigravity.google/download)
 - [Copy-ready Antigravity demo prompts](docs/events/antigravity-one-shot-prompts.md)
 - [Live event page](https://luma.com/j0vrcn5h)
+- [Follow Techlahoma Events on Luma for future events and updates](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC)
+- [GDG Tulsa website](https://gdgtulsa.com/)
+- [GDG Tulsa on Instagram](https://www.instagram.com/gdgtulsa/)
 - [GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/)
 - [Techlahoma Code of Conduct](https://www.techlahoma.org/code-of-conduct/)
 
