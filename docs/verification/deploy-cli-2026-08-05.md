@@ -1,10 +1,12 @@
-# Verification Record: Simplified Deploy CLI Implementation & Incident Fix
+# Verification Record: Simplified Deploy CLI Implementation, Incident Fix & Staging Hardening
 
-- `Tease:` Verification evidence for single-command `bun run deploy` deployment interface, site readiness polling, and error diagnostic evidence preservation.
-- `Lede:` Full monorepo verification, regression tests, and CLI dry-run checks passed cleanly for the simplified deployment workflow.
+- `Tease:` Verification evidence for single-command `bun run deploy` deployment interface, self-contained deployment bundle staging, hosting config preservation, greenfield/adoption setup flows, site readiness polling, and error diagnostic evidence preservation.
+- `Lede:` Full monorepo verification, regression tests, and CLI dry-run checks passed 100% cleanly for the simplified deployment workflow.
 - `Why it matters:`
-  - Resolves incident where failed Firebase deployment subprocesses hid error evidence and wiped debug logs.
-  - Adds bounded site-readiness polling after site creation, sanitized evidence persistence to `.starter/tmp/deploy-errors/`, site status calculation in app picker, and automatic reuse of existing secondary sites.
+  - Resolves incident where Firebase CLI rejected deployments due to public directory escaping the temporary project directory (`Error: ../apps/.../dist is outside of project directory`).
+  - Implements self-contained deployment bundles (`.starter/tmp/.firebase-deploy-tmp-<slug>-<rand>/`) with bundle-local `public` directory while preserving custom rewrites, headers, redirects, cleanUrls, and trailingSlash settings.
+  - Adds greenfield ("Create a new Firebase project") and adoption ("Use an existing Firebase project") interactive setup flows.
+  - Hardens deployment system to work generically across any authenticated account using account-independent test fixtures.
   - Ensures TypeScript strictness, Biome formatting, GTS linting, and app checks remain 100% clean.
 - `Go deeper:`
   - Review automated tests in [`tests/deploy.test.ts`](../../tests/deploy.test.ts).
@@ -24,10 +26,10 @@ $ bun test tests
 bun test v1.3.14 (0d9b296a)
 
 tests/deploy.test.ts:
-(pass) 29 unit & integration tests passed [192ms]
+(pass) 38 unit & integration tests passed [218ms]
 
 tests/google-cloud.test.ts:
-(pass) 16 unit tests passed [14ms]
+(pass) 16 unit tests passed [17ms]
 
 tests/create-app.test.ts:
 (pass) 3 unit tests passed [7ms]
@@ -38,14 +40,14 @@ apps:check: bison-byte-dash, example-crm, numeronym-generator, room-pulse, welco
 
 ### 2. Regression & Behavioral Test Proof (`tests/deploy.test.ts`)
 
+- `RED-GREEN REGRESSION TEST (self-contained deployment bundle)`: Verifies that staged `firebase.json` specifies `"public": "public"` inside the bundle directory (never containing `..`), and preserves app's custom `rewrites`, `cleanUrls`, `trailingSlash`, and `headers`. Verified with `StrictMockCommandExecutor` that rejects any escaping `public` path.
+- `App Hosting Config Resolution`: Verifies object-form, array-form matching, and throws `AMBIGUOUS_HOSTING_CONFIG` when multiple hosting blocks exist without explicit target match.
+- `Path Traversal & Symlink Safety`: Verifies validation throws `PUBLIC_DIRECTORY_MISSING`, `PUBLIC_DIRECTORY_OUTSIDE_REPOSITORY`, or `UNSAFE_PUBLIC_SYMLINK` before any process execution.
+- `Greenfield & Adoption Flows`: Verifies project creation command generation (`projects:create`), input validation (`INVALID_PROJECT_ID`), site classification (`mapped` vs `unclaimed`), and dry-run non-mutative guarantee.
 - `sanitizeFirebaseErrorOutput`: Verifies redaction of bearer tokens, API keys (`AIza`), `FIREBASE_TOKEN`, and `access_token`, ANSI sequence removal, and line bounding.
 - `pollSiteReadiness`: Verifies readiness succeeds after transient 404 responses (with 0ms sleep in tests), times out with `SITE_NOT_READY`, and fails immediately without retrying non-transient errors (403 Forbidden).
-- `ensureSiteExists`: Verifies existing secondary sites (e.g. `numeronym-generator-ef4ba1`) skip site creation and readiness polling.
+- `ensureSiteExists`: Verifies existing secondary sites skip site creation and readiness polling.
 - `determineAppStatuses`: Verifies app picker distinguishes `not_configured`, `site_missing`, `site_exists`, and `deployed`.
-- `REGRESSION TEST (eb995e4 fix)`: Verifies that when `firebase deploy` fails:
-  1. Sanitized error output is surfaced in terminal output and error payload.
-  2. Diagnostic receipt file is saved on disk under `.starter/tmp/deploy-errors/deploy-error-<app>-<timestamp>.json` with safe command, exit code, and sanitized stderr (no process environment dump).
-  3. Temporary deploy workspace directory is cleaned up reliably.
 
 ### 3. Manual CLI Verification Commands
 
@@ -57,7 +59,7 @@ bun run deploy --all --dry-run
 ```
 
 Result:
-All dry-run commands printed target project, site IDs, and planned execution steps without mutating local configuration or remote Firebase resources.
+All dry-run commands printed target project, site IDs, resolved public paths, hosting config summaries, site actions, and planned execution steps without mutating local configuration or remote Firebase resources.
 
 ## Limitations & Authority Boundary
 

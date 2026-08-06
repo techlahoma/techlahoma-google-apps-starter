@@ -14,6 +14,13 @@ export interface PromptAdapter {
   selectProject(projects: FirebaseProject[]): Promise<FirebaseProject>;
   confirmSetup(projectId: string): Promise<boolean>;
   confirmLogin(): Promise<boolean>;
+  selectSetupMode(): Promise<'existing' | 'new' | 'cancel'>;
+  promptNewProjectDetails(): Promise<{projectId: string; displayName: string}>;
+  confirmProjectCreation(
+    projectId: string,
+    displayName: string,
+  ): Promise<boolean>;
+  confirmAdoptExistingSite(siteId: string, appTitle: string): Promise<boolean>;
 }
 
 export class CliPromptAdapter implements PromptAdapter {
@@ -121,6 +128,72 @@ export class CliPromptAdapter implements PromptAdapter {
       '\nFirebase CLI authentication is missing. Start login flow now? (Y/n) ',
     );
     if (!answer) return true;
+    return answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes';
+  }
+
+  async selectSetupMode(): Promise<'existing' | 'new' | 'cancel'> {
+    console.log('\nSet up Firebase deployment\n');
+    console.log('  1) Use an existing Firebase project');
+    console.log('  2) Create a new Firebase project');
+    console.log('  3) Cancel');
+
+    const answer = await this.ask('\nChoice [1-3] (default 1): ');
+    if (answer === '2') return 'new';
+    if (answer === '3') return 'cancel';
+    return 'existing';
+  }
+
+  async promptNewProjectDetails(): Promise<{
+    projectId: string;
+    displayName: string;
+  }> {
+    console.log('\nCreate a new Firebase project details:');
+    const displayName = await this.ask(
+      'Project Display Name (e.g. My Workshop Apps): ',
+    );
+    const defaultSlug =
+      displayName
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') || 'my-workshop-apps';
+    const projectId = await this.ask(
+      `Globally Unique Project ID (default ${defaultSlug}): `,
+    );
+
+    return {
+      displayName: displayName.trim() || 'My Workshop Apps',
+      projectId: (projectId.trim() || defaultSlug).toLowerCase(),
+    };
+  }
+
+  async confirmProjectCreation(
+    projectId: string,
+    displayName: string,
+  ): Promise<boolean> {
+    console.log('\nProject Creation Effect:');
+    console.log(
+      `  firebase projects:create ${projectId} --display-name "${displayName}"`,
+    );
+    console.log(
+      '  This creates a shared Google Cloud project and enables Firebase.',
+    );
+    const answer = await this.ask(
+      `Confirm creation of project "${projectId}"? (y/N) `,
+    );
+    return answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes';
+  }
+
+  async confirmAdoptExistingSite(
+    siteId: string,
+    appTitle: string,
+  ): Promise<boolean> {
+    console.log(
+      `\n⚠️ WARNING: Secondary Hosting site "${siteId}" already exists on Firebase and may contain existing releases or content.`,
+    );
+    const answer = await this.ask(
+      `Adopt existing site "${siteId}" for app "${appTitle}"? (y/N) `,
+    );
     return answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes';
   }
 }

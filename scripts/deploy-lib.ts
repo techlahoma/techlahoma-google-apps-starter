@@ -25,6 +25,18 @@ export interface DiscoveredApp {
   siteId?: string;
   deployedUrl?: string;
   status?: AppDeployStatus;
+  hostingConfigSummary?: HostingConfigSummary;
+}
+
+export interface HostingConfigSummary {
+  publicRelPath: string;
+  rewritesCount: number;
+  hasSpaRewrite: boolean;
+  cleanUrls: boolean;
+  trailingSlash: boolean;
+  redirectsCount: number;
+  headersCount: number;
+  hasDynamicRewrites: boolean;
 }
 
 export interface FirebaseProject {
@@ -37,6 +49,15 @@ export interface FirebaseHostingSite {
   siteId: string;
   type?: 'DEFAULT_SITE' | 'USER_SITE' | string;
   defaultUrl?: string;
+}
+
+export type SecondarySiteClassification =
+  'created' | 'mapped' | 'adopted' | 'unclaimed' | 'unknown';
+
+export interface ClassifiedSecondarySite {
+  siteId: string;
+  classification: SecondarySiteClassification;
+  appSlug?: string;
 }
 
 export interface DeployReceipt {
@@ -135,14 +156,14 @@ export function sanitizeFirebaseErrorOutput(output: string): string {
   // eslint-disable-next-line no-control-regex
   let clean = output.replace(/\u001b\[[0-9;]*m/g, '');
 
-  // Redact Bearer tokens, API keys, and sensitive flags/parameters
+  // Redact Bearer tokens, API keys, and sensitive parameters
   clean = clean.replace(/Bearer\s+[A-Za-z0-9._~+/-]+=*/gi, 'Bearer [REDACTED]');
   clean = clean.replace(/AIza[0-9A-Za-z-_]{20,50}/g, '[REDACTED_API_KEY]');
   clean = clean.replace(/FIREBASE_TOKEN=\S+/gi, 'FIREBASE_TOKEN=[REDACTED]');
   clean = clean.replace(/access_token=\S+/gi, 'access_token=[REDACTED]');
   clean = clean.replace(/refresh_token=\S+/gi, 'refresh_token=[REDACTED]');
 
-  // Limit output lines and characters to prevent diagnostic log dumps
+  // Limit output lines and characters to prevent log dumps
   const lines = clean.split(/\r?\n/).filter(l => l.trim().length > 0);
   const boundedLines = lines.slice(-25);
   let boundedText = boundedLines.join('\n');
@@ -162,11 +183,26 @@ export async function saveDiagnosticReceipt(options: {
   exitCode: number;
   command: string[];
   firebaseStderr: string;
+  hostingConfigSummary?: HostingConfigSummary;
+  sourcePublicDir?: string;
+  stagedPublicDir?: string;
+  bundleCleaned?: boolean;
 }): Promise<string> {
-  const {rootDir, app, projectId, siteId, exitCode, command, firebaseStderr} =
-    options;
-  const tmpDir = join(rootDir, '.starter', 'tmp', 'deploy-errors');
+  const {
+    rootDir,
+    app,
+    projectId,
+    siteId,
+    exitCode,
+    command,
+    firebaseStderr,
+    hostingConfigSummary,
+    sourcePublicDir,
+    stagedPublicDir,
+    bundleCleaned,
+  } = options;
 
+  const tmpDir = join(rootDir, '.starter', 'tmp', 'deploy-errors');
   await mkdir(tmpDir, {recursive: true});
 
   const timestampStr = new Date().toISOString().replace(/[:.]/g, '-');
@@ -181,6 +217,10 @@ export async function saveDiagnosticReceipt(options: {
     exitCode,
     command,
     firebaseStderr,
+    ...(hostingConfigSummary ? {hostingConfigSummary} : {}),
+    ...(sourcePublicDir ? {sourcePublicDir} : {}),
+    ...(stagedPublicDir ? {stagedPublicDir} : {}),
+    bundleCleaned: bundleCleaned ?? true,
   };
 
   await Bun.write(filePath, `${JSON.stringify(safeData, null, 2)}\n`);
@@ -386,6 +426,59 @@ export async function checkFirebaseAuth(
   return false;
 }
 
+export async function createNewFirebaseProject(
+  firebaseBinary: string,
+  projectId: string,
+  displayName: string,
+  executor: CommandExecutor,
+  dryRun = false,
+): Promise<FirebaseProject> {
+  const cleanId = projectId.trim().toLowerCase();
+  if (!/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(cleanId)) {
+    throw new DeployError(
+      'INVALID_PROJECT_ID',
+      `Project ID "${projectId}" is invalid.`,
+      'Firebase project IDs must be 6-30 characters long, contain only lowercase letters, numbers, and hyphens, and start with a letter.',
+    );
+  }
+
+  if (dryRun) {
+    return {projectId: cleanId, displayName: displayName.trim()};
+  }
+
+  const res = await executor.exec([
+    firebaseBinary,
+    'projects:create',
+    cleanId,
+    '--display-name',
+    displayName.trim(),
+    '--non-interactive',
+  ]);
+
+  if (res.exitCode !== 0) {
+    const sanitized = sanitizeFirebaseErrorOutput(res.stderr || res.stdout);
+    throw new DeployError(
+      'PROJECT_CREATION_FAILED',
+      `Failed to create Firebase project "${cleanId}".`,
+      'Check if the project ID is already taken globally or if your account reached project creation quota limits.',
+      {
+        projectId: cleanId,
+        exitCode: res.exitCode,
+        command: [
+          firebaseBinary,
+          'projects:create',
+          cleanId,
+          '--display-name',
+          displayName.trim(),
+        ],
+        firebaseStderr: sanitized,
+      },
+    );
+  }
+
+  return {projectId: cleanId, displayName: displayName.trim()};
+}
+
 export async function listFirebaseProjects(
   firebaseBinary: string,
   executor: CommandExecutor,
@@ -516,6 +609,30 @@ export async function listHostingSites(
       {error},
     );
   }
+}
+
+export function classifySecondarySites(
+  sites: FirebaseHostingSite[],
+  config: GoogleProjectConfig | null,
+  projectId: string,
+): ClassifiedSecondarySite[] {
+  const mappedSites = new Map<string, string>();
+  if (config?.sites) {
+    for (const [appSlug, siteId] of Object.entries(config.sites)) {
+      mappedSites.set(siteId, appSlug);
+    }
+  }
+
+  return sites
+    .filter(s => s.type !== 'DEFAULT_SITE' && s.siteId !== projectId)
+    .map(s => {
+      const appSlug = mappedSites.get(s.siteId);
+      return {
+        siteId: s.siteId,
+        classification: appSlug ? 'mapped' : 'unclaimed',
+        ...(appSlug ? {appSlug} : {}),
+      };
+    });
 }
 
 export function getProtectedDefaultSite(
@@ -736,6 +853,191 @@ export async function buildAppWorkspace(
   }
 }
 
+export interface AppHostingResolution {
+  hostingConfig: Record<string, unknown>;
+  publicRelPath: string;
+  sourcePublicDir: string;
+  realPublicDir: string;
+  summary: HostingConfigSummary;
+}
+
+export async function resolveAppHostingConfig(
+  appDirectory: string,
+  appSlug: string,
+  rootDir: string,
+): Promise<AppHostingResolution> {
+  const fbPath = join(appDirectory, 'firebase.json');
+  const fbFile = Bun.file(fbPath);
+
+  let rawConfig: Record<string, unknown> = {};
+  if (await fbFile.exists()) {
+    try {
+      const text = await fbFile.text();
+      rawConfig = JSON.parse(text);
+    } catch (err) {
+      throw new DeployError(
+        'INVALID_HOSTING_CONFIG',
+        `App configuration at ${relative(rootDir, fbPath)} is invalid JSON.`,
+        'Fix syntax errors in app firebase.json.',
+        {cause: err},
+      );
+    }
+  }
+
+  const rawHosting = rawConfig.hosting;
+  let selectedHosting: Record<string, unknown> | null = null;
+
+  if (Array.isArray(rawHosting)) {
+    if (rawHosting.length === 0) {
+      selectedHosting = {public: 'dist'};
+    } else {
+      const targetMatches = rawHosting.filter(
+        h =>
+          h &&
+          typeof h === 'object' &&
+          ((h as Record<string, unknown>).target === appSlug ||
+            (h as Record<string, unknown>).site === appSlug),
+      );
+
+      if (targetMatches.length === 1) {
+        selectedHosting = targetMatches[0] as Record<string, unknown>;
+      } else if (targetMatches.length > 1) {
+        throw new DeployError(
+          'AMBIGUOUS_HOSTING_CONFIG',
+          `App firebase.json contains multiple hosting configurations matching target "${appSlug}".`,
+          'Ensure each hosting configuration in array has a unique target.',
+        );
+      } else {
+        if (
+          rawHosting.length === 1 &&
+          rawHosting[0] &&
+          typeof rawHosting[0] === 'object'
+        ) {
+          selectedHosting = rawHosting[0] as Record<string, unknown>;
+        } else {
+          throw new DeployError(
+            'AMBIGUOUS_HOSTING_CONFIG',
+            `App firebase.json contains ${rawHosting.length} hosting configurations, but none match target "${appSlug}".`,
+            `Specify "target": "${appSlug}" on the intended hosting block in apps/${appSlug}/firebase.json.`,
+          );
+        }
+      }
+    }
+  } else if (rawHosting && typeof rawHosting === 'object') {
+    selectedHosting = rawHosting as Record<string, unknown>;
+  } else {
+    selectedHosting = {public: 'dist'};
+  }
+
+  const publicRelPath =
+    typeof selectedHosting.public === 'string' && selectedHosting.public.trim()
+      ? selectedHosting.public.trim()
+      : 'dist';
+
+  const sourcePublicDir = resolve(appDirectory, publicRelPath);
+
+  const {lstat, stat, realpath} = await import('node:fs/promises');
+
+  let lstats;
+  try {
+    lstats = await lstat(sourcePublicDir);
+  } catch {
+    throw new DeployError(
+      'PUBLIC_DIRECTORY_MISSING',
+      `Resolved public directory "${relative(rootDir, sourcePublicDir)}" for app "${appSlug}" does not exist.`,
+      `Ensure app build outputs to "${publicRelPath}" or update apps/${appSlug}/firebase.json.`,
+    );
+  }
+
+  let realPublicDir: string;
+  try {
+    realPublicDir = await realpath(sourcePublicDir);
+  } catch (err) {
+    throw new DeployError(
+      'PUBLIC_DIRECTORY_MISSING',
+      `Failed to resolve canonical path for public directory "${sourcePublicDir}".`,
+      undefined,
+      {cause: err},
+    );
+  }
+
+  const realStats = await stat(realPublicDir);
+  if (!realStats.isDirectory()) {
+    throw new DeployError(
+      'PUBLIC_DIRECTORY_MISSING',
+      `Resolved public path "${relative(rootDir, sourcePublicDir)}" for app "${appSlug}" is not a directory.`,
+      'Public path must be a valid directory.',
+    );
+  }
+
+  const realRootDir = await realpath(rootDir);
+  const relToRoot = relative(realRootDir, realPublicDir);
+  if (relToRoot.startsWith('..') || isAbsolute(relToRoot)) {
+    throw new DeployError(
+      'PUBLIC_DIRECTORY_OUTSIDE_REPOSITORY',
+      `Public directory "${realPublicDir}" resolves outside the repository root "${realRootDir}".`,
+      'Public directory must reside inside the repository workspace.',
+    );
+  }
+
+  if (lstats.isSymbolicLink()) {
+    const realAppDir = await realpath(appDirectory);
+    const relToApp = relative(realAppDir, realPublicDir);
+    if (relToApp.startsWith('..') || isAbsolute(relToApp)) {
+      throw new DeployError(
+        'UNSAFE_PUBLIC_SYMLINK',
+        `Public directory symlink "${sourcePublicDir}" points outside the app workspace directory "${realAppDir}".`,
+        'Symlinks must resolve inside the app workspace directory.',
+      );
+    }
+  }
+
+  const rewrites = Array.isArray(selectedHosting.rewrites)
+    ? selectedHosting.rewrites
+    : [];
+  const redirects = Array.isArray(selectedHosting.redirects)
+    ? selectedHosting.redirects
+    : [];
+  const headers = Array.isArray(selectedHosting.headers)
+    ? selectedHosting.headers
+    : [];
+
+  const hasSpaRewrite = rewrites.some(
+    r =>
+      r &&
+      typeof r === 'object' &&
+      (r as {source?: string; destination?: string}).source === '**' &&
+      typeof (r as {destination?: string}).destination === 'string',
+  );
+
+  const hasDynamicRewrites = rewrites.some(
+    r =>
+      r &&
+      typeof r === 'object' &&
+      (typeof (r as {function?: string}).function === 'string' ||
+        typeof (r as {run?: unknown}).run === 'object'),
+  );
+
+  const summary: HostingConfigSummary = {
+    publicRelPath,
+    rewritesCount: rewrites.length,
+    hasSpaRewrite,
+    cleanUrls: Boolean(selectedHosting.cleanUrls),
+    trailingSlash: Boolean(selectedHosting.trailingSlash),
+    redirectsCount: redirects.length,
+    headersCount: headers.length,
+    hasDynamicRewrites,
+  };
+
+  return {
+    hostingConfig: selectedHosting,
+    publicRelPath,
+    sourcePublicDir,
+    realPublicDir,
+    summary,
+  };
+}
+
 export async function deployAppWithTarget(options: {
   rootDir: string;
   firebaseBinary: string;
@@ -746,22 +1048,33 @@ export async function deployAppWithTarget(options: {
 }): Promise<void> {
   const {rootDir, firebaseBinary, projectId, app, siteId, executor} = options;
 
-  // Verify dist directory exists before deployment
-  const distDir = join(app.directory, 'dist');
-  if (!(await Bun.file(join(distDir, 'index.html')).exists())) {
-    throw new DeployError(
-      'MISSING_BUILD_OUTPUT',
-      `Build output dist/index.html does not exist for app workspace apps/${app.slug}.`,
-      `Run "bun run --cwd apps/${app.slug} build" first.`,
-    );
-  }
+  // 1. Resolve source app hosting configuration and canonical public directory
+  const {hostingConfig, sourcePublicDir, realPublicDir, summary} =
+    await resolveAppHostingConfig(app.directory, app.slug, rootDir);
 
-  // Create temporary deploy workspace directory under root scratch/tmp
+  // 2. Create temporary project directory inside repository scratch/tmp
   const tmpDirName = `.firebase-deploy-tmp-${app.slug}-${Math.random().toString(36).substring(2, 8)}`;
-  const tmpDir = join(rootDir, tmpDirName);
+  const tmpDir = join(rootDir, '.starter', 'tmp', tmpDirName);
 
   try {
     await mkdir(tmpDir, {recursive: true});
+
+    // 3. Stage self-contained public directory inside deployment bundle
+    const stagedPublicDir = join(tmpDir, 'public');
+    const {cp} = await import('node:fs/promises');
+    await cp(realPublicDir, stagedPublicDir, {recursive: true});
+
+    // 4. Construct bundle-local firebase.json preserving app's source hosting settings
+    const preservedHostingObj: Record<string, unknown> = {
+      ...hostingConfig,
+      target: app.slug,
+      public: 'public',
+    };
+    delete preservedHostingObj.site; // remove direct site property if present
+
+    const firebaseJsonContent = {
+      hosting: preservedHostingObj,
+    };
 
     const firebasercContent = {
       projects: {
@@ -776,16 +1089,6 @@ export async function deployAppWithTarget(options: {
       },
     };
 
-    const relativeDistPath = relative(tmpDir, distDir).replace(/\\/g, '/');
-
-    const firebaseJsonContent = {
-      hosting: {
-        target: app.slug,
-        public: relativeDistPath,
-        ignore: ['**/.*', '**/node_modules/**'],
-      },
-    };
-
     await Bun.write(
       join(tmpDir, '.firebaserc'),
       JSON.stringify(firebasercContent, null, 2),
@@ -794,6 +1097,16 @@ export async function deployAppWithTarget(options: {
       join(tmpDir, 'firebase.json'),
       JSON.stringify(firebaseJsonContent, null, 2),
     );
+
+    // Assert before execution that public is bundle-local and inside tmpDir
+    const relPublicInBundle = relative(tmpDir, stagedPublicDir);
+    if (relPublicInBundle.startsWith('..') || isAbsolute(relPublicInBundle)) {
+      throw new DeployError(
+        'DEPLOYMENT_BUNDLE_FAILED',
+        `Staged public path "${stagedPublicDir}" escapes temporary deployment bundle "${tmpDir}".`,
+        'Deployment bundle public directory must be strictly bundle-local.',
+      );
+    }
 
     const relFirebaseBinary = relative(
       tmpDir,
@@ -836,6 +1149,10 @@ export async function deployAppWithTarget(options: {
         exitCode: res.exitCode,
         command: safeCmd,
         firebaseStderr: sanitized,
+        hostingConfigSummary: summary,
+        sourcePublicDir: relative(rootDir, sourcePublicDir).replace(/\\/g, '/'),
+        stagedPublicDir: 'public',
+        bundleCleaned: true,
       });
 
       throw new DeployError(

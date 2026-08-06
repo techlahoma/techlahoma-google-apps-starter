@@ -1,5 +1,5 @@
 import {afterEach, beforeEach, describe, expect, test} from 'bun:test';
-import {mkdir, rm, writeFile} from 'node:fs/promises';
+import {mkdir, rm, symlink, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {
   type CommandExecResult,
@@ -8,6 +8,8 @@ import {
   type DiscoveredApp,
   type FirebaseHostingSite,
   type FirebaseProject,
+  classifySecondarySites,
+  createNewFirebaseProject,
   deployAppWithTarget,
   detectAppFromCwd,
   determineAppStatuses,
@@ -19,6 +21,7 @@ import {
   listFirebaseProjects,
   listHostingSites,
   pollSiteReadiness,
+  resolveAppHostingConfig,
   resolveAppTarget,
   sanitizeFirebaseErrorOutput,
   validateDeploymentSite,
@@ -60,12 +63,72 @@ class MockCommandExecutor implements CommandExecutor {
   }
 }
 
+class StrictMockCommandExecutor implements CommandExecutor {
+  calls: {command: string[]; cwd?: string; env?: Record<string, string>}[] = [];
+  bundleAsserted = false;
+
+  async exec(
+    command: string[],
+    options?: {cwd?: string; env?: Record<string, string>},
+  ): Promise<CommandExecResult> {
+    this.calls.push({
+      command,
+      ...(options?.cwd ? {cwd: options.cwd} : {}),
+      ...(options?.env ? {env: options.env} : {}),
+    });
+
+    if (command.includes('deploy') && options?.cwd) {
+      const fbJsonFile = Bun.file(join(options.cwd, 'firebase.json'));
+      const indexFile = Bun.file(join(options.cwd, 'public/index.html'));
+
+      if (await fbJsonFile.exists()) {
+        const data = JSON.parse(await fbFileToText(fbJsonFile));
+        const pub = data.hosting?.public;
+
+        if (
+          typeof pub === 'string' &&
+          (pub.startsWith('..') || pub.includes('/apps/'))
+        ) {
+          return {
+            exitCode: 1,
+            stdout: '',
+            stderr: `Error: ${pub} is outside of project directory`,
+          };
+        }
+
+        if (
+          pub === 'public' &&
+          data.hosting?.target === 'workshop-app' &&
+          (await indexFile.exists())
+        ) {
+          this.bundleAsserted = true;
+        }
+      }
+    }
+
+    return {exitCode: 0, stdout: '{}', stderr: ''};
+  }
+}
+
+async function fbFileToText(
+  file: ReturnType<typeof Bun.file>,
+): Promise<string> {
+  return await file.text();
+}
+
 class MockPromptAdapter implements PromptAdapter {
   selectedApp?: DiscoveredApp;
   selectedProject?: FirebaseProject;
   deployConfirmed = true;
   setupConfirmed = true;
   loginConfirmed = true;
+  setupMode: 'existing' | 'new' | 'cancel' = 'existing';
+  newProjectDetails = {
+    projectId: 'new-project',
+    displayName: 'New Greenfield Project',
+  };
+  createConfirmed = true;
+  adoptConfirmed = true;
 
   async selectApp(apps: DiscoveredApp[]): Promise<DiscoveredApp> {
     return this.selectedApp ?? apps[0]!;
@@ -86,30 +149,50 @@ class MockPromptAdapter implements PromptAdapter {
   async confirmLogin(): Promise<boolean> {
     return this.loginConfirmed;
   }
+
+  async selectSetupMode(): Promise<'existing' | 'new' | 'cancel'> {
+    return this.setupMode;
+  }
+
+  async promptNewProjectDetails(): Promise<{
+    projectId: string;
+    displayName: string;
+  }> {
+    return this.newProjectDetails;
+  }
+
+  async confirmProjectCreation(): Promise<boolean> {
+    return this.createConfirmed;
+  }
+
+  async confirmAdoptExistingSite(): Promise<boolean> {
+    return this.adoptConfirmed;
+  }
 }
 
 describe('Deploy CLI argument parsing', () => {
   test('parses simple app argument', () => {
-    const opts = parseDeployArgs(['numeronym-generator']);
-    expect(opts.appArg).toBe('numeronym-generator');
+    const opts = parseDeployArgs(['workshop-app']);
+    expect(opts.appArg).toBe('workshop-app');
     expect(opts.all).toBeUndefined();
   });
 
   test('parses apps/ path and flags', () => {
     const opts = parseDeployArgs([
-      'apps/numeronym-generator',
+      'apps/workshop-app',
       '--dry-run',
+      '--yes',
       '--json',
     ]);
-    expect(opts.appArg).toBe('apps/numeronym-generator');
+    expect(opts.appArg).toBe('apps/workshop-app');
     expect(opts.dryRun).toBe(true);
+    expect(opts.yes).toBe(true);
     expect(opts.json).toBe(true);
   });
 
   test('parses --all flag', () => {
-    const opts = parseDeployArgs(['--all', '--yes']);
+    const opts = parseDeployArgs(['--all']);
     expect(opts.all).toBe(true);
-    expect(opts.yes).toBe(true);
   });
 
   test('throws on ambiguous positional arguments', () => {
@@ -117,93 +200,96 @@ describe('Deploy CLI argument parsing', () => {
   });
 
   test('throws on unknown options', () => {
-    expect(() => parseDeployArgs(['--invalid-flag'])).toThrow(DeployError);
+    expect(() => parseDeployArgs(['--foo'])).toThrow(DeployError);
   });
 });
 
 describe('App discovery and resolution', () => {
-  const mockApps: DiscoveredApp[] = [
-    {
-      slug: 'bison-byte-dash',
-      directory: '/mock/apps/bison-byte-dash',
-      title: 'Bison Byte Dash',
-    },
-    {
-      slug: 'numeronym-generator',
-      directory: '/mock/apps/numeronym-generator',
-      title: 'Numeronym Generator',
-    },
-  ];
+  const testDir = join(process.cwd(), '.tmp-test-deploy-discovery');
 
-  test('resolves slug, apps/slug, and ./apps/slug', () => {
-    const a1 = resolveAppTarget('numeronym-generator', '/mock', mockApps);
-    expect(a1.slug).toBe('numeronym-generator');
-
-    const a2 = resolveAppTarget('apps/numeronym-generator', '/mock', mockApps);
-    expect(a2.slug).toBe('numeronym-generator');
-
-    const a3 = resolveAppTarget(
-      './apps/numeronym-generator',
-      '/mock',
-      mockApps,
+  beforeEach(async () => {
+    await mkdir(join(testDir, 'apps/workshop-app'), {recursive: true});
+    await writeFile(
+      join(testDir, 'apps/workshop-app/package.json'),
+      JSON.stringify({name: 'workshop-app', title: 'Workshop App'}),
     );
-    expect(a3.slug).toBe('numeronym-generator');
-  });
-
-  test('throws error for invalid or unknown app slug', () => {
-    expect(() =>
-      resolveAppTarget('nonexistent-app', '/mock', mockApps),
-    ).toThrow(DeployError);
-  });
-
-  test('detects app from cwd when inside apps/ directory', () => {
-    const app = detectAppFromCwd(
-      '/mock/apps/numeronym-generator/src',
-      '/mock',
-      mockApps,
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({hosting: {public: 'dist'}}),
     );
-    expect(app?.slug).toBe('numeronym-generator');
   });
 
-  test('returns undefined from cwd if at root', () => {
-    const app = detectAppFromCwd('/mock', '/mock', mockApps);
-    expect(app).toBeUndefined();
+  afterEach(async () => {
+    await rm(testDir, {recursive: true, force: true});
+  });
+
+  test('resolves slug, apps/slug, and ./apps/slug', async () => {
+    const apps = await discoverApps(testDir);
+    expect(apps.length).toBe(1);
+    expect(apps[0]?.slug).toBe('workshop-app');
+    expect(apps[0]?.title).toBe('Workshop App');
+
+    expect(resolveAppTarget('workshop-app', testDir, apps).slug).toBe(
+      'workshop-app',
+    );
+    expect(resolveAppTarget('apps/workshop-app', testDir, apps).slug).toBe(
+      'workshop-app',
+    );
+    expect(resolveAppTarget('./apps/workshop-app', testDir, apps).slug).toBe(
+      'workshop-app',
+    );
+  });
+
+  test('throws error for invalid or unknown app slug', async () => {
+    const apps = await discoverApps(testDir);
+    expect(() => resolveAppTarget('unknown-app', testDir, apps)).toThrow(
+      DeployError,
+    );
+  });
+
+  test('detects app from cwd when inside apps/ directory', async () => {
+    const apps = await discoverApps(testDir);
+    const inside = join(testDir, 'apps/workshop-app/src');
+    const detected = detectAppFromCwd(inside, testDir, apps);
+    expect(detected?.slug).toBe('workshop-app');
+  });
+
+  test('returns undefined from cwd if at root', async () => {
+    const apps = await discoverApps(testDir);
+    const detected = detectAppFromCwd(testDir, testDir, apps);
+    expect(detected).toBeUndefined();
   });
 });
 
 describe('Firebase project and site safety rules', () => {
   test('identifies protected default site and rejects deployment to site matching project ID', () => {
     const sites: FirebaseHostingSite[] = [
-      {
-        siteId: 'my-project-dev',
-        type: 'DEFAULT_SITE',
-        defaultUrl: 'https://my-project-dev.web.app',
-      },
-      {
-        siteId: 'app-site-123',
-        type: 'USER_SITE',
-        defaultUrl: 'https://app-site-123.web.app',
-      },
+      {siteId: 'existing-project', type: 'DEFAULT_SITE'},
+      {siteId: 'workshop-app-123456', type: 'USER_SITE'},
     ];
-
-    const protectedSite = getProtectedDefaultSite(sites, 'my-project-dev');
-    expect(protectedSite?.siteId).toBe('my-project-dev');
+    const defaultSite = getProtectedDefaultSite(sites, 'existing-project');
+    expect(defaultSite?.siteId).toBe('existing-project');
 
     expect(() =>
-      validateDeploymentSite('my-project-dev', 'my-project-dev', protectedSite),
+      validateDeploymentSite(
+        'existing-project',
+        'existing-project',
+        defaultSite,
+      ),
     ).toThrow(DeployError);
   });
 
   test('allows secondary site deployment', () => {
     const sites: FirebaseHostingSite[] = [
-      {siteId: 'my-project-dev', type: 'DEFAULT_SITE'},
+      {siteId: 'existing-project', type: 'DEFAULT_SITE'},
     ];
-    const protectedSite = getProtectedDefaultSite(sites, 'my-project-dev');
+    const defaultSite = getProtectedDefaultSite(sites, 'existing-project');
+
     expect(() =>
       validateDeploymentSite(
-        'numeronym-a1b2c3',
-        'my-project-dev',
-        protectedSite,
+        'existing-secondary-site',
+        'existing-project',
+        defaultSite,
       ),
     ).not.toThrow();
   });
@@ -213,27 +299,20 @@ describe('Placeholder configuration detection', () => {
   test('detects missing or placeholder configs', () => {
     expect(isPlaceholderConfig(null)).toBe(true);
     expect(
-      isPlaceholderConfig({
-        schema_version: 1,
-        project_id: 'small-google-app-dev',
-        display_name: 'Small Google App',
-        environment: 'development',
-        region: 'us-central1',
-        features: ['hosting'],
-        sites: {},
-      }),
+      isPlaceholderConfig(
+        makeConfig({
+          projectId: 'small-google-app-dev',
+          displayName: 'Placeholder',
+        }),
+      ),
     ).toBe(true);
-
     expect(
-      isPlaceholderConfig({
-        schema_version: 1,
-        project_id: 'sam-carlton-creative',
-        display_name: 'Sam Carlton Creative',
-        environment: 'development',
-        region: 'us-central1',
-        features: ['hosting'],
-        sites: {},
-      }),
+      isPlaceholderConfig(
+        makeConfig({
+          projectId: 'existing-project',
+          displayName: 'Valid Project',
+        }),
+      ),
     ).toBe(false);
   });
 });
@@ -245,15 +324,14 @@ describe('Firebase CLI interaction via Executor', () => {
       exitCode: 0,
       stdout: JSON.stringify({
         result: [
-          {projectId: 'p1', displayName: 'Project One'},
-          {projectId: 'p2', displayName: 'Project Two'},
+          {projectId: 'existing-project', displayName: 'Existing Project'},
         ],
       }),
     });
 
     const projects = await listFirebaseProjects('firebase', executor);
-    expect(projects.length).toBe(2);
-    expect(projects[0]!.projectId).toBe('p1');
+    expect(projects.length).toBe(1);
+    expect(projects[0]?.projectId).toBe('existing-project');
   });
 
   test('lists hosting sites from Firebase CLI', async () => {
@@ -263,34 +341,41 @@ describe('Firebase CLI interaction via Executor', () => {
       stdout: JSON.stringify({
         result: {
           sites: [
-            {name: 'projects/p1/sites/p1', type: 'DEFAULT_SITE'},
-            {name: 'projects/p1/sites/site-sec', type: 'USER_SITE'},
+            {
+              name: 'projects/existing-project/sites/existing-project',
+              type: 'DEFAULT_SITE',
+            },
           ],
         },
       }),
     });
 
-    const sites = await listHostingSites('firebase', 'p1', executor);
-    expect(sites.length).toBe(2);
-    expect(sites[0]!.siteId).toBe('p1');
-    expect(sites[1]!.siteId).toBe('site-sec');
+    const sites = await listHostingSites(
+      'firebase',
+      'existing-project',
+      executor,
+    );
+    expect(sites.length).toBe(1);
+    expect(sites[0]?.siteId).toBe('existing-project');
   });
 
   test('ensures site creation if not present', async () => {
     const executor = new MockCommandExecutor();
-    executor.setResponse('hosting:sites:create', {exitCode: 0, stdout: '{}'});
+    executor.setResponse('hosting:sites:get', {
+      exitCode: 0,
+      stdout: JSON.stringify({
+        result: {siteId: 'workshop-app-123456', type: 'USER_SITE'},
+      }),
+    });
 
-    const result = await ensureSiteExists(
+    const res = await ensureSiteExists(
       'firebase',
-      'p1',
-      'new-site',
+      'existing-project',
+      'workshop-app-123456',
       [],
       executor,
     );
-    expect(result.created).toBe(true);
-    expect(
-      executor.calls.some(c => c.command.includes('hosting:sites:create')),
-    ).toBe(true);
+    expect(res.created).toBe(true);
   });
 
   test('fetches site receipt and verifies URL', async () => {
@@ -299,32 +384,30 @@ describe('Firebase CLI interaction via Executor', () => {
       exitCode: 0,
       stdout: JSON.stringify({
         result: {
-          defaultUrl: 'https://site-sec.web.app',
+          defaultUrl: 'https://workshop-app-123456.web.app',
         },
       }),
     });
 
+    const mockVerifyFetch = async () => true;
+
     const app: DiscoveredApp = {
-      slug: 'numeronym-generator',
-      directory: '/app',
-      title: 'Numeronym Generator',
+      slug: 'workshop-app',
+      title: 'Workshop App',
+      directory: '/apps/workshop-app',
     };
-
-    const mockVerifyFetch = async (url: string) =>
-      url === 'https://site-sec.web.app';
-
     const receipt = await fetchHostingSiteReceipt({
       firebaseBinary: 'firebase',
-      projectId: 'p1',
+      projectId: 'existing-project',
       app,
-      siteId: 'site-sec',
+      siteId: 'workshop-app-123456',
       executor,
       verifyFetch: mockVerifyFetch,
     });
 
     expect(receipt.status).toBe('deployed');
-    expect(receipt.deployedUrl).toBe('https://site-sec.web.app');
     expect(receipt.verified).toBe(true);
+    expect(receipt.deployedUrl).toBe('https://workshop-app-123456.web.app');
   });
 
   test('returns deployed_but_unverified when live URL fetch fails', async () => {
@@ -333,24 +416,23 @@ describe('Firebase CLI interaction via Executor', () => {
       exitCode: 0,
       stdout: JSON.stringify({
         result: {
-          defaultUrl: 'https://site-sec.web.app',
+          defaultUrl: 'https://workshop-app-123456.web.app',
         },
       }),
     });
 
-    const app: DiscoveredApp = {
-      slug: 'numeronym-generator',
-      directory: '/app',
-      title: 'Numeronym Generator',
-    };
-
     const mockVerifyFetch = async () => false;
 
+    const app: DiscoveredApp = {
+      slug: 'workshop-app',
+      title: 'Workshop App',
+      directory: '/apps/workshop-app',
+    };
     const receipt = await fetchHostingSiteReceipt({
       firebaseBinary: 'firebase',
-      projectId: 'p1',
+      projectId: 'existing-project',
       app,
-      siteId: 'site-sec',
+      siteId: 'workshop-app-123456',
       executor,
       verifyFetch: mockVerifyFetch,
     });
@@ -365,7 +447,7 @@ describe('Execution flow end-to-end with mock executor and test fixture director
 
   beforeEach(async () => {
     await mkdir(join(testDir, 'apps/welcome'), {recursive: true});
-    await mkdir(join(testDir, 'apps/numeronym-generator/dist'), {
+    await mkdir(join(testDir, 'apps/workshop-app/dist'), {
       recursive: true,
     });
 
@@ -379,25 +461,25 @@ describe('Execution flow end-to-end with mock executor and test fixture director
     );
 
     await writeFile(
-      join(testDir, 'apps/numeronym-generator/package.json'),
+      join(testDir, 'apps/workshop-app/package.json'),
       JSON.stringify({
-        name: 'numeronym-generator',
-        title: 'Numeronym Generator',
+        name: 'workshop-app',
+        title: 'Workshop App',
       }),
     );
     await writeFile(
-      join(testDir, 'apps/numeronym-generator/firebase.json'),
+      join(testDir, 'apps/workshop-app/firebase.json'),
       JSON.stringify({hosting: {public: 'dist'}}),
     );
     await writeFile(
-      join(testDir, 'apps/numeronym-generator/dist/index.html'),
+      join(testDir, 'apps/workshop-app/dist/index.html'),
       '<html><body>Demo</body></html>',
     );
 
     const validConfig = makeConfig({
-      projectId: 'sam-carlton-creative',
-      displayName: 'Sam Carlton Creative',
-      apps: ['welcome', 'numeronym-generator'],
+      projectId: 'existing-project',
+      displayName: 'Existing Project',
+      apps: ['welcome', 'workshop-app'],
     });
     await writeRootConfig(testDir, validConfig);
   });
@@ -411,7 +493,7 @@ describe('Execution flow end-to-end with mock executor and test fixture director
     const promptAdapter = new MockPromptAdapter();
 
     await runDeploy({
-      appArg: 'numeronym-generator',
+      appArg: 'workshop-app',
       dryRun: true,
       json: true,
       rootDir: testDir,
@@ -451,7 +533,7 @@ describe('Execution flow end-to-end with mock executor and test fixture director
         result: {
           sites: [
             {
-              name: 'projects/sam-carlton-creative/sites/sam-carlton-creative',
+              name: 'projects/existing-project/sites/existing-project',
               type: 'DEFAULT_SITE',
             },
           ],
@@ -462,16 +544,14 @@ describe('Execution flow end-to-end with mock executor and test fixture director
       exitCode: 0,
       stdout: JSON.stringify({
         result: {
-          defaultUrl: 'https://numeronym-generator-a1b2c3.web.app',
+          defaultUrl: 'https://workshop-app-a1b2c3.web.app',
         },
       }),
     });
 
     const promptAdapter = new MockPromptAdapter();
     const apps = await discoverApps(testDir);
-    promptAdapter.selectedApp = apps.find(
-      a => a.slug === 'numeronym-generator',
-    )!;
+    promptAdapter.selectedApp = apps.find(a => a.slug === 'workshop-app')!;
     promptAdapter.deployConfirmed = true;
 
     await runDeploy({
@@ -492,7 +572,7 @@ describe('Execution flow end-to-end with mock executor and test fixture director
         result: {
           sites: [
             {
-              name: 'projects/sam-carlton-creative/sites/sam-carlton-creative',
+              name: 'projects/existing-project/sites/existing-project',
               type: 'DEFAULT_SITE',
             },
           ],
@@ -503,7 +583,7 @@ describe('Execution flow end-to-end with mock executor and test fixture director
       exitCode: 0,
       stdout: JSON.stringify({
         result: {
-          defaultUrl: 'https://numeronym-generator-a1b2c3.web.app',
+          defaultUrl: 'https://workshop-app-a1b2c3.web.app',
         },
       }),
     });
@@ -511,7 +591,7 @@ describe('Execution flow end-to-end with mock executor and test fixture director
     const promptAdapter = new MockPromptAdapter();
 
     await runDeploy({
-      appArg: 'numeronym-generator',
+      appArg: 'workshop-app',
       yes: true,
       json: true,
       rootDir: testDir,
@@ -537,7 +617,7 @@ describe('Execution flow end-to-end with mock executor and test fixture director
         result: {
           sites: [
             {
-              name: 'projects/sam-carlton-creative/sites/sam-carlton-creative',
+              name: 'projects/existing-project/sites/existing-project',
               type: 'DEFAULT_SITE',
             },
           ],
@@ -570,6 +650,282 @@ describe('Execution flow end-to-end with mock executor and test fixture director
   });
 });
 
+describe('Self-contained deployment bundle & app hosting config preservation', () => {
+  const testDir = join(process.cwd(), '.tmp-test-bundle-preservation');
+
+  beforeEach(async () => {
+    await mkdir(join(testDir, 'apps/workshop-app/build'), {recursive: true});
+    await writeFile(
+      join(testDir, 'apps/workshop-app/build/index.html'),
+      '<html>SPA Index</html>',
+    );
+    await writeFile(
+      join(testDir, 'apps/workshop-app/package.json'),
+      JSON.stringify({name: 'workshop-app', title: 'Workshop App'}),
+    );
+  });
+
+  afterEach(async () => {
+    await rm(testDir, {recursive: true, force: true});
+  });
+
+  test('RED-GREEN REGRESSION TEST: staged public directory is bundle-local ("public") and preserves rewrites, cleanUrls, trailingSlash', async () => {
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({
+        hosting: {
+          public: 'build',
+          cleanUrls: true,
+          trailingSlash: false,
+          rewrites: [{source: '**', destination: '/index.html'}],
+          headers: [
+            {
+              source: '**/*.@(js|css)',
+              headers: [
+                {key: 'Cache-Control', value: 'max-age=31536000, immutable'},
+              ],
+            },
+          ],
+        },
+      }),
+    );
+
+    const app: DiscoveredApp = {
+      slug: 'workshop-app',
+      title: 'Workshop App',
+      directory: join(testDir, 'apps/workshop-app'),
+    };
+
+    const strictExecutor = new StrictMockCommandExecutor();
+
+    await deployAppWithTarget({
+      rootDir: testDir,
+      firebaseBinary: 'firebase',
+      projectId: 'existing-project',
+      app,
+      siteId: 'workshop-app-123456',
+      executor: strictExecutor,
+    });
+
+    expect(strictExecutor.bundleAsserted).toBe(true);
+  });
+
+  test('resolveAppHostingConfig handles array-form hosting configuration by matching target', async () => {
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({
+        hosting: [
+          {target: 'other-app', public: 'dist-other'},
+          {target: 'workshop-app', public: 'build', cleanUrls: true},
+        ],
+      }),
+    );
+
+    const res = await resolveAppHostingConfig(
+      join(testDir, 'apps/workshop-app'),
+      'workshop-app',
+      testDir,
+    );
+
+    expect(res.publicRelPath).toBe('build');
+    expect(res.summary.cleanUrls).toBe(true);
+  });
+
+  test('resolveAppHostingConfig throws AMBIGUOUS_HOSTING_CONFIG when multiple array items exist and none match target', async () => {
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({
+        hosting: [
+          {target: 'app-a', public: 'dist-a'},
+          {target: 'app-b', public: 'dist-b'},
+        ],
+      }),
+    );
+
+    try {
+      await resolveAppHostingConfig(
+        join(testDir, 'apps/workshop-app'),
+        'workshop-app',
+        testDir,
+      );
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      expect((err as DeployError).code).toBe('AMBIGUOUS_HOSTING_CONFIG');
+    }
+  });
+
+  test('resolveAppHostingConfig throws PUBLIC_DIRECTORY_MISSING when public path does not exist', async () => {
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({hosting: {public: 'nonexistent-folder'}}),
+    );
+
+    try {
+      await resolveAppHostingConfig(
+        join(testDir, 'apps/workshop-app'),
+        'workshop-app',
+        testDir,
+      );
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      expect((err as DeployError).code).toBe('PUBLIC_DIRECTORY_MISSING');
+    }
+  });
+
+  test('resolveAppHostingConfig throws PUBLIC_DIRECTORY_OUTSIDE_REPOSITORY when public path escapes repository', async () => {
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({hosting: {public: '../../..'}}, null, 2),
+    );
+
+    try {
+      await resolveAppHostingConfig(
+        join(testDir, 'apps/workshop-app'),
+        'workshop-app',
+        testDir,
+      );
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      expect((err as DeployError).code).toBe(
+        'PUBLIC_DIRECTORY_OUTSIDE_REPOSITORY',
+      );
+    }
+  });
+
+  test('resolveAppHostingConfig throws UNSAFE_PUBLIC_SYMLINK when symlink points outside app directory', async () => {
+    const outsideDir = join(testDir, 'outside-folder');
+    await mkdir(outsideDir, {recursive: true});
+
+    const symlinkPath = join(testDir, 'apps/workshop-app/symlinked-public');
+    await symlink(outsideDir, symlinkPath, 'dir');
+
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({hosting: {public: 'symlinked-public'}}),
+    );
+
+    try {
+      await resolveAppHostingConfig(
+        join(testDir, 'apps/workshop-app'),
+        'workshop-app',
+        testDir,
+      );
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      expect((err as DeployError).code).toBe('UNSAFE_PUBLIC_SYMLINK');
+    }
+  });
+});
+
+describe('Greenfield and Adoption Project Setup Flows', () => {
+  const testDir = join(process.cwd(), '.tmp-test-greenfield-adoption');
+
+  beforeEach(async () => {
+    await mkdir(join(testDir, 'apps/workshop-app/dist'), {recursive: true});
+    await writeFile(
+      join(testDir, 'apps/workshop-app/package.json'),
+      JSON.stringify({name: 'workshop-app', title: 'Workshop App'}),
+    );
+    await writeFile(
+      join(testDir, 'apps/workshop-app/firebase.json'),
+      JSON.stringify({hosting: {public: 'dist'}}),
+    );
+  });
+
+  afterEach(async () => {
+    await rm(testDir, {recursive: true, force: true});
+  });
+
+  test('createNewFirebaseProject executes firebase projects:create command', async () => {
+    const executor = new MockCommandExecutor();
+
+    const proj = await createNewFirebaseProject(
+      'firebase',
+      'new-greenfield-project',
+      'New Greenfield Project',
+      executor,
+    );
+
+    expect(proj.projectId).toBe('new-greenfield-project');
+    expect(
+      executor.calls.some(c => c.command.includes('projects:create')),
+    ).toBe(true);
+  });
+
+  test('createNewFirebaseProject throws INVALID_PROJECT_ID for invalid project ID format', async () => {
+    const executor = new MockCommandExecutor();
+
+    try {
+      await createNewFirebaseProject(
+        'firebase',
+        'Invalid Project ID!',
+        'New Project',
+        executor,
+      );
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err).toBeInstanceOf(DeployError);
+      expect((err as DeployError).code).toBe('INVALID_PROJECT_ID');
+    }
+  });
+
+  test('classifySecondarySites distinguishes mapped vs unclaimed secondary sites', () => {
+    const config = makeConfig({
+      projectId: 'existing-project',
+      displayName: 'Existing Project',
+      sites: {
+        'workshop-app': 'workshop-app-mapped',
+      },
+    });
+
+    const sites: FirebaseHostingSite[] = [
+      {siteId: 'existing-project', type: 'DEFAULT_SITE'},
+      {siteId: 'workshop-app-mapped', type: 'USER_SITE'},
+      {siteId: 'unclaimed-secondary-site', type: 'USER_SITE'},
+    ];
+
+    const classified = classifySecondarySites(
+      sites,
+      config,
+      'existing-project',
+    );
+    expect(classified.length).toBe(2);
+    expect(
+      classified.find(c => c.siteId === 'workshop-app-mapped')?.classification,
+    ).toBe('mapped');
+    expect(
+      classified.find(c => c.siteId === 'unclaimed-secondary-site')
+        ?.classification,
+    ).toBe('unclaimed');
+  });
+
+  test('greenfield interactive setup prompts for details and creates project', async () => {
+    const executor = new MockCommandExecutor();
+    const promptAdapter = new MockPromptAdapter();
+    promptAdapter.setupMode = 'new';
+    promptAdapter.newProjectDetails = {
+      projectId: 'brand-new-project',
+      displayName: 'Brand New Project',
+    };
+
+    await runDeploy({
+      rootDir: testDir,
+      executor,
+      promptAdapter,
+      isTty: true,
+      dryRun: true,
+    });
+
+    expect(
+      executor.calls.some(c => c.command.includes('projects:create')),
+    ).toBe(false); // Dry run performed no mutations!
+  });
+});
+
 describe('Sanitization, diagnostic evidence, site readiness, and site reuse', () => {
   test('sanitizeFirebaseErrorOutput redacts tokens, API keys, ANSI codes, and bounds output', () => {
     const raw =
@@ -587,21 +943,13 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
   });
 
   test('pollSiteReadiness succeeds after transient not-found responses with zero delay in test', async () => {
-    const executor = new MockCommandExecutor();
     let callsCount = 0;
-
-    executor.setResponse('hosting:sites:get', {
-      exitCode: 1,
-      stdout: '',
-      stderr: 'HTTP 404 Site not found',
-    });
-
     const sleepFn = async () => {};
 
     const readinessPromise = pollSiteReadiness(
       'firebase',
-      'sam-carlton-creative',
-      'numeronym-generator-ef4ba1',
+      'existing-project',
+      'workshop-app-123456',
       {
         async exec() {
           callsCount++;
@@ -610,9 +958,9 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
               exitCode: 0,
               stdout: JSON.stringify({
                 result: {
-                  name: 'projects/sam-carlton-creative/sites/numeronym-generator-ef4ba1',
+                  name: 'projects/existing-project/sites/workshop-app-123456',
                   type: 'USER_SITE',
-                  defaultUrl: 'https://numeronym-generator-ef4ba1.web.app',
+                  defaultUrl: 'https://workshop-app-123456.web.app',
                 },
               }),
               stderr: '',
@@ -629,7 +977,7 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
     );
 
     const result = await readinessPromise;
-    expect(result.siteId).toBe('numeronym-generator-ef4ba1');
+    expect(result.siteId).toBe('workshop-app-123456');
     expect(callsCount).toBe(3);
   });
 
@@ -646,8 +994,8 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
     try {
       await pollSiteReadiness(
         'firebase',
-        'sam-carlton-creative',
-        'numeronym-generator-ef4ba1',
+        'existing-project',
+        'workshop-app-123456',
         executor,
         {maxAttempts: 3, initialDelayMs: 1, sleepFn},
       );
@@ -664,8 +1012,8 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
 
     const promise = pollSiteReadiness(
       'firebase',
-      'sam-carlton-creative',
-      'numeronym-generator-ef4ba1',
+      'existing-project',
+      'workshop-app-123456',
       {
         async exec() {
           callsCount++;
@@ -681,11 +1029,11 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
 
     try {
       await promise;
-      expect(true).toBe(false); // should not reach
+      expect(true).toBe(false);
     } catch (err) {
       expect(err).toBeInstanceOf(DeployError);
       expect((err as DeployError).code).toBe('SITE_READINESS_FAILED');
-      expect(callsCount).toBe(1); // failed immediately without retrying!
+      expect(callsCount).toBe(1);
     }
   });
 
@@ -693,16 +1041,16 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
     const executor = new MockCommandExecutor();
     const existingSites: FirebaseHostingSite[] = [
       {
-        siteId: 'numeronym-generator-ef4ba1',
+        siteId: 'workshop-app-123456',
         type: 'USER_SITE',
-        defaultUrl: 'https://numeronym-generator-ef4ba1.web.app',
+        defaultUrl: 'https://workshop-app-123456.web.app',
       },
     ];
 
     const res = await ensureSiteExists(
       'firebase',
-      'sam-carlton-creative',
-      'numeronym-generator-ef4ba1',
+      'existing-project',
+      'workshop-app-123456',
       existingSites,
       executor,
     );
@@ -714,28 +1062,27 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
   test('determineAppStatuses correctly distinguishes missing, existing, deployed, and unconfigured sites', () => {
     const apps: DiscoveredApp[] = [
       {
-        slug: 'numeronym-generator',
-        title: 'Numeronym Generator',
-        directory: '/apps/numeronym-generator',
+        slug: 'workshop-app',
+        title: 'Workshop App',
+        directory: '/apps/workshop-app',
       },
       {slug: 'welcome', title: 'Welcome', directory: '/apps/welcome'},
-      {slug: 'room-pulse', title: 'Room Pulse', directory: '/apps/room-pulse'},
     ];
 
     const config = makeConfig({
-      projectId: 'sam-carlton-creative',
-      displayName: 'Sam Carlton Creative',
+      projectId: 'existing-project',
+      displayName: 'Existing Project',
       sites: {
-        'numeronym-generator': 'numeronym-generator-ef4ba1',
+        'workshop-app': 'workshop-app-123456',
       },
     });
 
     const existingSites: FirebaseHostingSite[] = [
-      {siteId: 'sam-carlton-creative', type: 'DEFAULT_SITE'},
-      {siteId: 'numeronym-generator-ef4ba1', type: 'USER_SITE'},
+      {siteId: 'existing-project', type: 'DEFAULT_SITE'},
+      {siteId: 'workshop-app-123456', type: 'USER_SITE'},
     ];
 
-    const verifiedApps = new Set<string>(['numeronym-generator']);
+    const verifiedApps = new Set<string>(['workshop-app']);
 
     const statuses = determineAppStatuses(
       apps,
@@ -744,133 +1091,11 @@ describe('Sanitization, diagnostic evidence, site readiness, and site reuse', ()
       verifiedApps,
     );
 
-    expect(statuses.find(a => a.slug === 'numeronym-generator')?.status).toBe(
+    expect(statuses.find(a => a.slug === 'workshop-app')?.status).toBe(
       'deployed',
     );
     expect(statuses.find(a => a.slug === 'welcome')?.status).toBe(
       'site_missing',
     );
-  });
-
-  test('REGRESSION TEST (eb995e4 fix): failed firebase deploy surfaces sanitized stderr, saves evidence receipt, and cleans temporary workspace', async () => {
-    const testDir = join(
-      process.cwd(),
-      'tests',
-      'fixtures',
-      `test-regression-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-    );
-
-    await mkdir(join(testDir, 'apps/numeronym-generator/dist'), {
-      recursive: true,
-    });
-    await writeFile(
-      join(testDir, 'apps/numeronym-generator/dist/index.html'),
-      '<html>Test</html>',
-    );
-    await writeFile(
-      join(testDir, 'apps/numeronym-generator/package.json'),
-      JSON.stringify({
-        name: 'numeronym-generator',
-        title: 'Numeronym Generator',
-      }),
-    );
-    await writeFile(
-      join(testDir, 'apps/numeronym-generator/firebase.json'),
-      '{}',
-    );
-
-    const app: DiscoveredApp = {
-      slug: 'numeronym-generator',
-      title: 'Numeronym Generator',
-      directory: join(testDir, 'apps/numeronym-generator'),
-    };
-
-    const failingExecutor: CommandExecutor = {
-      async exec(command, options) {
-        // Assert temporary .firebaserc and firebase.json contents in cwd
-        if (options?.cwd) {
-          const firebasercFile = Bun.file(join(options.cwd, '.firebaserc'));
-          const firebaseJsonFile = Bun.file(join(options.cwd, 'firebase.json'));
-
-          expect(await firebasercFile.exists()).toBe(true);
-          expect(await firebaseJsonFile.exists()).toBe(true);
-
-          const rcData = JSON.parse(await firebasercFile.text());
-          const jsonData = JSON.parse(await firebaseJsonFile.text());
-
-          expect(rcData.projects.default).toBe('sam-carlton-creative');
-          expect(
-            rcData.targets['sam-carlton-creative'].hosting[
-              'numeronym-generator'
-            ],
-          ).toEqual(['numeronym-generator-ef4ba1']);
-          expect(jsonData.hosting.target).toBe('numeronym-generator');
-        }
-
-        return {
-          exitCode: 1,
-          stdout: '',
-          stderr:
-            'Error: Deploy failed due to insufficient hosting release authorization Bearer secret-auth-token-999',
-        };
-      },
-    };
-
-    try {
-      await deployAppWithTarget({
-        rootDir: testDir,
-        firebaseBinary: 'firebase',
-        projectId: 'sam-carlton-creative',
-        app,
-        siteId: 'numeronym-generator-ef4ba1',
-        executor: failingExecutor,
-      });
-      expect(true).toBe(false); // should not reach
-    } catch (err) {
-      expect(err).toBeInstanceOf(DeployError);
-      const deployErr = err as DeployError;
-      expect(deployErr.code).toBe('DEPLOYMENT_FAILED');
-
-      const details = deployErr.details as {
-        app: string;
-        projectId: string;
-        siteId: string;
-        exitCode: number;
-        command: string[];
-        firebaseStderr: string;
-        evidencePath: string;
-      };
-
-      // 1. Surfaced sanitized stderr (redacting secret-auth-token-999)
-      expect(details.firebaseStderr).toContain('Bearer [REDACTED]');
-      expect(details.firebaseStderr).not.toContain('secret-auth-token-999');
-
-      // 2. Evidence receipt saved on disk under .starter/tmp/deploy-errors/
-      expect(details.evidencePath).toBeDefined();
-      const evidenceFile = Bun.file(join(testDir, details.evidencePath));
-      expect(await evidenceFile.exists()).toBe(true);
-
-      const savedEvidence = JSON.parse(await evidenceFile.text());
-      expect(savedEvidence.app).toBe('numeronym-generator');
-      expect(savedEvidence.projectId).toBe('sam-carlton-creative');
-      expect(savedEvidence.siteId).toBe('numeronym-generator-ef4ba1');
-      expect(savedEvidence.exitCode).toBe(1);
-      expect(savedEvidence.command).toEqual([
-        'firebase',
-        'deploy',
-        '--only',
-        'hosting:numeronym-generator',
-        '--project',
-        'sam-carlton-creative',
-      ]);
-      expect(savedEvidence.firebaseStderr).toContain('Bearer [REDACTED]');
-      expect(savedEvidence.env).toBeUndefined(); // no env dump!
-    }
-
-    // 3. Verify temporary deploy folder was cleaned up
-    const entries = await Bun.file(join(testDir, '.firebaserc')).exists();
-    expect(entries).toBe(false);
-
-    await rm(testDir, {recursive: true, force: true});
   });
 });

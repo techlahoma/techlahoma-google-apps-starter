@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import {resolve} from 'node:path';
+import {relative, resolve} from 'node:path';
 import {
   type CommandExecutor,
   DefaultCommandExecutor,
@@ -10,6 +10,7 @@ import {
   type FirebaseHostingSite,
   buildAppWorkspace,
   checkFirebaseAuth,
+  createNewFirebaseProject,
   detectAppFromCwd,
   determineAppStatuses,
   discoverApps,
@@ -21,6 +22,7 @@ import {
   listFirebaseProjects,
   listHostingSites,
   readRootConfig,
+  resolveAppHostingConfig,
   resolveAppTarget,
   validateDeploymentSite,
   writeRootConfig,
@@ -176,59 +178,99 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
     }
 
     // Guided setup flow
-    console.log('Firebase project connection setup\n');
-    const isAuthed = await checkFirebaseAuth(firebaseBinary, executor);
-    if (!isAuthed) {
-      const wantLogin = await promptAdapter.confirmLogin();
-      if (!wantLogin) {
-        throw new DeployError(
-          'AUTH_REQUIRED',
-          'Firebase authentication is required to query project hosting sites.',
-          'Run "bun run firebase:login" to authenticate.',
-        );
-      }
-      await executor.exec([firebaseBinary, 'login']);
-      const recheck = await checkFirebaseAuth(firebaseBinary, executor);
-      if (!recheck) {
-        throw new DeployError(
-          'AUTH_FAILED',
-          'Firebase login incomplete or unauthenticated.',
-          'Complete login and retry "bun run deploy".',
-        );
-      }
-    }
-
-    const projects = await listFirebaseProjects(firebaseBinary, executor);
-    if (projects.length === 0) {
-      throw new DeployError(
-        'NO_FIREBASE_PROJECTS',
-        'No Firebase projects visible to your authenticated account.',
-        'Create a project in the Firebase Console: https://console.firebase.google.com/',
-      );
-    }
-
-    const selectedProject = await promptAdapter.selectProject(projects);
-    const confirmSetup = await promptAdapter.confirmSetup(
-      selectedProject.projectId,
-    );
-    if (!confirmSetup) {
+    const mode = await promptAdapter.selectSetupMode();
+    if (mode === 'cancel') {
       console.log('Setup cancelled.');
       return;
     }
 
-    config = makeConfig(
-      {
-        projectId: selectedProject.projectId,
-        displayName: selectedProject.displayName,
-        apps: discoveredApps.map(a => a.slug),
-      },
-      config ?? undefined,
-    );
+    if (mode === 'new') {
+      const details = await promptAdapter.promptNewProjectDetails();
+      const confirmed = await promptAdapter.confirmProjectCreation(
+        details.projectId,
+        details.displayName,
+      );
+      if (!confirmed) {
+        console.log('Project creation cancelled.');
+        return;
+      }
 
-    await writeRootConfig(rootDir, config);
-    console.log(
-      `Connected to project "${config.project_id}". Saved to google.project.json.\n`,
-    );
+      await createNewFirebaseProject(
+        firebaseBinary,
+        details.projectId,
+        details.displayName,
+        executor,
+        options.dryRun,
+      );
+
+      config = makeConfig(
+        {
+          projectId: details.projectId,
+          displayName: details.displayName,
+          apps: discoveredApps.map(a => a.slug),
+        },
+        config ?? undefined,
+      );
+
+      await writeRootConfig(rootDir, config);
+      console.log(
+        `Created and connected new Firebase project "${config.project_id}". Saved to google.project.json.\n`,
+      );
+    } else {
+      // Existing project flow
+      const isAuthed = await checkFirebaseAuth(firebaseBinary, executor);
+      if (!isAuthed) {
+        const wantLogin = await promptAdapter.confirmLogin();
+        if (!wantLogin) {
+          throw new DeployError(
+            'AUTH_REQUIRED',
+            'Firebase authentication is required to query project hosting sites.',
+            'Run "bun run firebase:login" to authenticate.',
+          );
+        }
+        await executor.exec([firebaseBinary, 'login']);
+        const recheck = await checkFirebaseAuth(firebaseBinary, executor);
+        if (!recheck) {
+          throw new DeployError(
+            'AUTH_FAILED',
+            'Firebase login incomplete or unauthenticated.',
+            'Complete login and retry "bun run deploy".',
+          );
+        }
+      }
+
+      const projects = await listFirebaseProjects(firebaseBinary, executor);
+      if (projects.length === 0) {
+        throw new DeployError(
+          'NO_FIREBASE_PROJECTS',
+          'No Firebase projects visible to your authenticated account.',
+          'Create a project in the Firebase Console: https://console.firebase.google.com/',
+        );
+      }
+
+      const selectedProject = await promptAdapter.selectProject(projects);
+      const confirmSetup = await promptAdapter.confirmSetup(
+        selectedProject.projectId,
+      );
+      if (!confirmSetup) {
+        console.log('Setup cancelled.');
+        return;
+      }
+
+      config = makeConfig(
+        {
+          projectId: selectedProject.projectId,
+          displayName: selectedProject.displayName,
+          apps: discoveredApps.map(a => a.slug),
+        },
+        config ?? undefined,
+      );
+
+      await writeRootConfig(rootDir, config);
+      console.log(
+        `Connected to project "${config.project_id}". Saved to google.project.json.\n`,
+      );
+    }
   }
 
   if (!config) {
@@ -249,7 +291,6 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
     existingSites = await listHostingSites(firebaseBinary, projectId, executor);
   } catch (err) {
     if (options.dryRun) {
-      // In dry-run mode, if site query fails due to missing auth/mock, proceed gracefully
       existingSites = [];
     } else {
       throw err;
@@ -282,6 +323,20 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
       deriveSiteId(projectId, selectedApp.slug);
     validateDeploymentSite(siteId, projectId, defaultSite);
 
+    const isMapped = Boolean(activeConfig.sites[selectedApp.slug]);
+    const existsRemotely = existingSites.some(s => s.siteId === siteId);
+
+    if (!isMapped && existsRemotely && !options.yes && !options.json && isTty) {
+      const wantAdopt = await promptAdapter.confirmAdoptExistingSite(
+        siteId,
+        selectedApp.title,
+      );
+      if (!wantAdopt) {
+        console.log('Site adoption cancelled.');
+        return;
+      }
+    }
+
     if (!options.json) {
       printDestination(siteId);
       const confirmed = await promptAdapter.confirmDeploy(
@@ -304,6 +359,20 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
     const siteId =
       activeConfig.sites[app.slug] ?? deriveSiteId(projectId, app.slug);
     validateDeploymentSite(siteId, projectId, defaultSite);
+
+    const isMapped = Boolean(activeConfig.sites[app.slug]);
+    const existsRemotely = existingSites.some(s => s.siteId === siteId);
+
+    if (!isMapped && existsRemotely && isTty) {
+      const wantAdopt = await promptAdapter.confirmAdoptExistingSite(
+        siteId,
+        app.title,
+      );
+      if (!wantAdopt) {
+        console.log('Site adoption cancelled.');
+        return;
+      }
+    }
 
     printDeployHeader();
     printProjectInfo(displayName, projectId, defaultSite);
@@ -328,23 +397,51 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
 
   // Handle Dry Run
   if (options.dryRun) {
-    const plans = targetApps.map(app => {
-      const siteId =
-        activeConfig.sites[app.slug] ?? deriveSiteId(projectId, app.slug);
-      return {
-        app: app.slug,
-        title: app.title,
-        projectId,
-        siteId,
-        destination: `https://${siteId}.web.app`,
-        protectedDefaultSite: defaultSite?.siteId ?? `${projectId}.web.app`,
-        commands: [
-          `bun run --cwd apps/${app.slug} build`,
-          `firebase hosting:sites:create ${siteId} --project ${projectId}`,
-          `firebase deploy --only hosting:${app.slug} --project ${projectId}`,
-        ],
-      };
-    });
+    const plans = await Promise.all(
+      targetApps.map(async app => {
+        const siteId =
+          activeConfig.sites[app.slug] ?? deriveSiteId(projectId, app.slug);
+
+        const {publicRelPath, sourcePublicDir, summary} =
+          await resolveAppHostingConfig(app.directory, app.slug, rootDir);
+
+        const existsRemotely = existingSites.some(s => s.siteId === siteId);
+        const isMapped = Boolean(activeConfig.sites[app.slug]);
+
+        let action: 'reuse_mapped' | 'adopt_existing' | 'create_new' =
+          'create_new';
+        if (isMapped && existsRemotely) {
+          action = 'reuse_mapped';
+        } else if (existsRemotely) {
+          action = 'adopt_existing';
+        }
+
+        return {
+          app: app.slug,
+          title: app.title,
+          projectId,
+          siteId,
+          destination: `https://${siteId}.web.app`,
+          protectedDefaultSite: defaultSite?.siteId ?? `${projectId}.web.app`,
+          publicRelPath,
+          sourcePublicDir: relative(rootDir, sourcePublicDir).replace(
+            /\\/g,
+            '/',
+          ),
+          siteAction: action,
+          hostingConfigSummary: summary,
+          commands: [
+            `bun run --cwd apps/${app.slug} build`,
+            ...(action === 'create_new'
+              ? [
+                  `firebase hosting:sites:create ${siteId} --project ${projectId}`,
+                ]
+              : []),
+            `firebase deploy --only hosting:${app.slug} --project ${projectId}`,
+          ],
+        };
+      }),
+    );
 
     if (options.json) {
       console.log(
@@ -364,7 +461,7 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
       console.log(`Project: ${displayName} (${projectId})`);
       if (defaultSite) {
         console.log(
-          `Protected site: ${defaultSite.siteId} (will not be modified)`,
+          `Protected default site: ${defaultSite.siteId} (will not be modified)`,
         );
       }
       console.log('\nTarget Deployments:');
@@ -372,6 +469,16 @@ export async function runDeploy(options: DeployCliOptions): Promise<void> {
         console.log(
           `  - ${p.title} (${p.app}) -> ${p.destination} [Site: ${p.siteId}]`,
         );
+        console.log(`    Resolved Public: ${p.sourcePublicDir}`);
+        console.log(
+          `    Hosting Config: public="${p.publicRelPath}", rewrites=${p.hostingConfigSummary.rewritesCount}, cleanUrls=${p.hostingConfigSummary.cleanUrls}`,
+        );
+        console.log(`    Site Action: ${p.siteAction}`);
+        if (p.hostingConfigSummary.hasDynamicRewrites) {
+          console.log(
+            '    ⚠️ Warning: Config contains dynamic rewrites to functions or Cloud Run',
+          );
+        }
       }
       console.log('\nCommands that would execute:');
       for (const p of plans) {

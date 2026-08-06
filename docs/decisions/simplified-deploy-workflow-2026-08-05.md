@@ -24,17 +24,22 @@ The previous monorepo deployment experience required developers to run multi-ste
    - Direct positional argument (`bun run deploy numeronym-generator`, `apps/numeronym-generator`, `./apps/numeronym-generator`) deploys a specific app workspace.
    - Support `--all`, `--dry-run`, `--yes`, `--json`, and `--help`.
 
-2. **First-Run Connection**:
+2. **First-Run Connection & Setup Modes**:
    - Automatically detect missing or placeholder configuration (`google.project.json`).
-   - Guide authentication check (`bun run firebase:login`), list visible Firebase projects, let user choose a project, protect the default site, and assign deterministic secondary Hosting sites.
+   - Offer interactive setup options: `1) Use an existing Firebase project`, `2) Create a new Firebase project`, `3) Cancel`.
+   - In greenfield mode, prompt for display name and project ID, validate format, confirm effect, execute `firebase projects:create`, and write root config.
+   - In adoption mode, query visible projects, list Hosting sites, classify secondary sites (`mapped` vs `unclaimed`), protect default site unconditionally, require adoption confirmation for unclaimed sites, and write root config.
 
-3. **Protection & Target Binding**:
+3. **Protection & Self-Contained Deployment Bundle**:
    - Protect default Hosting sites (where site ID equals project ID or marked `DEFAULT_SITE`).
-   - Generate task-scoped temporary deployment workspaces containing `.firebaserc` and matching `firebase.json` for target binding (`hosting:APP_SLUG`).
-   - Reliably clean up temporary configuration files on exit.
+   - Create self-contained deployment bundle directories under `.starter/tmp/.firebase-deploy-tmp-<slug>-<rand>/` containing `.firebaserc`, bundle-local `firebase.json` (`hosting.target = APP_SLUG`, `hosting.public = "public"`), and staged build output in `public/`.
+   - Preserve custom source app hosting configuration (`rewrites`, `headers`, `redirects`, `cleanUrls`, `trailingSlash`, `i18n`, `ignore`).
+   - Assert staged public directory is strictly bundle-local to prevent `outside of project directory` Firebase CLI errors.
+   - Reliably clean up temporary bundle workspaces on exit.
 
 4. **Receipt & Verification**:
    - After deployment, query site metadata (`firebase hosting:sites:get SITE_ID --project PROJECT_ID --json`), read `defaultUrl`, and verify HTTP responsiveness.
+   - On deployment failure, write sanitized diagnostic error receipt to `.starter/tmp/deploy-errors/` with bundle metadata (`hostingConfigSummary`, `sourcePublicDir`, `stagedPublicDir`).
    - Return structured deployment receipts for `--json` and user-friendly summary for TUI.
 
 ## Status
