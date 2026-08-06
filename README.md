@@ -10,8 +10,9 @@
   - Cloud commands must name both the exact app and project before a mutation.
 - `Go deeper:`
   - Follow the five-minute local start below.
-  - Use the [Intro to GDG event hub](docs/events/README.md) and
-    [one-shot Antigravity prompts](docs/events/antigravity-one-shot-prompts.md).
+  - Open the [GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f),
+    use the [public event handout](docs/events/README.md), or jump to the
+    [complete resource directory](#gdg-tulsa-builder-kit) at the bottom of this README.
   - Read the [cloud operations guide](docs/operations/google-cloud.md) before creating a project.
   - Read the [research](docs/research/firebase-gcp-agent-provisioning-2026-08-03.md) and
     [architecture decision](docs/decisions/project-per-environment-google-starter-2026-08-03.md)
@@ -25,19 +26,35 @@
   </a>
 </p>
 
-## Intro to GDG event materials
+## Table of contents
+
+- [Intro to GDG workshop links](#intro-to-gdg-workshop-links)
+- [Clone and start](#clone-and-start)
+- [Fork setup](#fork-setup)
+- [One-prompt demo builds](#one-prompt-demo-builds)
+- [What Google-aligned means](#what-google-aligned-means)
+- [Put it on Firebase Hosting](#put-it-on-firebase-hosting)
+  - [Protection and safety](#protection-and-safety)
+  - [Advanced lifecycle commands](#advanced-lifecycle-commands)
+- [Tear the environment down](#tear-the-environment-down)
+- [Complexity ladder](#complexity-ladder)
+- [Agent contract](#agent-contract)
+- [About Techlahoma](#about-techlahoma)
+- [GDG Tulsa Builder Kit](#gdg-tulsa-builder-kit)
+
+## Intro to GDG workshop links
 
 This starter is the public build workspace for Techlahoma's **Intro to Google Developer Group**
-workshop with GDG Tulsa. These attendee-safe resources are public:
+workshop with GDG Tulsa. Start with the public repository handout or directory; the linked Notion
+kit may require a Notion session:
 
-- [Event handout and resource hub](docs/events/README.md)
-- [Copy-ready Antigravity demo prompts](docs/events/antigravity-one-shot-prompts.md)
-- [Live event page](https://luma.com/j0vrcn5h)
-- [GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/)
-- [Techlahoma Code of Conduct](https://www.techlahoma.org/code-of-conduct/)
+- [GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f)
+- [Public event handout in this repository](docs/events/README.md)
+- [Complete README resource directory](#gdg-tulsa-builder-kit)
 
 The working presentation is intentionally not linked here until its Google Drive sharing setting is
-public. A public repository link should work for attendees without requesting access.
+public. The resource directory at the bottom preserves its attendee-relevant links and safety
+guidance without exposing the private deck.
 
 ## Clone and start
 
@@ -234,3 +251,71 @@ The complete command/effect table and current proof live in [`PROJECT.md`](PROJE
 
 This is a Techlahoma community project, not an official Google product. GDG Tulsa is an independent
 Google Developer Group; its activities and opinions are not affiliated with or endorsed by Google.
+
+## GDG Tulsa Builder Kit
+
+This is the complete public resource directory for the Intro to Google Developer Group workshop.
+The same links are maintained in the
+[GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f).
+
+### Start here
+
+- [Techlahoma Google Apps Starter repository](https://github.com/techlahoma/techlahoma-google-apps-starter)
+- [Public event handout and resource hub](docs/events/README.md)
+- [Download Google Antigravity for macOS or Windows](https://antigravity.google/download)
+- [Copy-ready Antigravity demo prompts](docs/events/antigravity-one-shot-prompts.md)
+- [Intro to Google Developer Group event page](https://luma.com/j0vrcn5h)
+- [Follow Techlahoma Events on Luma for future events, newsletters, and reminders](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC)
+- [Official GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/)
+
+### Build with Google
+
+- [Open Google AI Studio](https://aistudio.google.com/)
+- [AI Studio Build mode guide](https://ai.google.dev/gemini-api/docs/aistudio-build-mode)
+- [Deploy an app from AI Studio](https://ai.google.dev/gemini-api/docs/aistudio-deploying)
+- [Google Cloud Starter Tier](https://docs.cloud.google.com/docs/starter-tier)
+- [Cloud Run Button](https://github.com/GoogleCloudPlatform/cloud-run-button)
+
+### Stay connected
+
+- [GDG Tulsa community website](https://gdgtulsa.com/) — browse community information here; use the
+  [official GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/) for official membership and
+  event registration
+- [GDG Tulsa on Instagram](https://www.instagram.com/gdgtulsa/)
+- [Techlahoma](https://www.techlahoma.org/)
+- [Techlahoma user groups](https://www.techlahoma.org/user-groups/)
+- [Techlahoma on LinkedIn](https://www.linkedin.com/company/techlahoma-foundation/)
+- [Techlahoma on GitHub](https://github.com/techlahoma)
+- [Techlahoma membership and Slack access](https://www.techlahoma.org/memberships/)
+- [Join Techlahoma Slack directly](https://www.techlahoma.org/techlahoma-slack/) and open
+  `#ug-google` for GDG Tulsa questions, event links, and follow-up
+- [Techlahoma talks on YouTube](https://www.youtube.com/@Techlahoma)
+
+### Community standards
+
+- [Techlahoma Code of Conduct](https://www.techlahoma.org/code-of-conduct/)
+- [Google Event Community Guidelines and Anti-Harassment Policy](https://developers.google.com/community-guidelines)
+
+Both standards apply. Talk to a volunteer immediately when it is safe to do so if you experience or
+observe a problem.
+
+### Build responsibly
+
+- Use invented demo data. Do not paste private customer, employee, donor, health, financial, or
+  personal records into a live build.
+- A working first version is not automatically production-ready. Real use may require
+  authentication, authorization, privacy review, accessibility checks, tests, cost controls,
+  monitoring, backups, and maintenance ownership.
+- Take one artifact from the workshop, show it to one person, and try a second version within seven
+  days. Bring back what worked, what broke, and what assumption changed.
+
+### Coming next
+
+The August 2026 workshop slide plan lists **OklahomAI Google Edition** as planned for September 23,
+2026 at 6 PM. The public [Techlahoma Events calendar](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC)
+does not yet confirm the event, so treat the date as planned and follow the calendar for the
+authoritative registration link, schedule, and venue when they are published.
+
+[Luma documents calendar Follow](https://help.luma.com/p/discovering-events) as the public signup for
+a calendar's events, newsletters, and reminders, so this directory does not invent a second “blast
+signup” URL.
