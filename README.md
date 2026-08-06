@@ -1,24 +1,15 @@
 # Techlahoma Google Apps Starter
 
-- `Tease:` Oklahoma's public launchpad for building small Google-powered apps with agents.
-- `Lede:` [Techlahoma](https://www.techlahoma.org/) maintains this Bun and TypeScript monorepo so
-  Antigravity can turn one prompt into one isolated, runnable `apps/<slug>` project with a
-  Google-aligned control plane and app-scoped Firebase Hosting configuration.
-- `Why it matters:`
-  - The default path needs no billing account, database, Terraform state, or dashboard setup.
-  - Agents can preserve several demo results in one checkout instead of rebuilding the root app.
-  - Cloud commands must name both the exact app and project before a mutation.
-- `Go deeper:`
-  - Follow the five-minute local start below.
-  - Open the [GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f),
-    use the [public event handout](docs/events/README.md), or jump to the
-    [complete resource directory](#gdg-tulsa-builder-kit) at the bottom of this README.
-  - Read the [cloud operations guide](docs/operations/google-cloud.md) before creating a project.
-  - Read the [research](docs/research/firebase-gcp-agent-provisioning-2026-08-03.md) and
-    [architecture decision](docs/decisions/project-per-environment-google-starter-2026-08-03.md)
-    before adding infrastructure.
-  - Read the [Google engineering profile](docs/research/google-public-engineering-conventions-2026-08-03.md)
-    before changing repository conventions.
+Oklahoma's public launchpad for building small Google-powered apps with agents.
+
+[Techlahoma](https://www.techlahoma.org/) maintains this Bun and TypeScript monorepo so Antigravity
+can turn one prompt into one isolated, runnable `apps/<slug>` project with a Google-aligned control
+plane and app-scoped Firebase Hosting configuration. New here? Open the
+[GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f)
+or follow the no-terminal setup below and let Antigravity be your developer.
+
+<!-- SBC4 compatibility: `Tease:` and `Lede:` render above without labels. `Why it matters:` and
+`Go deeper:` are intentionally collapsed into the lede and table of contents. -->
 
 <p align="center">
   <a href="https://www.techlahoma.org/">
@@ -28,6 +19,7 @@
 
 ## Table of contents
 
+- [Start here: let Antigravity set everything up](#start-here-let-antigravity-set-everything-up)
 - [Intro to GDG workshop links](#intro-to-gdg-workshop-links)
 - [Clone and start](#clone-and-start)
 - [Fork setup](#fork-setup)
@@ -41,6 +33,64 @@
 - [Agent contract](#agent-contract)
 - [About Techlahoma](#about-techlahoma)
 - [GDG Tulsa Builder Kit](#gdg-tulsa-builder-kit)
+
+## Start here: let Antigravity set everything up
+
+You do not need to know Git, use Terminal, or type any commands yourself.
+
+1. [Download Google Antigravity](https://antigravity.google/download) for macOS or Windows, install
+   it, and open it. Sign in if Antigravity asks you to.
+2. Create a blank Antigravity project:
+   - Click the folder with a **+** in the left sidebar.
+   - Choose **New Project**, then **Add Folder**.
+   - Create or select an empty folder named `GDG Tulsa Workshop`, then click **Create**.
+3. Paste the prompt below into Antigravity's chat and press **Enter**. When Antigravity asks which
+   mode to use, choose **Local Mode**.
+
+Antigravity may ask permission before it runs a command or installs a missing tool. Read its plain-
+English explanation and approve only actions that match the setup described in this prompt.
+
+```text
+I am a non-technical user. Be my developer and complete this setup for me. Do not
+tell me to open Terminal, type commands, clone a repository, or install developer
+tools myself. Use your own terminal and browser tools to do the work.
+
+Work only inside the folder attached to this Antigravity Project. Set up this public
+starter repository:
+https://github.com/techlahoma/techlahoma-google-apps-starter.git
+
+Before changing anything, inspect the Project folder. Never delete or overwrite an
+existing folder. If a techlahoma-google-apps-starter folder already exists, verify
+that it is the correct repository and reuse it. Otherwise, use your terminal to clone
+the repository into a new techlahoma-google-apps-starter folder.
+
+Then complete all of these steps for me:
+
+1. Detect whether this computer is running macOS or Windows.
+2. Check for Git and for the version of Bun required by the repository. If either is
+   missing, install it from its official source using the normal method for this
+   operating system. The only system-level changes you may make are installing Git
+   and Bun when they are required. Explain any permission prompt in plain English.
+3. Enter the cloned repository and read README.md, AGENTS.md, PROJECT.md, and the
+   repository's active instructions before continuing.
+4. Install the locked dependencies with `bun install --frozen-lockfile`.
+5. Run the repository verification with `bash scripts/verify.sh`.
+6. Start the known-good welcome app with `bun run dev` on an available local port and
+   keep it running.
+7. Open the local app in your browser, confirm that the welcome page loads, and report
+   any browser or console error you actually observe.
+
+Do not modify tracked files, commit, push, deploy, create cloud resources, sign in to
+Firebase or Google Cloud, or authenticate any external account. If setup cannot finish
+without one of those actions, stop and explain the blocker in plain English.
+
+Finish by showing me the exact local website URL first. Then give me a short summary
+of what you installed, what you ran, whether verification passed, and any warning or
+step that still needs me.
+```
+
+Once the starter is running, continue with the
+[copy-ready one-shot demo prompts](docs/events/antigravity-one-shot-prompts.md) to build a new app.
 
 ## Intro to GDG workshop links
 
