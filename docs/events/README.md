@@ -1,11 +1,13 @@
 # Intro to Google Developer Group — public event hub
 
 - `Tease:` Start here at the Techlahoma × GDG Tulsa workshop.
-- `Lede:` This is the attendee-safe home for Antigravity setup, the public starter, copy-ready
+- `Lede:` This is the attendee-facing home for Antigravity setup, the public starter, copy-ready
   prompts, community updates, and the rules that make the event welcoming.
-- `Why it matters:` Every link on this page should open without access requests, and every build can
-  begin from the same known-good repository.
-- `Go deeper:` Clone the starter, choose one prompt, and build a new app under `apps/`.
+- `Why it matters:` The core repository materials open without access requests, and every build can
+  begin from the same known-good starter; social and workspace services may require their own session.
+- `Go deeper:` Open the [complete README directory](../../README.md#gdg-tulsa-builder-kit), keep the
+  [Notion Builder Kit](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f),
+  or clone the starter and build a new app under `apps/`.
 
 - **Event:** Intro to Google Developer Group
 - **Workshop date:** August 6, 2026
@@ -30,8 +32,9 @@ deploy, authenticate an account, provision cloud resources, or delete anything.
 - [Intro to Google Developer Group event page](https://luma.com/j0vrcn5h)
 - [Follow Techlahoma Events on Luma](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC) — open the
   calendar and select **Follow** to sign up for its published events, newsletters, and reminders.
-- **Coming next:** OklahomAI is planned for September 23, 2026 at 6 PM. Follow the Luma calendar for
-  the registration link when it is published; a venue and event-specific URL are not confirmed here.
+- **Coming next:** The August 2026 workshop slide plan lists OklahomAI Google Edition as planned for
+  September 23, 2026 at 6 PM. The public Luma calendar does not yet confirm it, so treat the date as
+  planned and follow the calendar for the authoritative registration link, schedule, and venue.
 
 [Luma documents calendar Follow](https://help.luma.com/p/discovering-events) as the public signup for
 a calendar's events, newsletters, and reminders, so this hub does not invent a second “blast signup”
@@ -39,9 +42,10 @@ URL.
 
 ## GDG Tulsa and Techlahoma
 
-- [GDG Tulsa website](https://gdgtulsa.com/)
+- [GDG Tulsa community website](https://gdgtulsa.com/) — browse community information here; use the
+  [official GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/) for official membership and
+  event registration.
 - [GDG Tulsa on Instagram](https://www.instagram.com/gdgtulsa/)
-- [GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/)
 - [Techlahoma](https://www.techlahoma.org/)
 - [Techlahoma user groups](https://www.techlahoma.org/user-groups/)
 - [Join Techlahoma Slack](https://www.techlahoma.org/techlahoma-slack/) and open `#ug-google` for
@@ -70,9 +74,10 @@ observe a problem.
 ## What is public
 
 This repository, event hub, prompt library, public event and calendar pages, GDG Tulsa links, and
-linked Techlahoma pages are public. The working Google Slides presentation was not publicly shared
-when this hub was checked, so it remains deliberately unlinked; the relevant attendee links and
-safety guidance from the slides are preserved above.
+linked Techlahoma pages were publicly reachable when checked. Social and workspace services may
+still request a session. The working Google Slides presentation was not publicly shared, so it
+remains deliberately unlinked; the relevant attendee links and safety guidance from the slides are
+preserved above.
 
 ## Community note
 

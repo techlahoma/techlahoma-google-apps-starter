@@ -45,8 +45,8 @@
 ## Intro to GDG workshop links
 
 This starter is the public build workspace for Techlahoma's **Intro to Google Developer Group**
-workshop with GDG Tulsa. Use either attendee-safe hub and move between them without losing the
-starting point:
+workshop with GDG Tulsa. Start with the public repository handout or directory; the linked Notion
+kit may require a Notion session:
 
 - [GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f)
 - [Public event handout in this repository](docs/events/README.md)
@@ -278,7 +278,9 @@ The same links are maintained in the
 
 ### Stay connected
 
-- [GDG Tulsa website](https://gdgtulsa.com/)
+- [GDG Tulsa community website](https://gdgtulsa.com/) — browse community information here; use the
+  [official GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/) for official membership and
+  event registration
 - [GDG Tulsa on Instagram](https://www.instagram.com/gdgtulsa/)
 - [Techlahoma](https://www.techlahoma.org/)
 - [Techlahoma user groups](https://www.techlahoma.org/user-groups/)
@@ -309,9 +311,10 @@ observe a problem.
 
 ### Coming next
 
-**OklahomAI Google Edition** is planned for September 23, 2026 at 6 PM. Follow the
-[Techlahoma Events calendar](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC) for the registration
-link when it is published; a venue and event-specific URL are not confirmed here.
+The August 2026 workshop slide plan lists **OklahomAI Google Edition** as planned for September 23,
+2026 at 6 PM. The public [Techlahoma Events calendar](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC)
+does not yet confirm the event, so treat the date as planned and follow the calendar for the
+authoritative registration link, schedule, and venue when they are published.
 
 [Luma documents calendar Follow](https://help.luma.com/p/discovering-events) as the public signup for
 a calendar's events, newsletters, and reminders, so this directory does not invent a second “blast
