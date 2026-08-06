@@ -11,7 +11,7 @@
 - **Date:** 2026-08-06 (America/Chicago)
 - **Branch:** `codex/relationship-workbench-prompt`
 - **Base:** `origin/main` at `68637bc534795271de62789d38f61b7ef1b7c526`
-- **Status:** published to GitHub review branch
+- **Status:** merged into GitHub `main`
 - **App commit:** `861c3f5bbedfc7ca1c9e24038388cadfa5401333`
 - **Remote receipt:** `git ls-remote` matched the app commit on
   `refs/heads/codex/relationship-workbench-prompt` at 2026-08-06 17:21 CDT
@@ -41,6 +41,7 @@
 - **Latest main before merge:** `89080f455bf38ab6ab926b4a6f833558d0672062`
 - **Source branch head:** `94f1160388c2357958a9df413aceddd4259b61a0`
 - **Local merge commit:** `c462993c8950efe54ea0ae25b9a398cb33ebc0b9`
+- **Merged app head:** `b7ff223b2fb235678d78f34f2e6bdf01dacde032`
 - **Target:** `refs/heads/main`
 - **Deployment effect:** none; this repository has no deploy-on-push workflow
 
@@ -51,4 +52,5 @@
 - [x] Merged-tree `bun run verify` passed with pre-existing non-failing CSS warnings.
 - [x] Merged-tree desktop and phone scaffold browser verification passed.
 - [x] Touched-file `prek` and staged Gitleaks guardrails passed for integration changes.
-- [ ] Exact merged head is pushed and verified on GitHub `main`.
+- [x] `git ls-remote` matched the merged app head on GitHub `main` at
+  2026-08-06 18:32 CDT.
