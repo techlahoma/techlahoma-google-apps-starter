@@ -3,6 +3,7 @@
 import {chromium, type Page} from 'playwright';
 import {existsSync, mkdirSync, readFileSync} from 'node:fs';
 import {join, resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {readAppContract} from './app-contract-lib';
 
 const ROOT_DIR = resolve(import.meta.dir, '..');
@@ -158,7 +159,10 @@ export async function runBrowserVerification(slug: string): Promise<void> {
     // Try importing custom smoke test runner from spec file if exported
     let customModule: Record<string, unknown> | null = null;
     try {
-      customModule = (await import(specAbsPath)) as Record<string, unknown>;
+      customModule = (await import(pathToFileURL(specAbsPath).href)) as Record<
+        string,
+        unknown
+      >;
     } catch {
       // Standard spec file without export runner
     }

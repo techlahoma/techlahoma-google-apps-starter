@@ -8,11 +8,13 @@
     "packages/*"
   ],
   "scripts": {
+    "setup:doctor": "bun scripts/setup-doctor.ts",
     "dev": "bun run --cwd apps/welcome dev",
     "build": "bun scripts/workspace-apps.ts build",
     "app:create": "bun scripts/create-app.ts",
     "app:verify": "bun scripts/verify-app.ts",
     "app:browser:verify": "bun scripts/verify-browser.ts",
+    "browser:install": "playwright install chromium",
     "agent:finish": "bun scripts/agent-finish.ts",
     "apps:check": "bun scripts/workspace-apps.ts check",
     "deploy": "bun scripts/deploy.ts",
@@ -24,7 +26,7 @@
     "lint": "NODE_PATH=./node_modules gts lint 'scripts/**/*.ts' 'tests/**/*.ts' 'apps/*/src/**/*.ts' 'templates/vite-app/src/**/*.ts' && biome lint .",
     "typecheck": "tsc --noEmit",
     "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run apps:check",
-    "verify": "bun run check",
+    "verify": "bun scripts/verify-repository.ts",
     "firebase:login": "NO_UPDATE_NOTIFIER=1 firebase login",
     "firebase:serve": "NO_UPDATE_NOTIFIER=1 firebase emulators:start --only hosting --project demo-techlahoma-google-apps --config apps/welcome/firebase.json",
     "google:doctor": "bun scripts/google-cloud.ts doctor",
@@ -45,7 +47,7 @@
     "firebase-tools": "15.24.0",
     "globals": "14.0.0",
     "gts": "7.0.0",
-    "playwright": "^1.62.1",
+    "playwright": "1.62.1",
     "prettier": "3.6.2",
     "typescript": "5.9.3",
     "vite": "8.0.16"

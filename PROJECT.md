@@ -16,10 +16,10 @@
 ## Status
 
 - Lifecycle: `active`
-- Current objective: let Antigravity create and launch isolated Techlahoma workshop apps under `apps/` from one prompt
-- Next decision or action: rehearse the public event prompts from a fresh clone in Antigravity
-- Verification base: public monorepo revision `fb5528f`; see current `main` for this identity update
-- Last verified at: 2026-08-04
+- Current objective: let a first-time developer or Antigravity bootstrap and launch isolated workshop apps on native Windows or Apple Silicon macOS without guessing at developer tooling
+- Next decision or action: use the Windows and macOS CI matrix as the per-revision portability proof and rehearse the event prompt from a clean workshop machine
+- Verification base: current `main`; durable local evidence belongs under `docs/verification/` and remote CI remains revision-specific
+- Last verified at: 2026-08-06
 
 ## User and problem
 
@@ -42,6 +42,8 @@
 - Read-only doctor and plan commands
 - Exact project-ID confirmation for provision, deploy, and whole-project deletion
 - Source-backed research, operating guide, tests, and production build
+- Native PowerShell and macOS onboarding with a read-only environment doctor
+- Cross-platform repository verification plus Windows and macOS CI coverage
 
 ### Non-goals
 
@@ -54,7 +56,8 @@
 ### Success proof
 
 - `bun install --frozen-lockfile` resolves the pinned toolchain.
-- `bash scripts/verify.sh` validates the starter contract, format, lint, types, tests, and build.
+- `bun run setup:doctor` reports platform and prerequisite readiness without mutating the machine.
+- `bun run verify` validates the starter contract, format, lint, types, tests, and build on Windows, macOS, and Linux.
 - `bun run app:create plan` names the exact new app path without writing it.
 - `bun run google:doctor` reports shared project and hosting site readiness without a cloud request.
 - Lifecycle plan commands name their effect, exact target, commands, and limitations.
@@ -89,7 +92,9 @@ See
 |---|---|
 | Product intent and operational status | `PROJECT.md` |
 | Human onboarding | `README.md` |
+| Fresh-machine onboarding | `docs/operations/fresh-machine-setup.md` |
 | Agent rules | `AGENTS.md` and `.starter/addenda/` |
+| Antigravity environment bootstrap | `.agents/rules/environment-bootstrap.md` and `.agents/skills/bootstrap-workspace/` |
 | One-prompt local demo workflow | `.agents/skills/build-and-launch-demo/` |
 | Runnable apps | `apps/<slug>/` |
 | App seed | `templates/vite-app/` |
@@ -112,6 +117,9 @@ See
 
 | Command | Effect | Target | Required authority | Proof |
 |---|---|---|---|---|
+| `bun run setup:doctor [--json]` | read-only | local platform, tools, checkout, dependencies, and browser readiness | none | findings and exact next actions |
+| `bun run setup:doctor --network` | read-only network query | GitHub and npm registry reachability | none | bounded endpoint results |
+| `bun run browser:install` | local-write plus network download | pinned Playwright Chromium cache | explicit dependency/browser install intent | local browser executable |
 | `bun run dev` | local runtime | `apps/welcome` Vite server | none | local page loads |
 | `bun run app:create plan --name APP --title TITLE` | read-only | proposed `apps/APP` workspace | none | JSON plan |
 | `bun run app:create apply --name APP --title TITLE` | local-write | new `apps/APP` workspace | local-edit authority | generated files and app check |
@@ -121,7 +129,7 @@ See
 | `bun run agent:finish --changed` | read-only except test artifacts | changed `apps/<slug>` workspaces | none | completion receipts for changed apps |
 | `bun run format` | local-write | TypeScript, JSON, HTML, and CSS source | local-edit authority | clean format check |
 | `bun run audit:dependencies` | read-only network query | locked dependency graph | none | current advisory report |
-| `bash scripts/verify.sh` | read-only except disposable build output | local checkout | none | exit status and output |
+| `bun run verify` | read-only except disposable build output | local checkout | none | cross-platform exit status and output |
 | `bun run deploy [APP]` | deploy | selected app workspace and its dedicated Firebase Hosting site | explicit deployment authority | CLI deployment result & live URL check |
 | `bun run deploy --all` | deploy | all app workspaces and their dedicated Firebase Hosting sites | explicit deployment authority | CLI deployment results & live URL checks |
 | `bun run deploy [APP] --dry-run` | read-only | deployment plan, project config, site mapping | none | JSON or text dry run plan |

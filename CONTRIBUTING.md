@@ -13,15 +13,21 @@
 
 ## Local workflow
 
+If Git or Bun may be missing, begin with the
+[fresh-machine setup guide](docs/operations/fresh-machine-setup.md). The basic Windows path uses
+native PowerShell without WSL; the macOS path does not require Homebrew.
+
 ```sh
+bun run setup:doctor
 bun install --frozen-lockfile
+bun run setup:doctor
 bun run dev
 ```
 
 Before committing:
 
 ```sh
-bash scripts/verify.sh
+bun run verify
 bun run prek run --all-files
 ```
 

@@ -26,6 +26,14 @@
   repository-specific policy wins and material conflicts must be surfaced for
   review.
 
+## Fresh-machine bootstrap
+
+- Support native PowerShell on Windows and the built-in terminal on Apple Silicon macOS. The basic local path must not require WSL, Git Bash, Homebrew, Node, npm, or a global Firebase CLI.
+- Before project commands, verify Git and the exact Bun version declared in `package.json`. When either is missing, use `.agents/skills/bootstrap-workspace/` and `docs/operations/fresh-machine-setup.md`.
+- Run `bun run setup:doctor` before and after installing locked dependencies. Use `bun run verify` as the canonical cross-platform repository check; `scripts/verify.sh` is an optional Unix wrapper.
+- Diagnosing tools is read-only. Installing machine software, elevating privileges, changing `PATH`, or changing an execution policy requires explicit authority unless the user specifically requested machine bootstrap.
+- Prefer official, user-local installers. Never install WSL or Homebrew solely for this repository, use `Set-ExecutionPolicy Unrestricted`, weaken TLS/certificate/security controls, or silently configure global Git identity.
+
 ## External action authority
 
 - Inspection, audit, explanation, diagnosis, and review are read-only unless

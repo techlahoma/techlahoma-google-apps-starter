@@ -14,7 +14,7 @@
 - Run `bun run --cwd apps/<slug> check` for its types, tests, and production build.
 - Run `bun run app:browser:verify --app <slug>` to run browser verification.
 - Run `bun run app:verify --app <slug>` to run full completion verification.
-- Run `bash scripts/verify.sh` before declaring the whole repository healthy.
+- Run `bun run verify` before declaring the whole repository healthy. This is the native Windows, macOS, and Linux entrypoint; `scripts/verify.sh` is only an optional Unix wrapper.
 
 ## Dependencies and shared code
 

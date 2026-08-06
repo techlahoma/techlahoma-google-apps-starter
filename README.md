@@ -56,14 +56,22 @@ The working presentation is intentionally not linked here until its Google Drive
 public. The resource directory at the bottom preserves its attendee-relevant links and safety
 guidance without exposing the private deck.
 
-## Clone and start
+## Start on a new machine
 
-Prerequisite: [Bun](https://bun.sh/) 1.3.14, or use the tools pinned in `mise.toml`.
+The native workshop path supports Windows PowerShell without WSL and Apple Silicon macOS without
+Homebrew. If Git, Bun, or other developer tooling may be missing, start with the
+[fresh-machine setup guide](docs/operations/fresh-machine-setup.md). It documents official,
+versioned installation paths and the authority boundary for machine changes.
+
+The basic path requires Git and [Bun](https://bun.sh/) `1.3.14`. Mise and the additional tools in
+`mise.toml` are optional for starting the app.
 
 ```sh
 git clone https://github.com/techlahoma/techlahoma-google-apps-starter.git
 cd techlahoma-google-apps-starter
+bun run setup:doctor
 bun install --frozen-lockfile
+bun run setup:doctor
 bun run dev
 ```
 
@@ -112,6 +120,7 @@ Distinguish between app compilation (`check`) and app completion (`verify`):
 
 ```sh
 bun run --cwd apps/example-crm check            # App typecheck, unit tests, and production build
+bun run browser:install                         # One-time pinned Chromium download
 bun run app:browser:verify --app example-crm   # Shared Playwright browser verification
 bun run app:verify --app example-crm           # Full completion check (contract, markers, policy, tests, browser)
 bun run agent:finish --changed                 # Verify all changed app workspaces
@@ -129,11 +138,15 @@ local URL without stopping for intermediate approval.
 The skill permits local work only. A one-prompt build does not authorize GitHub changes, Google
 Cloud provisioning, authentication, deployment, publication, or deletion.
 
-Verify the production build, tests, formatting, lint, types, starter contract, and shell scripts:
+Verify the production build, tests, formatting, lint, types, and starter contract through the
+cross-platform Bun entrypoint:
 
 ```sh
-bash scripts/verify.sh
+bun run verify
 ```
+
+`scripts/verify.sh` remains an optional Unix wrapper. Native Windows does not require Bash; Unix
+shell syntax and shellcheck remain enforced in Linux CI.
 
 Use `bun run format` to apply GTS to TypeScript and Biome to JSON, HTML, and CSS.
 Run `bun run audit:dependencies` for the current registry-backed vulnerability report; its known

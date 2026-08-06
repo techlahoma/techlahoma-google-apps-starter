@@ -9,9 +9,9 @@ Complete the requested local demo in one uninterrupted pass. Do not turn the req
 
 ## Work autonomously
 
-1. Confirm the current working directory is the Techlahoma Google Apps Starter root. Read `AGENTS.md`, `PROJECT.md`, `apps/AGENTS.md`, the active `.starter/addenda/`, and relevant scripts before editing.
+1. Confirm the current working directory is the Techlahoma Google Apps Starter root. Read `AGENTS.md`, `PROJECT.md`, `apps/AGENTS.md`, the active `.starter/addenda/`, and relevant scripts before editing. If Git or the exact Bun version is missing, use the `bootstrap-workspace` skill rather than guessing at WSL, Homebrew, or another package manager.
 2. Treat the user's prompt as the acceptance contract. Resolve minor ambiguity with the smallest reversible interpretation and state it in the final report.
-3. Install the locked root dependencies when needed and run the existing repository verification before editing. Record failures without weakening checks.
+3. Run `bun run setup:doctor`, install the locked root dependencies when needed, and run `bun run verify` before editing. Install the pinned browser with `bun run browser:install` only when browser proof requires it. Record failures without weakening checks.
 4. Choose a short lowercase app slug from the requested artifact. If `apps/<slug>` exists, add the first unused numeric suffix; never overwrite an existing app.
 5. Run `bun run app:create plan --name <slug> --title "<title>"`, inspect its target, then run the matching `app:create apply` command. Continue without asking for an intermediate approval because the one-shot prompt authorizes this local app creation.
 6. Make all artifact-specific edits inside that new `apps/<slug>/` workspace. Change root files only when the prompt explicitly requests a shared monorepo capability.
@@ -46,4 +46,4 @@ Read [references/completion-contract.md](references/completion-contract.md) when
 
 ## Authority boundary
 
-A one-shot build authorizes local inspection, dependency installation from the committed lockfile, creating one new `apps/<slug>` workspace, app-scoped edits, tests, browser verification, and launching a local server. It does not authorize committing, pushing, opening a pull request, provisioning cloud resources, authenticating external accounts, deploying, publishing, or deleting anything unless the prompt explicitly names that exact effect.
+A one-shot build authorizes local inspection, repository-local dependency installation from the committed lockfile, creating one new `apps/<slug>` workspace, app-scoped edits, tests, browser verification, and launching a local server. It does not authorize machine-wide tool installation, administrator elevation, `PATH` or execution-policy changes, committing, pushing, opening a pull request, provisioning cloud resources, authenticating external accounts, deploying, publishing, or deleting anything unless the prompt explicitly names that exact effect.

@@ -32,6 +32,8 @@ Create a folder only when its first real document exists.
 - [Decision: selectively adopt public Google engineering conventions](decisions/google-public-engineering-conventions-2026-08-03.md)
 - [Decision: static Firebase Hosting with one project per environment](decisions/project-per-environment-google-starter-2026-08-03.md)
 - [Operations: Google Cloud lifecycle](operations/google-cloud.md)
+- [Operations: fresh native Windows and macOS setup](operations/fresh-machine-setup.md)
+- [Verification: fresh-machine bootstrap](verification/fresh-machine-bootstrap-2026-08-06.md)
 - [Public event materials: Intro to Google Developer Group](events/README.md)
 - [Verification: Techlahoma Google Apps Starter](verification/google-app-starter-2026-08-03.md)
 

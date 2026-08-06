@@ -86,8 +86,11 @@ const ACTION_SHA_PATTERN = /@[0-9a-f]{40}(?:\s|$)/;
 const PROJECT_TOKEN_PATTERN = /__PROJECT_(?:NAME|SLUG|DESCRIPTION)__/g;
 const MARKDOWN_LINK_PATTERN = /\[[^\]]+\]\(([^)]+)\)/g;
 const REQUIRED_CORE_PATHS = [
+  '.agents/rules/environment-bootstrap.md',
+  '.agents/skills/bootstrap-workspace/SKILL.md',
   '.agents/skills/build-and-launch-demo/SKILL.md',
   '.editorconfig',
+  '.gitattributes',
   '.github/CODEOWNERS',
   '.github/ISSUE_TEMPLATE/bug-report.yml',
   '.github/ISSUE_TEMPLATE/config.yml',
@@ -107,13 +110,17 @@ const REQUIRED_CORE_PATHS = [
   'SECURITY.md',
   'bunfig.toml',
   'docs/README.md',
+  'docs/operations/fresh-machine-setup.md',
   'mise.toml',
   'prek.toml',
   'profiles/README.md',
   'scripts/create-app.ts',
   'scripts/hooks/gitleaks-staged',
   'scripts/project-starter.ts',
+  'scripts/setup-doctor-lib.ts',
+  'scripts/setup-doctor.ts',
   'scripts/verify.sh',
+  'scripts/verify-repository.ts',
   'scripts/workspace-apps.ts',
   'templates/vite-app/package.json',
   'tsconfig.base.json',
@@ -429,6 +436,14 @@ function verifyShellSyntax(report: Report): void {
   }
   const hook = join(ROOT, 'scripts', 'hooks', 'gitleaks-staged');
   if (existsSync(hook)) candidates.add(hook);
+  if (process.platform === 'win32' || !Bun.which('bash')) {
+    if (candidates.size > 0) {
+      report.warning(
+        'bash is unavailable; Unix shell syntax remains enforced in Linux CI',
+      );
+    }
+    return;
+  }
   for (const path of [...candidates].toSorted()) {
     const result = run(['bash', '-n', path]);
     if (result.returncode !== 0) {
