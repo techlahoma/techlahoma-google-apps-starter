@@ -21,7 +21,9 @@
 2. [Open the repository](https://github.com/techlahoma/techlahoma-google-apps-starter).
 3. Follow the [five-minute local start](../../README.md#clone-and-start).
 4. Open the cloned folder in Antigravity.
-5. Paste one of the [one-shot demo prompts](antigravity-one-shot-prompts.md).
+5. Paste one of the [one-shot demo prompts](antigravity-one-shot-prompts.md), or use the
+   [transcript-conditioned CRM prompt](../../apps/relationship-workbench/PROMPT.md) with a Granola
+   transcript from a business interview.
 6. Keep every generated demo in its own `apps/<slug>/` directory.
 
 The prompts finish at a verified, running local URL. They do not authorize an agent to commit, push,

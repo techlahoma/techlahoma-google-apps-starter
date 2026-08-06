@@ -186,6 +186,10 @@ should use it automatically to create one unused `apps/<slug>` workspace, build 
 artifact, verify it in the browser, launch its development server, and return the app path plus usable
 local URL without stopping for intermediate approval.
 
+For the live business-interview demo, use the
+[Relationship Workbench prompt kit](apps/relationship-workbench/PROMPT.md). It combines a Granola
+transcript with a tested CRM product, local persistence, and browser-proof contract.
+
 The skill permits local work only. A one-prompt build does not authorize GitHub changes, Google
 Cloud provisioning, authentication, deployment, publication, or deletion.
 
@@ -330,6 +334,7 @@ The same links are maintained in the
 - [Public event handout and resource hub](docs/events/README.md)
 - [Download Google Antigravity for macOS or Windows](https://antigravity.google/download)
 - [Copy-ready Antigravity demo prompts](docs/events/antigravity-one-shot-prompts.md)
+- [Transcript-conditioned Relationship Workbench prompt](apps/relationship-workbench/PROMPT.md)
 - [Intro to Google Developer Group event page](https://luma.com/j0vrcn5h)
 - [Follow Techlahoma Events on Luma for future events, newsletters, and reminders](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC)
 - [Official GDG Tulsa chapter](https://gdg.community.dev/gdg-tulsa/)
