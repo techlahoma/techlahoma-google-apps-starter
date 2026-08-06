@@ -33,9 +33,9 @@ deploy, authenticate an account, provision cloud resources, or delete anything.
 - **Coming next:** OklahomAI is planned for September 23, 2026 at 6 PM. Follow the Luma calendar for
   the registration link when it is published; a venue and event-specific URL are not confirmed here.
 
-[Luma documents calendar Follow](https://help.luma.com/p/discovering-events) as the signup for a
-calendar's events, newsletters, and reminders. There is no separate public “blast signup” link to
-save.
+[Luma documents calendar Follow](https://help.luma.com/p/discovering-events) as the public signup for
+a calendar's events, newsletters, and reminders, so this hub does not invent a second “blast signup”
+URL.
 
 ## GDG Tulsa and Techlahoma
 
