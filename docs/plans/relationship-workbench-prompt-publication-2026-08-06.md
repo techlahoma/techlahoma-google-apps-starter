@@ -35,3 +35,20 @@
 - [x] Repository `bun run verify` passed after one app-local formatting correction.
 - [x] Touched-file `prek` guardrails and staged Gitleaks review passed.
 - [x] Exact branch push and remote app-commit verification passed.
+
+## Main integration
+
+- **Latest main before merge:** `89080f455bf38ab6ab926b4a6f833558d0672062`
+- **Source branch head:** `94f1160388c2357958a9df413aceddd4259b61a0`
+- **Local merge commit:** `c462993c8950efe54ea0ae25b9a398cb33ebc0b9`
+- **Target:** `refs/heads/main`
+- **Deployment effect:** none; this repository has no deploy-on-push workflow
+
+- [x] Latest `origin/main` and prompt branch fetched before integration.
+- [x] Histories merged without conflicts in a separate integration worktree.
+- [x] Root lockfile updated only to register the new workspace.
+- [x] A second `bun install --frozen-lockfile` completed without changes.
+- [x] Merged-tree `bun run verify` passed with pre-existing non-failing CSS warnings.
+- [x] Merged-tree desktop and phone scaffold browser verification passed.
+- [x] Touched-file `prek` and staged Gitleaks guardrails passed for integration changes.
+- [ ] Exact merged head is pushed and verified on GitHub `main`.

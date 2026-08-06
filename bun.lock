@@ -71,6 +71,15 @@
         "vite": "8.0.16",
       },
     },
+    "apps/relationship-workbench": {
+      "name": "@techlahoma/relationship-workbench",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@types/bun": "1.3.14",
+        "typescript": "5.9.3",
+        "vite": "8.0.16",
+      },
+    },
     "apps/room-pulse": {
       "name": "@techlahoma/room-pulse",
       "version": "0.0.0",
@@ -432,6 +441,8 @@
     "@techlahoma/gargantua": ["@techlahoma/gargantua@workspace:apps/gargantua"],
 
     "@techlahoma/numeronym-generator": ["@techlahoma/numeronym-generator@workspace:apps/numeronym-generator"],
+
+    "@techlahoma/relationship-workbench": ["@techlahoma/relationship-workbench@workspace:apps/relationship-workbench"],
 
     "@techlahoma/room-pulse": ["@techlahoma/room-pulse@workspace:apps/room-pulse"],
 
