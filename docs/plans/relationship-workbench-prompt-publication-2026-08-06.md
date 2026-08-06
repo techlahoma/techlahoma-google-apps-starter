@@ -11,7 +11,10 @@
 - **Date:** 2026-08-06 (America/Chicago)
 - **Branch:** `codex/relationship-workbench-prompt`
 - **Base:** `origin/main` at `68637bc534795271de62789d38f61b7ef1b7c526`
-- **Status:** locally verified and ready to commit
+- **Status:** published to GitHub review branch
+- **App commit:** `861c3f5bbedfc7ca1c9e24038388cadfa5401333`
+- **Remote receipt:** `git ls-remote` matched the app commit on
+  `refs/heads/codex/relationship-workbench-prompt` at 2026-08-06 17:21 CDT
 
 ## Scope
 
@@ -31,4 +34,4 @@
 - [x] App check and desktop/phone scaffold browser verification passed after the changes.
 - [x] Repository `bun run verify` passed after one app-local formatting correction.
 - [x] Touched-file `prek` guardrails and staged Gitleaks review passed.
-- [ ] Exact branch push and remote commit verification passed.
+- [x] Exact branch push and remote app-commit verification passed.
