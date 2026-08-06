@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "complete",
+  "capabilities": ["static", "browser"],
+  "browserSpec": "e2e/smoke.spec.ts",
+  "requiredProof": {
+    "primaryFlow": true,
+    "failureOrEmptyPath": true,
+    "phoneWidth": true,
+    "cleanBrowserConsole": true
+  }
+}

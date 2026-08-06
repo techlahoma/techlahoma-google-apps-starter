@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CUT/LOCAL — Professional NLE Video Editor</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="app" class="editor-layout">
+      <!-- Top Header -->
+      <header class="editor-header">
+        <div class="brand">
+          <svg aria-hidden="true" focusable="false" class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 11a9 9 0 0 1 9 9" />
+            <path d="M4 4a16 16 0 0 1 16 16" />
+            <circle cx="5" cy="19" r="1" />
+          </svg>
+          <span class="brand-name">Launch Cut</span>
+          <span class="brand-tag">NLE PRO</span>
+        </div>
+
+        <div class="header-center">
+          <button type="button" id="import-media-btn" class="btn btn-primary">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Import Media
+          </button>
+          <input type="file" id="file-input" multiple accept="video/*,audio/*" class="hidden" />
+        </div>
+
+        <div class="header-actions">
+          <button type="button" id="undo-btn" class="btn btn-secondary" title="Undo (Ctrl+Z)" disabled>Undo</button>
+          <button type="button" id="redo-btn" class="btn btn-secondary" title="Redo (Ctrl+Y)" disabled>Redo</button>
+          <button type="button" id="reset-btn" class="btn btn-ghost" title="Reset Demo Project">Reset Demo</button>
+          <button type="button" id="export-btn" class="btn btn-accent">Export Video</button>
+        </div>
+      </header>
+
+      <!-- Main Content Split: 4 Panels -->
+      <main class="editor-main">
+        <!-- Panel 1: Media Bin -->
+        <section id="media-bin" class="panel media-bin-panel" aria-label="Media Bin">
+          <div class="panel-header">
+            <h2 class="panel-title">Project Bin</h2>
+            <span id="asset-count-badge" class="badge">3 Assets</span>
+          </div>
+
+          <div id="drop-zone" class="drop-zone">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="drop-icon">
+              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+              <path d="M12 12v9" /><path d="m16 16-4-4-4 4" />
+            </svg>
+            <p class="drop-text">Drag & Drop Video/Audio Files</p>
+          </div>
+
+          <div id="asset-list" class="asset-list">
+            <!-- Assets populated dynamically -->
+          </div>
+        </section>
+
+        <!-- Panel 2: Source Monitor -->
+        <section id="source-monitor" class="panel source-monitor-panel" aria-label="Source Monitor">
+          <div class="panel-header">
+            <h2 class="panel-title">Source Monitor</h2>
+            <span id="source-asset-name" class="source-filename">Select Asset...</span>
+          </div>
+
+          <div class="source-canvas-container">
+            <canvas id="source-canvas" width="640" height="360"></canvas>
+          </div>
+
+          <div class="source-controls">
+            <div class="source-time-row">
+              <span id="source-timecode" class="timecode">0.00s / 0.00s</span>
+              <input type="range" id="source-scrubber" min="0" max="1" step="0.01" value="0" />
+            </div>
+
+            <div class="source-btn-row">
+              <button type="button" id="source-play-btn" class="btn btn-secondary btn-sm">Play</button>
+              <button type="button" id="set-in-btn" class="btn btn-secondary btn-sm" title="Set In Point (I)">Set In (I)</button>
+              <button type="button" id="set-out-btn" class="btn btn-secondary btn-sm" title="Set Out Point (O)">Set Out (O)</button>
+              <button type="button" id="clear-inout-btn" class="btn btn-ghost btn-sm" title="Clear In/Out">Clear In/Out</button>
+              <button type="button" id="insert-btn" class="btn btn-primary btn-sm" title="Insert to Timeline">Insert</button>
+              <button type="button" id="overwrite-btn" class="btn btn-secondary btn-sm" title="Overwrite Timeline">Overwrite</button>
+            </div>
+            <div class="inout-range-info">
+              Range: <span id="inout-range-text">0.00s - 3.00s (3.00s)</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panel 3: Program Monitor -->
+        <section id="program-monitor" class="panel program-monitor-panel" aria-label="Program Monitor">
+          <div class="panel-header">
+            <h2 class="panel-title">Program Sequence</h2>
+            <div class="aspect-selector">
+              <button type="button" id="aspect-16-9" class="btn btn-toggle active" data-aspect="16:9">16:9</button>
+              <button type="button" id="aspect-1-1" class="btn btn-toggle" data-aspect="1:1">1:1</button>
+              <button type="button" id="aspect-9-16" class="btn btn-toggle" data-aspect="9:16">9:16</button>
+            </div>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas
+              id="preview-canvas"
+              width="1280"
+              height="720"
+              data-render-width="1280"
+              data-render-height="720"
+              style="aspect-ratio: 16 / 9;"
+            ></canvas>
+          </div>
+
+          <div class="transport-bar">
+            <button type="button" id="play-btn" class="btn btn-primary btn-icon-lg" aria-label="Play or Pause">
+              <svg aria-hidden="true" focusable="false" id="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+              <svg aria-hidden="true" focusable="false" id="pause-icon" viewBox="0 0 24 24" fill="currentColor" class="hidden">
+                <rect x="6" y="4" width="4" height="16" />
+                <rect x="14" y="4" width="4" height="16" />
+              </svg>
+            </button>
+            <span id="timecode-display" class="timecode">0.00s / 9.00s</span>
+            <input type="range" id="time-scrubber" min="0" max="9.00" step="0.01" value="0" />
+          </div>
+        </section>
+
+        <!-- Panel 4: Inspector -->
+        <section id="inspector-panel" class="panel inspector-panel" aria-label="Clip Inspector">
+          <div class="panel-header">
+            <h2 class="panel-title">Clip Inspector</h2>
+          </div>
+
+          <div id="inspector-content" class="inspector-content">
+            <div class="clip-info-card">
+              <span id="selected-clip-badge" class="badge">V1</span>
+              <span id="selected-clip-id" class="clip-id">No clip selected</span>
+            </div>
+
+            <!-- Video Transform Controls -->
+            <div class="control-group">
+              <label class="group-label">Transform & Layout</label>
+              <div class="form-row">
+                <label>Fit</label>
+                <select id="transform-fit" class="select">
+                  <option value="contain">Contain</option>
+                  <option value="cover">Cover</option>
+                  <option value="fill">Fill</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Scale</label>
+                <input type="range" id="transform-scale" min="0.1" max="3.0" step="0.1" value="1.0" />
+                <span id="scale-val" class="val-label">1.0x</span>
+              </div>
+              <div class="form-row">
+                <label>Rotation</label>
+                <select id="transform-rotation" class="select">
+                  <option value="0">0°</option>
+                  <option value="90">90°</option>
+                  <option value="180">180°</option>
+                  <option value="270">270°</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Opacity</label>
+                <input type="range" id="transform-opacity" min="0" max="1" step="0.05" value="1" />
+                <span id="opacity-val" class="val-label">100%</span>
+              </div>
+            </div>
+
+            <!-- Audio Controls -->
+            <div class="control-group">
+              <label class="group-label">Audio Adjustments</label>
+              <div class="form-row">
+                <label>Clip Gain</label>
+                <input type="range" id="audio-gain" min="0" max="2.0" step="0.1" value="1.0" />
+                <span id="gain-val" class="val-label">100%</span>
+              </div>
+              <div class="form-row">
+                <label>Fade In (s)</label>
+                <input type="number" id="audio-fade-in" min="0" max="5" step="0.1" value="0" class="input input-sm" />
+              </div>
+              <div class="form-row">
+                <label>Fade Out (s)</label>
+                <input type="number" id="audio-fade-out" min="0" max="5" step="0.1" value="0" class="input input-sm" />
+              </div>
+            </div>
+
+            <!-- Title Overlay Input -->
+            <div class="control-group">
+              <label class="group-label">Title / Text</label>
+              <input type="text" id="title-input" class="input" placeholder="Clip Title..." />
+            </div>
+
+            <!-- Trim Buttons -->
+            <div class="control-group">
+              <label class="group-label">Trim Bounds (±0.25s)</label>
+              <div class="trim-grid">
+                <button type="button" id="trim-start-minus" class="btn btn-secondary btn-sm">Start −</button>
+                <button type="button" id="trim-start-plus" class="btn btn-secondary btn-sm">Start +</button>
+                <button type="button" id="trim-end-minus" class="btn btn-secondary btn-sm">End −</button>
+                <button type="button" id="trim-end-plus" class="btn btn-secondary btn-sm">End +</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Multitrack Timeline -->
+      <section id="multitrack-timeline" class="timeline-section" aria-label="Multitrack Timeline">
+        <!-- Timeline Toolbar -->
+        <div class="timeline-toolbar">
+          <div class="tool-group">
+            <button type="button" id="split-btn" class="btn btn-secondary btn-sm" title="Split at Playhead (S)">Split (S)</button>
+            <button type="button" id="link-btn" class="btn btn-secondary btn-sm" title="Link/Unlink Audio-Video">Link/Unlink</button>
+            <button type="button" id="copy-btn" class="btn btn-secondary btn-sm" title="Copy (Ctrl+C)">Copy</button>
+            <button type="button" id="paste-btn" class="btn btn-secondary btn-sm" title="Paste (Ctrl+V)">Paste</button>
+            <button type="button" id="duplicate-btn" class="btn btn-secondary btn-sm" title="Duplicate (Ctrl+D)">Duplicate</button>
+            <button type="button" id="lift-delete-btn" class="btn btn-secondary btn-sm" title="Lift Delete">Delete</button>
+            <button type="button" id="ripple-delete-btn" class="btn btn-danger btn-sm" title="Ripple Delete (Shift+Delete)">Ripple Delete</button>
+          </div>
+          <div class="timeline-zoom-controls">
+            <span class="zoom-label">Zoom:</span>
+            <button type="button" id="zoom-out-btn" class="btn btn-ghost btn-sm">−</button>
+            <button type="button" id="zoom-in-btn" class="btn btn-ghost btn-sm">+</button>
+          </div>
+        </div>
+
+        <!-- Multitrack Container -->
+        <div class="multitrack-container" id="multitrack-container">
+          <!-- Track Headers Sidebar -->
+          <div class="track-headers" id="track-headers">
+            <div class="header-top-spacer">Track</div>
+            <div class="track-header video-track">V2 Overlay</div>
+            <div class="track-header video-track">V1 Primary</div>
+            <div class="track-header title-track">T1 Titles</div>
+            <div class="track-header audio-track">A1 Audio 1</div>
+            <div class="track-header audio-track">A2 Audio 2</div>
+          </div>
+
+          <!-- Track Area with Ruler & Clip Lanes -->
+          <div class="track-area" id="track-area">
+            <div class="timeline-ruler" id="timeline-ruler">
+              <!-- Ruler ticks generated dynamically -->
+            </div>
+
+            <div class="multitrack-lanes" id="multitrack-lanes">
+              <div class="track-lane video-lane" data-track-id="V2"></div>
+              <div class="track-lane video-lane" data-track-id="V1"></div>
+              <div class="track-lane title-lane" data-track-id="T1"></div>
+              <div class="track-lane audio-lane" data-track-id="A1"></div>
+              <div class="track-lane audio-lane" data-track-id="A2"></div>
+            </div>
+
+            <!-- Playhead Indicator -->
+            <div id="playhead" class="playhead-line" data-seconds="0.00" style="left: 0%;">
+              <div class="playhead-head"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Export Panel Modal -->
+      <section id="export-panel" class="export-panel hidden" aria-label="Export Results">
+        <div class="export-panel-content">
+          <div class="export-panel-header">
+            <h3 class="export-title">Export Status</h3>
+            <span id="export-status-badge" class="badge badge-idle">IDLE</span>
+            <button type="button" id="cancel-export-btn" class="btn btn-secondary btn-sm" disabled>Cancel</button>
+          </div>
+
+          <div id="export-progress-bar" class="progress-bar hidden">
+            <div id="export-progress-fill" class="progress-fill" style="width: 0%;"></div>
+          </div>
+
+          <div id="export-details" class="export-details hidden">
+            <div class="export-preview-container">
+              <video id="export-verify-video" muted playsinline class="export-video"></video>
+            </div>
+            <div class="export-info-grid">
+              <div class="info-item"><span class="info-label">Video Codec:</span> <span id="info-codec" class="info-val">-</span></div>
+              <div class="info-item"><span class="info-label">Audio Codec:</span> <span id="info-acodec" class="info-val">-</span></div>
+              <div class="info-item"><span class="info-label">Dimensions:</span> <span id="info-dims" class="info-val">-</span></div>
+              <div class="info-item"><span class="info-label">Duration:</span> <span id="info-duration" class="info-val">-</span></div>
+              <div class="info-item"><span class="info-label">File Size:</span> <span id="info-size" class="info-val">-</span></div>
+            </div>
+            <div class="export-button-row">
+              <a id="export-download-link" download="launch-cut-nle.mp4" class="btn btn-primary">Download Video</a>
+              <button type="button" id="export-replay-btn" class="btn btn-secondary">Replay Export</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
