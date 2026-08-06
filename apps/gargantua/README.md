@@ -3,18 +3,27 @@
 - `Tease:` Real-time WebGL2 gravitational ray tracer visualizing a Schwarzschild black hole.
 - `Lede:` `apps/gargantua` renders realistic light bending, a Keplerian accretion disk, and relativistic Doppler shifts in interactive 3D WebGL2.
 - `Why it matters:` Demonstrates high-performance WebGL2 physics visualization and interactive shader computation within the monorepo workspace.
-- `Go deeper:` Explore the shader implementation in [`src/shaders.ts`](./src/shaders.ts); add the verified live-demo URL after deployment setup.
+- `Go deeper:` Open the historical [live first pass](https://gargantua-c4d86a.web.app), then compare it with the stricter generation prompt and [`src/shaders.ts`](./src/shaders.ts).
 
 Real-time WebGL2 gravitational ray tracer visualizing a Schwarzschild black hole with realistic light bending, Keplerian accretion disk, and relativistic effects. 
 
-Live demo: not configured in the reusable starter. After an authorized deployment, replace this
-note with the verified Firebase Hosting URL.
+## Deployment
+
+Historical live first pass: [gargantua-c4d86a.web.app](https://gargantua-c4d86a.web.app) returned HTTP 200 on 2026-08-06.
+
+That release is on a legacy, unmapped Firebase Hosting site. The current root configuration maps this app to `gargantua.web.app`, which returned Firebase's HTTP 404 `Site Not Found` response on the same date. A deployment with the current mapping would not update the historical live URL.
+
+The live URL and the prompt below describe different iterations: the deployed URL is the original first pass, while the embedded prompt is the stricter rebuild brief created after reviewing that first pass.
 
 ---
 
 ## 🌟 Generation Prompt
 
 Below is the prompt used to generate this application:
+
+> Historical note: the prompt records the rebuild context. Its instruction that
+> `apps/gargantua` should not exist on `main` is no longer operational; the app
+> is now tracked on `main` and must be preserved.
 
 ```markdown
 <!-- PROMPT_START -->
