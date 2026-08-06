@@ -1,0 +1,45 @@
+:root {
+  color: #202124;
+  background: #fafafa;
+  font-family: system-ui, sans-serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  border-top: 8px solid #f8c702;
+  background: radial-gradient(circle at 85% 15%, rgb(33 158 188 / 18%), transparent 22rem), #fafafa;
+}
+
+.shell {
+  width: min(720px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(64px, 12vw, 128px) 0;
+}
+
+.eyebrow {
+  color: #023047;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 16px 0;
+  font-size: clamp(3rem, 10vw, 6rem);
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.lede,
+output {
+  color: #5f6368;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
