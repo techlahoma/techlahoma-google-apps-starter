@@ -29,6 +29,8 @@ Open the printed local URL. The four direct destinations are `#context`, `#retri
 
 The small models can produce incomplete or wrong answers. Inspect the supplied sources and held-out results. A successful training run does not establish general task reliability.
 
+The React interface uses clickable synthetic emails, a chat transcript, Heroicons, shadcn-style source and evaluation tables, and Xterm for compiler or training logs. Animated SVG flows expose the active operation; measured loss charts update from the real fine-tuning and Rust outputs. See the [visual-language research](../../docs/research/model-workshop-visual-language-2026-09-15.md) for the 3Blue1Brown sources and accessibility choices.
+
 ## Make your own version
 
 The [Google AI Studio Build documentation](https://ai.google.dev/gemini-api/docs/aistudio-build-mode) describes Add files → Import from GitHub. Select `techlahoma/techlahoma-google-apps-starter` and ask it to run this app workspace. Browser import verification is tracked separately in the delivery plan; do not assume the default repository welcome app is this workshop.

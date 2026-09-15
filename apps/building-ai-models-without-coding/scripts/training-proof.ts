@@ -162,7 +162,10 @@ try {
     if (!currentStatus.startsWith('Training and reload complete.')) {
       throw new Error(`Run ${run} did not complete: ${currentStatus}`);
     }
-    const lossText = (await page.locator('#tuning-loss').textContent()) ?? '';
+    const lossText =
+      (await page
+        .locator('#tuning-loss [data-terminal-plain]')
+        .textContent()) ?? '';
     const losses = Array.from(
       lossText.matchAll(/mean pre-update batch loss ([\d.eE+-]+)/g),
       match => Number(match[1]),

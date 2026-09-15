@@ -23,6 +23,10 @@ export default async function runSmokeTest({
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
     if (overflow) throw new Error(`${slug} overflows at ${viewport} width`);
+    await page.screenshot({
+      path: `apps/building-ai-models-without-coding/test-results/smoke-${slug}-${viewport}.png`,
+      fullPage: true,
+    });
   }
   await page.goto(`${baseURL}#retrieval`);
   await page.getByLabel('Retrieval method').selectOption('lexical');
@@ -32,6 +36,10 @@ export default async function runSmokeTest({
   await page
     .getByRole('heading', {name: '[1] Synthetic email: equipment', exact: true})
     .waitFor();
+  await page.screenshot({
+    path: `apps/building-ai-models-without-coding/test-results/smoke-retrieval-results-${viewport}.png`,
+    fullPage: true,
+  });
   await page
     .getByRole('textbox', {name: 'Your question', exact: true})
     .fill('zxqvmeaningless');

@@ -7,7 +7,7 @@ module.exports = [
   },
   ...gts,
   {
-    files: ['apps/*/src/**/*.ts', 'templates/vite-app/src/**/*.ts'],
+    files: ['apps/*/src/**/*.{ts,tsx}', 'templates/vite-app/src/**/*.ts'],
     languageOptions: {
       globals: globals.browser,
     },

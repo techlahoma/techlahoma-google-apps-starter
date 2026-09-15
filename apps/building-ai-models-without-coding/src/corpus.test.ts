@@ -1,13 +1,28 @@
 import {afterEach, expect, test} from 'bun:test';
 import {
+  addSampleDocument,
   getCorpus,
   importCorpus,
+  removeCorpusDocument,
   restoreExampleCorpus,
   sampleCorpus,
 } from './corpus';
 import {lexicalSearch} from './retrieval';
 
 afterEach(restoreExampleCorpus);
+
+test('sample documents can be removed and restored without duplicates', () => {
+  restoreExampleCorpus();
+  const before = getCorpus().length;
+  removeCorpusDocument('equipment');
+  expect(getCorpus().some(document => document.id === 'equipment')).toBe(false);
+  addSampleDocument('equipment');
+  addSampleDocument('equipment');
+  expect(getCorpus()).toHaveLength(before);
+  expect(
+    getCorpus().filter(document => document.id === 'equipment'),
+  ).toHaveLength(1);
+});
 
 test('an imported source remains available to later route readers until explicitly restored', () => {
   importCorpus([

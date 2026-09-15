@@ -1,4 +1,8 @@
 import {
+  mountTerminalOutput,
+  type MountedTerminal,
+} from './components/mount-terminal';
+import {
   loadFunctionGemma,
   type FunctionGemmaInference,
   type FunctionGemmaEvaluation,
@@ -11,6 +15,7 @@ interface Example {
 }
 interface Lesson {
   name: string;
+  explanation: string;
   instruction: string;
   train: Example[];
   test: Example[];
@@ -18,6 +23,8 @@ interface Lesson {
 const lessons: Lesson[] = [
   {
     name: 'Notification → now / later / ignore',
+    explanation:
+      'Task: teach the model to triage a notification by urgency. It should surface immediate problems, defer useful nonurgent notes, and filter obvious spam.',
     instruction:
       'Classify the notification. Reply with exactly now, later, or ignore. Urgent problems are now. Useful nonurgent information is later. Spam is ignore.',
     train: [
@@ -39,6 +46,8 @@ const lessons: Lesson[] = [
   },
   {
     name: 'Voice note → first action',
+    explanation:
+      'Task: teach the model to strip filler from a short voice note and return the first concrete action as a compact task.',
     instruction:
       'Extract the one action from the voice note. Reply with only the short action, without filler.',
     train: [
@@ -63,6 +72,8 @@ const lessons: Lesson[] = [
   },
   {
     name: 'Messy instructions → workflow',
+    explanation:
+      'Task: teach the model to route an informal request into one of three workflows: meeting, event, or document.',
     instruction:
       'Choose one workflow. Reply meeting for agendas or team discussions, event for venues or RSVPs, document for writing or proofreading. Reply with only that word.',
     train: [
@@ -114,18 +125,52 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   container.innerHTML = `<section aria-label="FunctionGemma fine-tuning">
     <h2>Teach a repeatable task</h2>
     <p>Compare FunctionGemma before and after a small, real adapter update. The examples are fictional. No actions are executed.</p>
+    <p id="tuning-task-explanation"></p>
     <p class="hint"><a href="functiongemma/NOTICE.txt">Model source and modification notice</a> · <a href="functiongemma/TERMS.txt">Gemma terms and use restrictions</a></p>
     <label for="tuning-lesson">Choose an everyday task</label><select id="tuning-lesson"></select>
     <div class="toolbar"><button id="tuning-run" class="primary">Train and compare</button><button id="tuning-cancel" disabled>Stop</button><button id="tuning-save" disabled>Save adapter</button></div>
     <output id="tuning-status" aria-live="polite">Ready. First use downloads a 426 MB model. Training needs WebGPU.</output>
     <progress id="tuning-progress" value="0" max="1" hidden></progress>
+    <figure class="m-0" aria-labelledby="tuning-visual-title tuning-visual-caption">
+      <svg id="tuning-visual" class="h-auto w-full" viewBox="0 0 720 280" role="img" aria-labelledby="tuning-visual-title tuning-visual-desc">
+        <title id="tuning-visual-title">How the adapter learns while the base model stays frozen</title>
+        <desc id="tuning-visual-desc">Training examples flow through a frozen model into a small trainable adapter. The loss plot updates from the measurements produced by this run.</desc>
+        <g id="tuning-visual-data" opacity="0.45">
+          <rect x="20" y="34" width="150" height="70" rx="8" fill="#202229" stroke="#697386" />
+          <text x="95" y="63" text-anchor="middle" fill="#eceef2" font-size="15">Training examples</text>
+          <text x="95" y="85" text-anchor="middle" fill="#a7abb6" font-size="12">input → expected label</text>
+        </g>
+        <path d="M170 69 H230" stroke="#697386" stroke-width="2" marker-end="url(#tuning-arrow)" />
+        <g id="tuning-visual-model" opacity="0.45">
+          <rect x="232" y="34" width="150" height="70" rx="8" fill="#202229" stroke="#697386" />
+          <text x="307" y="63" text-anchor="middle" fill="#eceef2" font-size="15">Frozen model</text>
+          <text x="307" y="85" text-anchor="middle" fill="#a7abb6" font-size="12">640-number features</text>
+        </g>
+        <path d="M382 69 H442" stroke="#697386" stroke-width="2" marker-end="url(#tuning-arrow)" />
+        <g id="tuning-visual-adapter" opacity="0.45">
+          <rect x="444" y="34" width="150" height="70" rx="8" fill="#202229" stroke="#b2c9ff" />
+          <text x="519" y="63" text-anchor="middle" fill="#eceef2" font-size="15">Trainable adapter</text>
+          <text x="519" y="85" text-anchor="middle" fill="#b2c9ff" font-size="12">rank 4 · updates here</text>
+        </g>
+        <defs><marker id="tuning-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#697386" /></marker></defs>
+        <g transform="translate(54 142)">
+          <text x="0" y="-12" fill="#eceef2" font-size="14">Measured training loss</text>
+          <line x1="0" y1="100" x2="612" y2="100" stroke="#697386" />
+          <line x1="0" y1="0" x2="0" y2="100" stroke="#697386" />
+          <polyline id="tuning-loss-line" points="" fill="none" stroke="#b2c9ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <circle id="tuning-loss-point" cx="0" cy="100" r="5" fill="#b2c9ff" opacity="0" />
+          <text id="tuning-loss-label" x="612" y="122" text-anchor="end" fill="#a7abb6" font-size="12">Run training to plot loss</text>
+        </g>
+      </svg>
+      <figcaption id="tuning-visual-caption" class="text-sm text-slate-400">The large model remains fixed. Each pass changes only the small adapter; a falling loss means its next-token predictions are getting closer to the training labels.</figcaption>
+    </figure>
     <div id="tuning-results"></div>
-    <details id="tuning-try"><summary>Try your own input</summary><label for="tuning-input">A short note or notification</label><textarea id="tuning-input" maxlength="500" rows="3"></textarea><button id="tuning-compare" disabled>Compare before and after</button><pre id="tuning-custom-result" aria-live="polite">Train an adapter first. This text stays on your device.</pre></details>
-    <details><summary>Examples and evaluation</summary><p>Training examples change the adapter. The test inputs below are withheld from those updates. These small authored examples are a teaching exercise, not a benchmark.</p><pre id="tuning-data"></pre></details>
-    <details><summary>What changes inside the model?</summary><p>The original FunctionGemma body stays frozen. We train two small matrices on its output projection with full-vocabulary cross-entropy. GPU shaders calculate the adapter and weight updates; the CPU calculates softmax and loss. This is output-head LoRA, not the attention-layer QLoRA used in the CLI example.</p><p>The browser adapter is specific to this model and this demo. It is not an MLX or PEFT adapter file.</p><pre id="tuning-loss"></pre></details>
+    <details id="tuning-try"><summary>Try your own input</summary><label for="tuning-input">A short note or notification</label><textarea id="tuning-input" maxlength="500" rows="3"></textarea><button id="tuning-compare" disabled>Compare before and after</button><div id="tuning-custom-result" aria-live="polite"></div></details>
+    <details><summary>Examples and evaluation</summary><p>Training examples change the adapter. The test inputs below are withheld from those updates. These small authored examples are a teaching exercise, not a benchmark.</p><div id="tuning-data"></div></details>
+    <details><summary>What changes inside the model?</summary><p>The original FunctionGemma body stays frozen. We train two small matrices on its output projection with full-vocabulary cross-entropy. GPU shaders calculate the adapter and weight updates; the CPU calculates softmax and loss. This is output-head LoRA, not the attention-layer QLoRA used in the CLI example.</p><p>The browser adapter is specific to this model and this demo. It is not an MLX or PEFT adapter file.</p><div id="tuning-loss"></div></details>
     <details><summary>Train with Antigravity or the CLI</summary><p>The repository includes a separate, verified MLX FunctionGemma experiment. It trains attention adapters, saves them, reloads them, and records held-out outputs.</p><p><a href="https://github.com/techlahoma/techlahoma-google-apps-starter/tree/main/apps/building-ai-models-without-coding/scripts/functiongemma">Open the CLI instructions ↗</a></p></details>
   </section>`;
-  function get<T extends HTMLElement>(selector: string): T {
+  function get<T extends Element>(selector: string): T {
     const element = container.querySelector<T>(selector);
     if (!element) throw new Error(`Missing tuning element ${selector}`);
     return element;
@@ -144,6 +189,40 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   const progress = get<HTMLProgressElement>('#tuning-progress');
   const results = get('#tuning-results');
   const compare = get<HTMLButtonElement>('#tuning-compare');
+  const customOutputRoot = mountTerminalOutput(
+    get('#tuning-custom-result'),
+    'Before and after',
+    'Custom input comparison',
+  );
+  const dataOutputRoot = mountTerminalOutput(
+    get('#tuning-data'),
+    'Training and held-out examples',
+    'Fine-tuning examples and evaluation data',
+  );
+  const lossOutputRoot = mountTerminalOutput(
+    get('#tuning-loss'),
+    'Adapter training log',
+    'Fine-tuning loss output',
+  );
+  function renderTerminal(
+    root: MountedTerminal,
+    _title: string,
+    _ariaLabel: string,
+    output: string,
+  ) {
+    root.setOutput(output);
+  }
+  let lossLog = '';
+  const lossLine = get<SVGPolylineElement>('#tuning-loss-line');
+  const lossPoint = get<SVGCircleElement>('#tuning-loss-point');
+  const lossLabel = get<SVGTextElement>('#tuning-loss-label');
+  const visualStages = {
+    data: get<SVGGElement>('#tuning-visual-data'),
+    model: get<SVGGElement>('#tuning-visual-model'),
+    adapter: get<SVGGElement>('#tuning-visual-adapter'),
+  };
+  let activeVisualStage: keyof typeof visualStages | undefined;
+  let losses: number[] = [];
   let customPrediction:
     ((text: string, adapted: boolean) => Promise<string>) | undefined;
   let cancelled = false;
@@ -154,17 +233,82 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   const currentLesson = () => lessons[Number(select.value)] ?? lessons[0]!;
   function showData() {
     const lesson = currentLesson();
-    get('#tuning-data').textContent =
-      `TRAIN\n${lesson.train.map(row => `${row.input} → ${row.answer}`).join('\n')}\n\nTEST\n${lesson.test.map(row => `${row.input} → ${row.answer}`).join('\n')}`;
+    get('#tuning-task-explanation').textContent = lesson.explanation;
+    renderTerminal(
+      dataOutputRoot,
+      'Training and held-out examples',
+      'Fine-tuning examples and evaluation data',
+      `TRAIN\n${lesson.train.map(row => `${row.input} → ${row.answer}`).join('\n')}\n\nTEST\n${lesson.test.map(row => `${row.input} → ${row.answer}`).join('\n')}`,
+    );
     results.replaceChildren();
     compare.disabled = true;
     customPrediction = undefined;
     save.disabled = true;
     adapter?.dispose();
     adapter = undefined;
+    losses = [];
+    renderLoss();
+    highlightStage('data');
+  }
+  function highlightStage(stage: keyof typeof visualStages) {
+    const changed = activeVisualStage !== stage;
+    activeVisualStage = stage;
+    for (const [name, element] of Object.entries(visualStages)) {
+      element.setAttribute('opacity', name === stage ? '1' : '0.45');
+    }
+    if (
+      changed &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      visualStages[stage].animate([{opacity: 0.55}, {opacity: 1}], {
+        duration: 240,
+        easing: 'ease-out',
+      });
+    }
+  }
+  function renderLoss() {
+    if (losses.length === 0) {
+      lossLine.setAttribute('points', '');
+      lossPoint.setAttribute('opacity', '0');
+      lossLabel.textContent = 'Run training to plot loss';
+      return;
+    }
+    const width = 612;
+    const height = 100;
+    const minimum = Math.min(...losses);
+    const maximum = Math.max(...losses);
+    const range = Math.max(maximum - minimum, 0.0001);
+    const points = losses.map((loss, index) => {
+      const x = losses.length === 1 ? 0 : (index / (losses.length - 1)) * width;
+      const y = ((maximum - loss) / range) * (height - 12) + 6;
+      return {x, y};
+    });
+    lossLine.setAttribute(
+      'points',
+      points
+        .map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`)
+        .join(' '),
+    );
+    const lastPoint = points[points.length - 1]!;
+    lossPoint.setAttribute('cx', lastPoint.x.toFixed(1));
+    lossPoint.setAttribute('cy', lastPoint.y.toFixed(1));
+    lossPoint.setAttribute('opacity', '1');
+    lossLabel.textContent = `Pass ${losses.length} · loss ${losses[losses.length - 1]!.toFixed(3)}`;
   }
   select.addEventListener('change', showData);
   showData();
+  renderTerminal(
+    customOutputRoot,
+    'Before and after',
+    'Custom input comparison',
+    'Train an adapter first. This text stays on your device.',
+  );
+  renderTerminal(
+    lossOutputRoot,
+    'Adapter training log',
+    'Fine-tuning loss output',
+    '',
+  );
   stop.addEventListener('click', () => {
     cancelled = true;
     loading?.abort();
@@ -215,9 +359,13 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   });
   async function compareInput() {
     const text = get<HTMLTextAreaElement>('#tuning-input').value.trim();
-    const result = get('#tuning-custom-result');
     if (!text) {
-      result.textContent = 'Enter a short input first.';
+      renderTerminal(
+        customOutputRoot,
+        'Before and after',
+        'Custom input comparison',
+        'Enter a short input first.',
+      );
       return;
     }
     if (running || !customPrediction) return;
@@ -229,17 +377,36 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     select.disabled = true;
     stop.disabled = false;
     try {
-      result.textContent = 'Running the original model…';
+      renderTerminal(
+        customOutputRoot,
+        'Before and after',
+        'Custom input comparison',
+        'Running the original model…',
+      );
       const before = await customPrediction(text, false);
       checkCancelled();
-      result.textContent = 'Running the adapted model…';
+      renderTerminal(
+        customOutputRoot,
+        'Before and after',
+        'Custom input comparison',
+        'Running the adapted model…',
+      );
       const after = await customPrediction(text, true);
       checkCancelled();
-      result.textContent = `Before: ${before || '(empty output)'}\nAfter: ${after || '(empty output)'}`;
+      renderTerminal(
+        customOutputRoot,
+        'Before and after',
+        'Custom input comparison',
+        `Before: ${before || '(empty output)'}\nAfter: ${after || '(empty output)'}`,
+      );
     } catch (error) {
       if (mounted)
-        result.textContent =
-          error instanceof Error ? error.message : String(error);
+        renderTerminal(
+          customOutputRoot,
+          'Before and after',
+          'Custom input comparison',
+          error instanceof Error ? error.message : String(error),
+        );
     } finally {
       running = false;
       if (mounted) {
@@ -270,7 +437,16 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     progress.hidden = false;
     progress.value = 0;
     results.replaceChildren();
-    get('#tuning-loss').textContent = '';
+    lossLog = '';
+    renderTerminal(
+      lossOutputRoot,
+      'Adapter training log',
+      'Fine-tuning loss output',
+      lossLog,
+    );
+    losses = [];
+    renderLoss();
+    highlightStage('data');
     adapter?.dispose();
     adapter = undefined;
     try {
@@ -278,6 +454,7 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       const model = await loadFunctionGemma(message => {
         if (mounted) status.value = message;
       }, loading.signal);
+      highlightStage('model');
       loading = undefined;
       checkCancelled();
       const lesson = currentLesson();
@@ -333,8 +510,16 @@ export function mountTuningDemo(container: HTMLElement): () => void {
         const {loss} = await trained.trainBatch(features);
         if (!Number.isFinite(loss))
           throw new Error('Training became unstable. This run did not pass.');
-        get('#tuning-loss').textContent +=
-          `Pass ${epoch + 1}: mean pre-update batch loss ${loss.toFixed(5)}\n`;
+        lossLog += `Pass ${epoch + 1}: mean pre-update batch loss ${loss.toFixed(5)}\n`;
+        renderTerminal(
+          lossOutputRoot,
+          'Adapter training log',
+          'Fine-tuning loss output',
+          lossLog,
+        );
+        losses.push(loss);
+        renderLoss();
+        highlightStage('adapter');
         status.value = `Training pass ${epoch + 1} / 200 · mean loss ${loss.toFixed(3)}`;
         progress.value = 0.25 + ((epoch + 1) / 200) * 0.55;
         await yieldToPage();
@@ -412,5 +597,8 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     cancelled = true;
     loading?.abort();
     if (!running) adapter?.dispose();
+    customOutputRoot.dispose();
+    dataOutputRoot.dispose();
+    lossOutputRoot.dispose();
   };
 }

@@ -66,3 +66,15 @@ The full-history scan now identifies one existing Google API-key finding in the 
 The [compact twelve-run receipt](../../apps/building-ai-models-without-coding/scripts/functiongemma-browser/reliability.json) preserves source hashes, actual losses, exact adapter hashes, and held-out outputs without local paths or weights.
 
 Final runtime revision `c28516334e6a8cc6c6539d2d131d66fbc10f300f` passed Linux guardrails, macOS portability, and Windows portability in [CI run 35011547211](https://github.com/techlahoma/techlahoma-google-apps-starter/actions/runs/35011547211). Both reference-app and Model Workshop desktop/phone browser checks passed on all three platforms. Windows used the hosted Node browser driver while Bun installed, checked, built, and served the app. The overall run remains red solely for the historical secret finding above. This CI UI proof is separate from the local Apple Metal model/training proof and the public-site checks.
+
+## React interface revision
+
+The follow-up interface revision replaces the workshop's DOM-built shell with React while preserving the model, retrieval, LoRA, and Rust execution boundaries. It adds clickable synthetic emails, a chat presentation for independent Context runs, Heroicons, shadcn table composition, Xterm logs with copy controls, an animated sources-to-answer system diagram, and measured fine-tuning and Rust loss plots. The visual rationale and primary sources are recorded in [the visual-language research](../research/model-workshop-visual-language-2026-09-15.md).
+
+Local proof on the revision before publication:
+
+- `bun run verify`: passed. Existing warnings in other app styles remain visible; the workshop's added descending-specificity warning was fixed.
+- `bun run app:verify --app building-ai-models-without-coding`: passed 12 tests, build, desktop 1440×900 and phone 390×844 routes, lexical ranking table, empty result, console, and requests.
+- Real Context/RAG proof: passed in 70.807 seconds. Context answered from the sample files; hybrid retrieval ranked `equipment` first; all three semantic/hybrid fixtures ranked their expected source first; RAG returned the laptop and power-adapter evidence. The known lexical `bike`/`bicycle` miss remains visible in the evaluation table.
+- Real Rust/Xterm proof: passed all 30 training steps and five samples; invalid source produced a compiler error; mixed infinite output stopped at the shared 256 KiB budget in 1.043 seconds; cancellation passed. The `dead_code` output is a nonfatal compiler warning.
+- Real FunctionGemma proof: Apple Metal 3, software fallback false, 200 finite adapter updates, loss 19.15222 → 0.44719, fresh adapter reload, and 2/3 exact held-out matches. The run took 144.637 seconds. The unchanged quality limitation remains explicit.

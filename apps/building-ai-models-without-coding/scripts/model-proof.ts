@@ -2,6 +2,7 @@ import {browserLaunchOptions} from '../../../scripts/browser-runtime';
 import {chromium} from 'playwright';
 import {mkdir, writeFile} from 'node:fs/promises';
 const output = '.starter/cache/model-proof';
+const base = process.env.MODEL_DEMO_URL ?? 'http://127.0.0.1:5191';
 await mkdir(output, {recursive: true});
 const browser = await chromium.launch(browserLaunchOptions);
 const context = await browser.newContext();
@@ -17,7 +18,7 @@ page.on('console', message => {
 });
 const started = Date.now();
 try {
-  await page.goto('http://127.0.0.1:5191/#context');
+  await page.goto(`${base}/#context`);
   await page.getByRole('button', {name: 'Ask Gemma', exact: true}).click();
   let previous = '';
   for (let step = 0; step < 600; step++) {
@@ -37,7 +38,7 @@ try {
   const contextStatus = await page.getByRole('status').last().textContent();
   const contextAnswer = await page.locator('.answer').textContent();
   await page.screenshot({path: `${output}/context.png`, fullPage: true});
-  await page.goto('http://127.0.0.1:5191/#retrieval');
+  await page.goto(`${base}/#retrieval`);
   await page
     .getByRole('button', {name: 'Find sources only', exact: true})
     .click();
@@ -80,16 +81,18 @@ try {
   const evaluation = await page
     .locator('details')
     .filter({hasText: 'Evaluation · check retrieval'})
-    .locator('pre')
+    .locator('table')
     .textContent();
   const sources = await page
-    .getByRole('region', {name: 'Retrieved sources'})
+    .locator('[aria-labelledby="ranked-sources-heading"]')
     .textContent();
-  await page.getByRole('button', {name: 'Ask Gemma', exact: true}).click();
+  await page
+    .getByRole('button', {name: 'Retrieve and ask', exact: true})
+    .click();
   for (let step = 0; step < 300; step++) {
     if (
       await page
-        .getByRole('button', {name: 'Ask Gemma', exact: true})
+        .getByRole('button', {name: 'Retrieve and ask', exact: true})
         .isEnabled()
     )
       break;

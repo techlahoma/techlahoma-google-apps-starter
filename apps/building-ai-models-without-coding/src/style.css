@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #eceef2;
@@ -201,6 +203,11 @@ nav {
   padding: 11px 14px;
   border-radius: 6px;
 }
+.demo-link > svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
 .demo-link > span:first-child {
   font-family: monospace;
   font-size: 12px;
@@ -246,9 +253,89 @@ main {
   font-size: 12px;
 }
 .workspace-content {
-  width: min(100%, 860px);
+  width: min(100%, 1120px);
   padding: 34px 44px 60px;
   margin: 0 auto;
+}
+.wordmark > svg,
+.sidebar-bottom svg,
+.link-row svg,
+.button-with-icon svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.sidebar-bottom a,
+.link-row a,
+.button-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: #262c38;
+}
+figure {
+  margin: 24px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #181a1f;
+}
+.workspace-content figure > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.terminal-shell {
+  overflow: hidden;
+  margin: 12px 0;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #0b1020;
+}
+.terminal-toolbar {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px 6px 14px;
+  border-bottom: 1px solid #334155;
+  background: #10182b;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.terminal-copy {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-color: #475569;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+.terminal-copy svg {
+  width: 16px;
+  height: 16px;
+}
+.terminal-viewport {
+  min-height: 256px;
+  padding: 12px;
 }
 .intro {
   color: var(--muted);
@@ -345,6 +432,9 @@ footer {
   .demo-link > span:first-child {
     display: block;
     font-size: 10px;
+  }
+  .demo-link > svg {
+    display: none;
   }
   .workspace-header {
     padding: 14px 20px;

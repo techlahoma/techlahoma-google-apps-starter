@@ -97,6 +97,21 @@ export function importCorpus(files: {name: string; text: string}[]): void {
   activeCorpus = imported;
 }
 
+export function addSampleDocument(id: string): void {
+  const sample = sampleCorpus.find(document => document.id === id);
+  if (!sample) throw new Error(`Unknown sample document: ${id}`);
+  if (activeCorpus.some(document => document.id === id)) return;
+  if (activeCorpus.length >= MAX_CHUNKS)
+    throw new Error(
+      'The context already contains 48 chunks. Remove one first.',
+    );
+  activeCorpus = [...activeCorpus, {...sample}];
+}
+
+export function removeCorpusDocument(id: string): void {
+  activeCorpus = activeCorpus.filter(document => document.id !== id);
+}
+
 export function restoreExampleCorpus(): void {
   activeCorpus = sampleCorpus.map(document => ({...document}));
 }

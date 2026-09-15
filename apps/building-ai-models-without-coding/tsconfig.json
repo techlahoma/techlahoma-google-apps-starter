@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["bun", "@webgpu/types"]
+    "types": ["bun", "@webgpu/types"],
+    "jsx": "react-jsx"
   },
   "include": ["src", "scripts", "e2e"]
 }

@@ -1,10 +1,12 @@
+import {mountTerminalOutput} from './components/mount-terminal';
+
 /** Browser Rust training: compile the edited source, then execute its real WASI output. */
 export function mountRustDemo(container: HTMLElement): () => void {
   const heading = document.createElement('h2');
   heading.textContent = 'Train a tiny model from scratch';
   const intro = document.createElement('p');
   intro.textContent =
-    'Edit a complete Rust GPT: attention, autograd and Adam. Compile it here, then train on synthetic GDG topic titles. Thirty steps demonstrate learning mechanics; generated fragments will usually be rough.';
+    'Task: train a tiny character-level language model to continue synthetic GDG topic text. Edit its Rust implementation, compile it in the browser, then watch thirty real optimization steps; the generated fragments will usually be rough.';
   const label = document.createElement('label');
   label.htmlFor = 'rust-source';
   label.textContent = 'Editable Rust model source';
@@ -32,9 +34,24 @@ export function mountRustDemo(container: HTMLElement): () => void {
   status.textContent = 'Loading editable source…';
   const outputLabel = document.createElement('h3');
   outputLabel.textContent = 'Actual compiler and training output';
-  const output = document.createElement('pre');
-  output.tabIndex = 0;
-  output.setAttribute('aria-label', 'Rust compiler and training output');
+  const lossFigure = document.createElement('figure');
+  lossFigure.className = 'm-0';
+  lossFigure.setAttribute(
+    'aria-labelledby',
+    'rust-loss-title rust-loss-caption',
+  );
+  lossFigure.innerHTML = `<svg class="h-auto w-full" viewBox="0 0 720 210" role="img" aria-labelledby="rust-loss-title rust-loss-desc">
+    <title id="rust-loss-title">Rust training loss by step</title>
+    <desc id="rust-loss-desc">A line chart built from loss values printed by the running Rust program.</desc>
+    <g transform="translate(54 30)">
+      <line x1="0" y1="130" x2="612" y2="130" stroke="#697386" />
+      <line x1="0" y1="0" x2="0" y2="130" stroke="#697386" />
+      <polyline id="rust-loss-line" points="" fill="none" stroke="#b2c9ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      <circle id="rust-loss-point" cx="0" cy="130" r="5" fill="#b2c9ff" opacity="0" />
+      <text id="rust-loss-label" x="612" y="154" text-anchor="end" fill="#a7abb6" font-size="12">Compile and train to plot stdout loss</text>
+    </g>
+  </svg><figcaption id="rust-loss-caption" class="text-sm text-slate-400">Each point comes from a <code>step … | loss …</code> line emitted by the Rust model. Lower is better on this tiny training set.</figcaption>`;
+  const output = document.createElement('div');
   const fallback = document.createElement('p');
   fallback.textContent =
     'CLI fallback: from this app directory, run bun scripts/rust/prepare-assets.ts apply, then bun scripts/rust/run-cli.ts. Pass a saved .rs file as the final argument to run your edited source. This uses the same WASM compiler and needs no Xcode or native Rust install. Shell and PowerShell wrappers are also included.';
@@ -48,6 +65,7 @@ export function mountRustDemo(container: HTMLElement): () => void {
     cancel,
     download,
     status,
+    lossFigure,
     outputLabel,
     output,
     fallback,
@@ -58,6 +76,66 @@ export function mountRustDemo(container: HTMLElement): () => void {
   let worker: Worker | null = null;
   let deadline: ReturnType<typeof setTimeout> | null = null;
   let active = true;
+  const outputTerminal = mountTerminalOutput(
+    output,
+    'Rust compiler and training output',
+  );
+  function renderOutput(text: string) {
+    outputTerminal.setOutput(text);
+  }
+  renderOutput('Compiler output will appear here.');
+  function getVisualElement<T extends Element>(selector: string): T {
+    const element = lossFigure.querySelector<T>(selector);
+    if (!element) throw new Error(`Rust loss visual is missing ${selector}.`);
+    return element;
+  }
+  const lossLine = getVisualElement<SVGPolylineElement>('#rust-loss-line');
+  const lossPoint = getVisualElement<SVGCircleElement>('#rust-loss-point');
+  const lossLabel = getVisualElement<SVGTextElement>('#rust-loss-label');
+  let streamedOutput = '';
+  function renderLosses(text: string) {
+    const matches = [
+      ...text.matchAll(
+        /step\s+(\d+)\s*\/\s*(\d+)\s*\|\s*loss\s+([0-9]+(?:\.[0-9]+)?)/g,
+      ),
+    ];
+    const losses = matches
+      .map(match => Number(match[3]))
+      .filter(loss => Number.isFinite(loss));
+    if (losses.length === 0) {
+      lossLine.setAttribute('points', '');
+      lossPoint.setAttribute('opacity', '0');
+      lossLabel.textContent = 'Compile and train to plot stdout loss';
+      return;
+    }
+    const width = 612;
+    const height = 130;
+    const minimum = Math.min(...losses);
+    const maximum = Math.max(...losses);
+    const range = Math.max(maximum - minimum, 0.0001);
+    const points = losses.map((loss, index) => {
+      const x = losses.length === 1 ? 0 : (index / (losses.length - 1)) * width;
+      const y = ((maximum - loss) / range) * (height - 12) + 6;
+      return {x, y};
+    });
+    lossLine.setAttribute(
+      'points',
+      points
+        .map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`)
+        .join(' '),
+    );
+    const lastPoint = points[points.length - 1]!;
+    lossPoint.setAttribute('cx', lastPoint.x.toFixed(1));
+    lossPoint.setAttribute('cy', lastPoint.y.toFixed(1));
+    lossPoint.setAttribute('opacity', '1');
+    lossLabel.textContent = `Step ${matches.length} · loss ${losses[losses.length - 1]!.toFixed(4)} · best ${minimum.toFixed(4)}`;
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      lossPoint.animate([{opacity: 0.35}, {opacity: 1}], {
+        duration: 180,
+        easing: 'ease-out',
+      });
+    }
+  }
   const stop = () => {
     jobController?.abort();
     jobController = null;
@@ -73,7 +151,10 @@ export function mountRustDemo(container: HTMLElement): () => void {
     stop();
     status.textContent =
       'Rust run failed. Read the diagnostic below or use the CLI fallback.';
-    output.textContent += `\n${error instanceof Error ? error.message : String(error)}`;
+    streamedOutput += `\n${error instanceof Error ? error.message : String(error)}`;
+    streamedOutput = streamedOutput.slice(-100_000);
+    renderOutput(streamedOutput);
+    renderLosses(streamedOutput);
   };
 
   fetch('/rust/tiny-gpt.rs', {signal: sourceController.signal})
@@ -97,7 +178,9 @@ export function mountRustDemo(container: HTMLElement): () => void {
     stop();
     run.disabled = true;
     cancel.disabled = false;
-    output.textContent = '';
+    streamedOutput = '';
+    renderOutput(streamedOutput);
+    renderLosses(streamedOutput);
     status.textContent = 'Downloading and compiling the Rust compiler…';
     const controller = new AbortController();
     jobController = controller;
@@ -138,7 +221,9 @@ export function mountRustDemo(container: HTMLElement): () => void {
           typeof data.text === 'string'
         ) {
           // Bound DOM output even when edited code prints indefinitely.
-          output.textContent = (output.textContent + data.text).slice(-100_000);
+          streamedOutput = (streamedOutput + data.text).slice(-100_000);
+          renderOutput(streamedOutput);
+          renderLosses(streamedOutput);
         } else if (data.type === 'init-error' && 'error' in data) {
           fail(data.error);
         } else if (data.type === 'result' && 'result' in data) {
@@ -167,7 +252,9 @@ export function mountRustDemo(container: HTMLElement): () => void {
               }
             }
           }
-          output.textContent = lines.join('\n').slice(-100_000);
+          streamedOutput = lines.join('\n').slice(-100_000);
+          renderOutput(streamedOutput);
+          renderLosses(streamedOutput);
           status.textContent =
             'ok' in result && result.ok === true
               ? 'Rust program completed. Losses and samples above came from this run.'
@@ -202,6 +289,6 @@ export function mountRustDemo(container: HTMLElement): () => void {
     active = false;
     sourceController.abort();
     stop();
-    container.replaceChildren();
+    outputTerminal.dispose();
   };
 }
