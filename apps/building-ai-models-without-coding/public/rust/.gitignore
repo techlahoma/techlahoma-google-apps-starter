@@ -1,0 +1,5 @@
+# Recreated from checksum-pinned release archives by scripts/rust/prepare-assets.ts.
+/rustc/
+# Required pinned browser WASI runtime source (repository-wide vendor ignore exception).
+!/vendor/
+!/vendor/**

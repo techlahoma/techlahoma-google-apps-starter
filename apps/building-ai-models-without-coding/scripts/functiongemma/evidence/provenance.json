@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-09-15T16:53:43.731435+00:00",
+  "source_model": "google/functiongemma-270m-it",
+  "converted_model": "mlx-community/functiongemma-270m-it-4bit",
+  "model_revision": "95c30bf2f45a0145d555808900312ac92a061a2f",
+  "quantization": "MLX affine 4-bit, group size 64",
+  "python": "3.12.13",
+  "packages": {
+    "mlx-lm": "0.28.4",
+    "mlx": "0.32.2",
+    "mlx-metal": "0.32.2",
+    "transformers": "4.57.3",
+    "huggingface-hub": "0.36.2",
+    "numpy": "2.5.3",
+    "safetensors": "0.8.0"
+  },
+  "dataset_origin": "Synthetic workshop examples authored in fixtures.py; no attendee data.",
+  "split_counts": {
+    "train": 36,
+    "valid": 9,
+    "test": 9
+  },
+  "files_sha256": {
+    "data/test.jsonl": "89e27e560aef0954632a9072d582c08f89bf6bc827499c993fc9f391542fcd3d",
+    "data/train.jsonl": "ca7c12793c619afc0b0011bffaa1f1fac26c97a2745bfc515a429a4e19681249",
+    "data/valid.jsonl": "e6bdc4099170b19af4d00ed3010d7db70daeebd9a6e7478b9d92337bfc81e46b"
+  },
+  "source_sha256": {
+    "fixtures.py": "26327eaf1be41e76dd180ceae60684c48c5ed885ce5b997388d3c29b409e5afe",
+    "config.yaml": "bc1bf1d6be47e94e30d42fd524362176194e41b076ac953e7b95e2f23f7b1b45",
+    "run.py": "f41e4141cb05c363048d5e3d925bf94e973eb2267001b566047948d42d95da33"
+  },
+  "model_files": {
+    "README.md": {
+      "bytes": 1266,
+      "sha256": "48526d65bf8cb8812110bef322bfe75f3b086354f792a1afd63c25f7749aee0b"
+    },
+    "chat_template.jinja": {
+      "bytes": 13792,
+      "sha256": "db61fb01017bd82401d3ffca4f8e066cd56ff6d38d2a30c4058770c0bf7ab49b"
+    },
+    "config.json": {
+      "bytes": 1744,
+      "sha256": "853aff99591663c3be286465515cbdf8b88c314bae594cec6a2944e9d10be824"
+    },
+    "generation_config.json": {
+      "bytes": 176,
+      "sha256": "f3f694d69c044000d84e777938fe314137af2ae06014c552332d1c82f5e1b13d"
+    },
+    "model.safetensors": {
+      "bytes": 150939130,
+      "sha256": "c67694efa6d9eb12945c00e9a6ac07f2e38d72009494d867f192487e513702d5"
+    },
+    "model.safetensors.index.json": {
+      "bytes": 34944,
+      "sha256": "3ef9f6408eebccbe14976dd8db24d75d848f01c4430aa8b5924d97782a0930fb"
+    },
+    "tokenizer.json": {
+      "bytes": 33378493,
+      "sha256": "3b83627b470a2b3eeb6cbd480490191e50f21549cb3de1d0fcc1a001a48c6c04"
+    },
+    "tokenizer_config.json": {
+      "bytes": 828,
+      "sha256": "9ffb9b4c29d60699a0c50b00abce43379640678852e442b1dec36a0421003a42"
+    }
+  },
+  "limitations": [
+    "Nine fixed held-out synthetic examples; not a real-world benchmark.",
+    "Native Apple Silicon MLX training, not browser training.",
+    "Model and adapter weights remain outside Git."
+  ]
+}

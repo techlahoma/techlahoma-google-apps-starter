@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "project_id": "REPLACE_WITH_PROJECT_ID",
+  "display_name": "Replace with project display name",
+  "environment": "development",
+  "region": "us-central1",
+  "features": ["hosting"]
+}

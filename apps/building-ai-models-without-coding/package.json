@@ -1,0 +1,27 @@
+{
+  "name": "@techlahoma/building-ai-models-without-coding",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run assets:apply && vite",
+    "build": "bun run assets:apply && vite build",
+    "preview": "vite preview",
+    "test": "bun test src",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run test && bun run build",
+    "assets:plan": "bun scripts/rust/prepare-assets.ts plan",
+    "assets:apply": "bun scripts/rust/prepare-assets.ts apply"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "@webgpu/types": "0.1.72",
+    "typescript": "5.9.3",
+    "vite": "8.0.16"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.2.0",
+    "onnxruntime-common": "1.24.0-dev.20251116-b39e144322",
+    "onnxruntime-web": "1.26.0-dev.20260416-b7804b056c"
+  }
+}

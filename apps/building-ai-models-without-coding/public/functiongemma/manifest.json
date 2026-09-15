@@ -1,0 +1,15 @@
+{
+  "repository": "onnx-community/functiongemma-270m-it-ONNX",
+  "revision": "ba3c872ede162a5c4ab753f509b2260af5587143",
+  "license": "gemma",
+  "terms": "https://ai.google.dev/gemma/terms",
+  "transformation": "Gather final token before frozen lm_head; expose float32 hidden state; weights unchanged",
+  "hiddenTensor": "/model/layers.18/final_norm_layernorm/output_0",
+  "hiddenSize": 640,
+  "vocabularySize": 262144,
+  "sha256": {
+    "model_q4f16.onnx": "8dc9fb5e2b0aa34f527309f0ecaeb9b824b5ad9a9613350168753054c180e145",
+    "model_q4f16.onnx_data": "b30ca95e4b31014ec791d7589f8c6416b8056ffc4f39093aa7ceb3ad37f2a0c7",
+    "model_hidden.onnx": "3e6148937c983d67ce4dbc042afc4a8862daff6d2101660d370b532ad7b36db0"
+  }
+}

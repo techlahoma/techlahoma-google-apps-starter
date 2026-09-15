@@ -1,0 +1,109 @@
+{
+  "variant": "adapted",
+  "created_utc": "2026-09-15T16:55:03.253672+00:00",
+  "model_revision": "95c30bf2f45a0145d555808900312ac92a061a2f",
+  "decoding": {
+    "temperature": 0,
+    "max_tokens": 96,
+    "seed": 42
+  },
+  "scoring": "Exactly one FunctionGemma call; exact tool name and serialized arguments match. Extra prose is retained for review.",
+  "passed": 3,
+  "total": 9,
+  "results": [
+    {
+      "id": 1,
+      "input": "Voice note: um, remind me to bring the adapter",
+      "expected_call": "call:create_task{action:<escape>bring the adapter<escape>}",
+      "generated": "<start_function_call>call:create_task{action:<escape>bring adapter<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": false,
+      "elapsed_seconds": 0.385
+    },
+    {
+      "id": 2,
+      "input": "Voice note: I need to email the checklist",
+      "expected_call": "call:create_task{action:<escape>email the checklist<escape>}",
+      "generated": "<start_function_call>call:create_task{action:<escape>choose_workflow<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": false,
+      "elapsed_seconds": 0.258
+    },
+    {
+      "id": 3,
+      "input": "Voice note: please add a task to clean the whiteboard",
+      "expected_call": "call:create_task{action:<escape>clean the whiteboard<escape>}",
+      "generated": "<start_function_call>call:create_task{action:<escape>clean the whiteboard<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": true,
+      "elapsed_seconds": 0.262
+    },
+    {
+      "id": 4,
+      "input": "Notification: urgent, attendees cannot enter the building",
+      "expected_call": "call:triage_notification{bucket:<escape>now<escape>}",
+      "generated": "<start_function_call>call:triage_notification{bucket:<escape>now<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": true,
+      "elapsed_seconds": 0.258
+    },
+    {
+      "id": 5,
+      "input": "Notification: useful reading saved for the end of the week",
+      "expected_call": "call:triage_notification{bucket:<escape>later<escape>}",
+      "generated": "<start_function_call>call:create_task{action:<escape>use the end of the week<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": false,
+      "elapsed_seconds": 0.316
+    },
+    {
+      "id": 6,
+      "input": "Notification: spam claiming you won an imaginary vacation",
+      "expected_call": "call:triage_notification{bucket:<escape>ignore<escape>}",
+      "generated": "<start_function_call>call:create_task{action:<escape>claim the win!<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": false,
+      "elapsed_seconds": 0.335
+    },
+    {
+      "id": 7,
+      "input": "Messy instructions: organize our team discussion and record the decisions",
+      "expected_call": "call:choose_workflow{workflow:<escape>meeting<escape>}",
+      "generated": "<start_function_call>call:choose_workflow{workflow:<escape>document<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": false,
+      "elapsed_seconds": 0.266
+    },
+    {
+      "id": 8,
+      "input": "Messy instructions: arrange a community gathering, venue, and signups",
+      "expected_call": "call:choose_workflow{workflow:<escape>event<escape>}",
+      "generated": "<start_function_call>call:choose_workflow{workflow:<escape>document<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": false,
+      "elapsed_seconds": 0.273
+    },
+    {
+      "id": 9,
+      "input": "Messy instructions: compose the draft and polish the wording",
+      "expected_call": "call:choose_workflow{workflow:<escape>document<escape>}",
+      "generated": "<start_function_call>call:choose_workflow{workflow:<escape>document<escape>}<end_function_call>",
+      "stop_token_id": 49,
+      "finish_reason": "stop",
+      "exact_call_match": true,
+      "elapsed_seconds": 0.307
+    }
+  ],
+  "adapter_sha256": "07536fad6089d40a148d49085f2d6aadc766e48b30340c94cff9ff38fc32566d",
+  "adapter_bytes": 329376,
+  "adapter_parameter_count": 81920,
+  "adapter_b_nonzero": true
+}

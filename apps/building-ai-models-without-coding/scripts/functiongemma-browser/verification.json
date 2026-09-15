@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-09-15T17:19:29.854891+00:00",
+  "sourceRevision": "ba3c872ede162a5c4ab753f509b2260af5587143",
+  "transformers": "4.2.0",
+  "onnxruntimeWeb": "1.26.0-dev.20260416-b7804b056c",
+  "execution": "Windowless Chromium via shared scripts/browser-runtime.ts; browser launch and observation performed by parent agent",
+  "graphComputationSha256BeforeMetadataNotice": "07d073ddf68c8fe1282632dc48a34c92c8a3778e8ee41bee78e7a523df811309",
+  "graphArtifactSha256WithMetadataNotice": "3e6148937c983d67ce4dbc042afc4a8862daff6d2101660d370b532ad7b36db0",
+  "result": {
+    "prompt": "<bos><start_of_turn>developer\nYou are a model that can do function calling with the following functions<end_of_turn>\n<start_of_turn>user\nRemind me to leave now.<end_of_turn>\n<start_of_turn>model\n",
+    "ids": 34,
+    "label": [
+      2998
+    ],
+    "hidden": 640,
+    "logits": 262144,
+    "finite": true,
+    "decoded": "<end_function_call>"
+  },
+  "limitations": [
+    "Single prompt proves inference plumbing, not trained model quality.",
+    "Metadata-only source/license notice added after browser execution.",
+    "Shape operations may execute on CPU.",
+    "Training reliability is verified separately."
+  ]
+}

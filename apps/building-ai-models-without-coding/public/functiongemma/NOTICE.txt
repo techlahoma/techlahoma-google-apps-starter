@@ -1,0 +1,8 @@
+Gemma is provided under and subject to the Gemma Terms of Use found at https://ai.google.dev/gemma/terms.
+
+This directory contains a modified FunctionGemma ONNX graph.
+Source: onnx-community/functiongemma-270m-it-ONNX
+Revision: ba3c872ede162a5c4ab753f509b2260af5587143
+Modification: select the final sequence token before lm_head and expose its hidden state as float32. Model weights are unchanged.
+Original authors: Google DeepMind. ONNX conversion: ONNX Community.
+See TERMS.txt for the terms and manifest.json for SHA-256 provenance.

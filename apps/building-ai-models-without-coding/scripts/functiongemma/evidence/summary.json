@@ -1,0 +1,12 @@
+{
+  "created_utc": "2026-09-15T16:55:23.927286+00:00",
+  "base_exact_matches": 0,
+  "adapted_exact_matches": 3,
+  "held_out_count": 9,
+  "changed_outputs": 9,
+  "saved_adapter_reloaded_in_separate_process": true,
+  "adapter_nonzero_update": true,
+  "adapter_sha256": "07536fad6089d40a148d49085f2d6aadc766e48b30340c94cff9ff38fc32566d",
+  "quality_improved_on_this_split": true,
+  "browser_training_verified": false
+}

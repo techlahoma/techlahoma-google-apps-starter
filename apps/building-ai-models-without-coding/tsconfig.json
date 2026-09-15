@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun", "@webgpu/types"]
+  },
+  "include": ["src", "scripts", "e2e"]
+}

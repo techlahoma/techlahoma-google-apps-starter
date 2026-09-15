@@ -1,0 +1,17 @@
+{
+  "origin": "Extracted verbatim Iter lines from the real local MLX training log; progress bars and local paths omitted.",
+  "lines": [
+    "Iter 1: Val loss 3.279, Val took 0.727s",
+    "Iter 10: Train loss 1.108, Learning Rate 2.000e-04, It/sec 1.558, Tokens/sec 26.020, Trained Tokens 167, Peak mem 0.869 GB",
+    "Iter 20: Train loss 0.190, Learning Rate 2.000e-04, It/sec 16.770, Tokens/sec 290.124, Trained Tokens 340, Peak mem 0.869 GB",
+    "Iter 30: Train loss 0.356, Learning Rate 2.000e-04, It/sec 17.287, Tokens/sec 292.143, Trained Tokens 509, Peak mem 0.869 GB",
+    "Iter 40: Val loss 0.107, Val took 0.296s",
+    "Iter 40: Train loss 0.127, Learning Rate 2.000e-04, It/sec 17.319, Tokens/sec 289.226, Trained Tokens 676, Peak mem 0.869 GB",
+    "Iter 50: Train loss 0.110, Learning Rate 2.000e-04, It/sec 17.223, Tokens/sec 296.243, Trained Tokens 848, Peak mem 0.869 GB",
+    "Iter 60: Train loss 0.072, Learning Rate 2.000e-04, It/sec 17.204, Tokens/sec 295.901, Trained Tokens 1020, Peak mem 0.869 GB",
+    "Iter 70: Train loss 0.043, Learning Rate 2.000e-04, It/sec 17.296, Tokens/sec 287.121, Trained Tokens 1186, Peak mem 0.869 GB",
+    "Iter 80: Val loss 0.085, Val took 0.301s",
+    "Iter 80: Train loss 0.038, Learning Rate 2.000e-04, It/sec 17.236, Tokens/sec 298.179, Trained Tokens 1359, Peak mem 0.869 GB",
+    "Iter 80: Saved adapter weights to /private/tmp/gdg-functiongemma-run-20260915-v2/adapters/adapters.safetensors and /private/tmp/gdg-functiongemma-run-20260915-v2/adapters/0000080_adapters.safetensors."
+  ]
+}
