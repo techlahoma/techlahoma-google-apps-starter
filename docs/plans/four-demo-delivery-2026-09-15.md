@@ -23,7 +23,7 @@ WordPress crossover is tentatively October. Fly simulation is a stretch goal. Ne
 
 1. Recover cloud code if it exists on an accessible ref; otherwise record the gap and build from settled requirements. Establish locked dependencies and a real browser baseline.
 2. Complete shared shell, local corpus handling, Context, and actual semantic/hybrid RAG. Preserve model and data provenance and honest no-match states.
-3. Complete real FunctionGemma training and tiny-model Rust training. Browser LoRA requires 12 successful headed GPU runs; a verified CLI fallback remains required. Distinguish training, inference, prepared adapters, and replay.
+3. Complete real FunctionGemma training and tiny-model Rust training. Browser LoRA requires 12 successful windowless hardware GPU runs; a verified CLI fallback remains required. Distinguish training, inference, prepared adapters, and replay.
 4. Run app completion and repository checks, review the scoped diff, commit/push, deploy to the exact app Hosting target, and verify all four public deep links.
 5. Import through AI Studio and verify all four demos there. Create the attendee Notion kit, add the reciprocal GitHub link, and check anonymous kit access and every attendee path.
 

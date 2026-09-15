@@ -7,7 +7,7 @@
 
 ## Source and environment
 
-Local Apple Silicon macOS, Bun 1.3.14, Playwright 1.62.1 and Chromium 151.0.7922.34. Browser tests use the full Chromium binary in unified headless mode with browser sandboxing enabled. The GPU probe identifies Apple metal-3; no unsafe GPU flag or software-rendering substitute was used. Tests create no new visible Chrome window.
+Local Apple Silicon macOS, Bun 1.3.14, Playwright 1.62.1 and Chromium 151.0.7922.34. Browser tests use the full Chromium binary in unified headless mode with browser sandboxing enabled. The GPU probe identifies Apple metal-3, and the training runs used hardware rather than a software fallback. The final shared launcher also removes Playwright’s default unsafe SwiftShader opt-in. Tests create no new visible Chrome window.
 
 Initial code release: `bbc110bf5db59e87eaedc249736928bc880c59d8`. Subsequent verification and CI repairs are recorded in Git. Model and compiler revisions are pinned in the app's provenance files. Synthetic fixtures are explicitly labeled and contain no attendee records.
 

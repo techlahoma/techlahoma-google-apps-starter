@@ -28,3 +28,11 @@ On September 15, actionlint 1.7.7 and `git diff --check` passed for the workflow
 ### Classification follow-up
 
 Read-only metadata matched the existing Gravity Rally configuration to an intended browser key. Its allowed services extend beyond Firebase, and its referrer list includes development and Firebase-hosted sites. This does not meet the narrow Firebase-only case described in [Firebase API-key guidance](https://firebase.google.com/docs/projects/api-keys). No credential, referrer, API restriction, history, or scanner exception was changed. The finding remains unresolved pending owner review of shared consumers and restrictions.
+
+## Linux browser sandbox
+
+The next run reached Chromium but Ubuntu 24.04 rejected its user-namespace sandbox. The browser job now pins the still-supported `ubuntu-22.04` image rather than disabling Chromium sandboxing or weakening host AppArmor globally. [GitHub runner image availability](https://github.com/actions/runner-images) and [Chromium's AppArmor diagnosis](https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md) document the relevant platform boundary. Revisit the pin when the pinned Chromium and newer runner support a scoped sandbox configuration. The shared launcher also removes Playwright's default unsafe SwiftShader opt-in; actual hardware GPU is still required for ML proofs.
+
+## Windows follow-through
+
+The same-volume install passed in run 35007444351; no global-store exception was needed. The subsequent native test exposed `detectAppFromCwd` splitting the result of `path.relative` only on `/`. It now uses the platform separator returned by `node:path`. The existing native Windows regression is the verification target.

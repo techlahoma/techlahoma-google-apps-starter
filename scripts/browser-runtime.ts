@@ -9,4 +9,5 @@ export const browserLaunchOptions = {
   channel: 'chromium',
   headless: true,
   chromiumSandbox: true,
+  ignoreDefaultArgs: ['--enable-unsafe-swiftshader'],
 } satisfies LaunchOptions;

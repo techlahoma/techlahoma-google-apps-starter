@@ -4,7 +4,7 @@ import {browserLaunchOptions} from './browser-runtime';
 const browser = await chromium.launch(browserLaunchOptions);
 try {
   const page = await browser.newPage();
-  await page.goto('http://127.0.0.1:5190/#fine-tuning');
+  await page.goto('https://gdg-model-workshop.web.app/#fine-tuning');
   const result = await page.evaluate(async () => {
     if (!navigator.gpu) return {gpu: false, reason: 'WebGPU API unavailable'};
     const adapter = await navigator.gpu.requestAdapter();

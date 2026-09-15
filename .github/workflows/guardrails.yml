@@ -17,7 +17,9 @@ permissions:
 jobs:
   guardrails:
     name: guardrails
-    runs-on: ubuntu-latest
+    # Ubuntu 24.04 AppArmor blocks this pinned Chromium user-namespace sandbox.
+    # Keep the browser sandbox enabled on the supported Ubuntu 22.04 image.
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
       - name: Check out repository
@@ -39,6 +41,9 @@ jobs:
 
       - name: Verify completed apps browser specs
         run: bun run app:verify --app numeronym-generator
+
+      - name: Verify model workshop UI in a real browser
+        run: bun run app:verify --app building-ai-models-without-coding
 
       - name: Upload test results on failure
         if: failure()
@@ -90,6 +95,9 @@ jobs:
 
       - name: Verify reference app in a real browser
         run: bun run app:verify --app numeronym-generator
+
+      - name: Verify model workshop UI in a real browser
+        run: bun run app:verify --app building-ai-models-without-coding
 
       - name: Upload native browser results on failure
         if: failure()

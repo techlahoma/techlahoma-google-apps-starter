@@ -1,5 +1,5 @@
 import {mkdir, readdir, rm} from 'node:fs/promises';
-import {isAbsolute, join, relative, resolve} from 'node:path';
+import {isAbsolute, join, relative, resolve, sep} from 'node:path';
 import {
   CONFIG_FILENAME,
   type GoogleProjectConfig,
@@ -324,7 +324,7 @@ export function detectAppFromCwd(
   const appsDir = join(rootDir, 'apps');
   const rel = relative(appsDir, cwd);
   if (rel && !rel.startsWith('..') && !isAbsolute(rel)) {
-    const slug = rel.split('/')[0];
+    const slug = rel.split(sep)[0];
     return discoveredApps.find(a => a.slug === slug);
   }
   return undefined;
