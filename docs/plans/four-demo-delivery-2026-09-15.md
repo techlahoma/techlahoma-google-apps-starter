@@ -61,4 +61,4 @@ WordPress crossover is tentatively October. Fly simulation is a stretch goal. Ne
 - Twelve consecutive hardware-GPU training runs passed with identical saved adapter hashes; default held-out quality remains 2/3. The other two task fixtures run but each scored 1/3.
 - Notion kit published and opened anonymously. The kit links to all four demos and GitHub; repository/app links point back to the public kit.
 - AI Studio Import from GitHub remains at the user's account sign-in; no import success is claimed. The tab is preserved for user handoff.
-- CI repairs are under verification. The complete-history scanner's existing broad Google browser-key finding is left unresolved and unsuppressed; no shared credential was changed.
+- Runtime revision `c28516334e6a8cc6c6539d2d131d66fbc10f300f` is pushed and passed Linux, macOS, and Windows checks in [CI run 35011547211](https://github.com/techlahoma/techlahoma-google-apps-starter/actions/runs/35011547211), including actual desktop/phone browser checks. The complete-history scanner's existing broad Google browser-key finding remains unresolved and unsuppressed; no shared credential was changed.
