@@ -3,7 +3,7 @@
 - `Tease:` One operational source of truth for Techlahoma Google Apps Starter.
 - `Lede:` The project is an active, public Techlahoma Bun monorepo with generated app workspaces,
   public-Google-aligned engineering conventions, and a shared Firebase project with per-app Hosting
-  sites lifecycle; no account binding, credentials, or canonical live deployment URL is committed.
+  sites lifecycle. Credentials and environment bindings stay local; verified public demo URLs live in the app documentation.
 - `Why it matters:`
   - Humans and agents can begin locally without reconstructing Google Cloud dashboard state.
   - Local edits, authentication, provisioning, deployment, deletion, and live verification remain
@@ -17,9 +17,9 @@
 
 - Lifecycle: `active`
 - Current objective: let a first-time developer or Antigravity bootstrap and launch isolated workshop apps on native Windows or Apple Silicon macOS without guessing at developer tooling
-- Next decision or action: use the Windows and macOS CI matrix as the per-revision portability proof and rehearse the event prompt from a clean workshop machine
+- Next decision or action: complete the Model Workshop AI Studio import after GitHub sign-in, and review the existing historical API-key scanner finding; use the CI matrix as per-revision portability proof
 - Verification base: current `main`; durable local evidence belongs under `docs/verification/` and remote CI remains revision-specific
-- Last verified at: 2026-08-06
+- Last verified at: 2026-09-15 (local repository and live Model Workshop checks; CI and import limits are recorded separately)
 
 ## User and problem
 
@@ -75,7 +75,7 @@
 
 - Scale-to-zero: satisfied; the default deployment is static Firebase Hosting with no application
   compute
-- Durable state: the starter has no runtime application state
+- Durable state: the static host has no application database. Model Workshop imports and working adapters stay in browser memory; users can download source and adapters to preserve them.
 - Authoritative inputs: Git-tracked app source, app-local `firebase.json`, root lockfile, and project docs
 - Durable state stores: Git for source; a future Google Cloud project only after provisioning
 - Reproducible or disposable state: `node_modules/`, `dist/`, Firebase emulator state, and the entire
@@ -111,7 +111,9 @@ See
 | Verification evidence | `docs/verification/google-app-starter-2026-08-03.md` |
 | Monorepo verification evidence | `docs/verification/app-workspace-monorepo-2026-08-04.md` |
 | Public Intro to GDG event materials | `docs/events/README.md` |
-| Runtime data | none in the starter |
+| Model Workshop and public Notion kit | `apps/building-ai-models-without-coding/README.md` |
+| Model Workshop proof and remaining import/CI limits | `docs/verification/model-workshop-2026-09-15.md` |
+| Runtime data | no server-side workshop records; user-selected documents and model execution remain on the device |
 
 ## Commands and effects
 
@@ -165,8 +167,8 @@ Cloud deployment.
 
 ## Sensitive-data boundary
 
-- Data categories handled: public static source and generated assets only
-- Data that must remain local: Firebase CLI authentication, ADC credentials, and any future secrets
+- Data categories handled: public static source and generated assets; the Model Workshop can process user-selected text locally in browser memory
+- Data that must remain local: Firebase CLI authentication, ADC credentials, future secrets, and workshop-imported text. The workshop does not upload imported documents.
 - Safe publication surface: built static assets that contain no secret material
 - Retention and deletion contract: generated output is disposable; future runtime data requires a
   documented export and retention contract before service adoption
@@ -179,11 +181,9 @@ The machine-readable active-profile list is `.starter/project.json`.
 
 ## Handoff
 
-- Changed locally: yes; fork-specific identities, Firebase examples, and machine-local links were
-  replaced with reusable setup values
-- Committed locally: no
-- Pushed: no
-- Deployed: no; this cleanup made no cloud-side changes
-- Live-verified: no
-- Remaining risk or gap: each fork must set its own GitHub ownership, repository ruleset, ignored
-  Firebase project binding, and post-deployment live URL
+- Changed locally: Model Workshop, its attendee kit links, and browser/CI verification repairs.
+- Committed locally: yes; task-scoped source, provenance, tests, and verification records.
+- Pushed: yes; Model Workshop code and proof are on the existing `main` branch.
+- Deployed: Model Workshop only, at `https://gdg-model-workshop.web.app`; existing app sites and the default site were preserved.
+- Live-verified: all four routes and real Context/RAG, Rust, and FunctionGemma flows. The separate twelve-run local hardware-GPU training gate passed.
+- Remaining gap: Google AI Studio import awaits GitHub account sign-in. The full-history secret scan retains an existing broad Google browser-key finding. See the verification record for platform CI status and measured model-quality limits.

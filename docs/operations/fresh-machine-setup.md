@@ -133,3 +133,7 @@ On native Windows, mise uses Windows shims; WSL is not required. Unix shell synt
 - If a corporate proxy intercepts browser downloads, configure the documented proxy and certificate variables. Do not disable certificate validation.
 - If an installer requires administrator elevation, stop and obtain approval rather than silently elevating.
 - Firebase authentication, project creation, billing, and deployment are not part of local setup. Read [`google-cloud.md`](google-cloud.md) only after that separate effect is authorized.
+
+## Windows browser-proof limitation
+
+Bun 1.3.14 can install, build and serve this repository on Windows, but its Playwright Chromium pipe handshake can stall. The local browser verifier reports that limitation immediately. Hosted Windows CI uses its already-installed Node runtime only for browser control while Bun performs the other checks; see the [transport note](ci-package-and-secret-scanning.md#windows-browser-transport). This does not require installing Node for the normal local setup. A successful build is separate from a completed local browser proof.

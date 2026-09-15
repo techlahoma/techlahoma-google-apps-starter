@@ -36,3 +36,11 @@ The next run reached Chromium but Ubuntu 24.04 rejected its user-namespace sandb
 ## Windows follow-through
 
 The same-volume install passed in run 35007444351; no global-store exception was needed. The subsequent native test exposed `detectAppFromCwd` splitting the result of `path.relative` only on `/`. It now uses the platform separator returned by `node:path`. The existing native Windows regression is the verification target.
+
+## Windows browser transport
+
+After installation and repository checks passed, Windows Chromium spawned but its Playwright pipe handshake timed out. This matches the documented [Bun Windows issue](https://github.com/oven-sh/bun/issues/31105). A bounded loopback-CDP experiment also stalled in Playwright under Bun, despite a reachable endpoint and working native WebSocket; that unverified factory was removed.
+
+Hosted Windows CI now keeps Bun for installation, type/unit/build checks and the app server. Only the browser-control driver uses Node already present in the runner. The CI-only wrapper bundles the actual verifier and the app's actual smoke spec with Bun, invokes Node, propagates failures, and removes temporary files. It installs no runtime and does not skip the app contract or browser assertions.
+
+The normal local path still requires only Git and Bun. Direct Bun browser automation on Windows fails fast with the upstream limitation instead of hanging for three minutes. This is a local CLI browser-proof gap, not a claim that the browser app itself fails on Windows. No Node prerequisite was added to local setup. Revisit this bridge when the pinned Bun transport passes the existing native browser gate.

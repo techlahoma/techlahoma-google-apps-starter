@@ -3,19 +3,20 @@ import {browserLaunchOptions} from './browser-runtime';
 
 import {chromium, type Page} from 'playwright';
 import {existsSync, mkdirSync, readFileSync} from 'node:fs';
+import {spawn, spawnSync, type ChildProcess} from 'node:child_process';
+import {createServer} from 'node:net';
 import {join, resolve} from 'node:path';
-import {pathToFileURL} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import {readAppContract} from './app-contract-lib';
 
-const ROOT_DIR = resolve(import.meta.dir, '..');
-const APPS_DIR = join(ROOT_DIR, 'apps');
+const ROOT_DIR = fileURLToPath(new URL('../', import.meta.url));
 
 interface Options {
   appSlug: string;
 }
 
 function parseArgs(): Options {
-  const args = Bun.argv.slice(2);
+  const args = process.argv.slice(2);
   let appSlug = '';
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--app' && args[i + 1]) {
@@ -34,13 +35,13 @@ function parseArgs(): Options {
 async function findAvailablePort(startPort = 5180): Promise<number> {
   for (let port = startPort; port < startPort + 50; port++) {
     try {
-      const server = Bun.serve({
-        port,
-        fetch() {
-          return new Response('ok');
-        },
+      await new Promise<void>((resolve, reject) => {
+        const server = createServer();
+        server.once('error', reject);
+        server.listen(port, '127.0.0.1', () => {
+          server.close(error => (error ? reject(error) : resolve()));
+        });
       });
-      void server.stop(true);
       return port;
     } catch {
       // Port in use, try next
@@ -53,7 +54,7 @@ async function waitForServer(url: string, timeoutMs = 15000): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, {signal: AbortSignal.timeout(1000)});
       if (res.ok || res.status === 304 || res.status === 200) return;
     } catch {
       // Server not ready yet
@@ -93,8 +94,60 @@ export async function loadBrowserSmokeRunner(
   };
 }
 
-export async function runBrowserVerification(slug: string): Promise<void> {
-  const appDir = join(APPS_DIR, slug);
+async function stopDevServer(child: ChildProcess): Promise<void> {
+  if (!child.pid) return;
+  if (process.platform === 'win32') {
+    // The exact owned PID and its children only; never kill processes by name.
+    const stopped = spawnSync(
+      'taskkill',
+      ['/PID', String(child.pid), '/T', '/F'],
+      {
+        stdio: 'ignore',
+        timeout: 5000,
+        windowsHide: true,
+      },
+    );
+    if (stopped.error) throw stopped.error;
+    if (stopped.status !== 0 && child.exitCode === null)
+      throw new Error(`Could not stop owned Vite process ${child.pid}`);
+    return;
+  }
+  try {
+    process.kill(-child.pid, 'SIGTERM');
+  } catch (error) {
+    if (!(error instanceof Error && 'code' in error && error.code === 'ESRCH'))
+      throw error;
+  }
+}
+
+export async function runBrowserVerification(
+  slug: string,
+  options: {rootDir?: string; specPath?: string} = {},
+): Promise<void> {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
+    throw new Error('Invalid app slug');
+  const rootDir = options.rootDir ?? ROOT_DIR;
+  if (process.platform === 'win32' && process.versions.bun) {
+    if (process.env.CI === 'true') {
+      const result = spawnSync(
+        'bun',
+        [join(rootDir, 'scripts/verify-browser-ci.ts'), '--app', slug],
+        {cwd: rootDir, stdio: 'inherit', windowsHide: true, timeout: 180000},
+      );
+      if (result.error) throw result.error;
+      if (result.status !== 0)
+        throw new Error(
+          `CI browser driver failed with status ${result.status}`,
+        );
+      return;
+    }
+    throw new Error(
+      'Bun 1.3.14 on Windows cannot complete the Playwright pipe handshake. ' +
+        'In hosted CI use bun scripts/verify-browser-ci.ts --app <slug> with its preinstalled Node driver. ' +
+        'Local install, development and build still use Bun.',
+    );
+  }
+  const appDir = join(rootDir, 'apps', slug);
   console.log(`\n=== Browser Verification: apps/${slug} ===`);
 
   if (!existsSync(appDir)) {
@@ -127,7 +180,7 @@ export async function runBrowserVerification(slug: string): Promise<void> {
   }
 
   const runSpecFn = await loadBrowserSmokeRunner(
-    specAbsPath,
+    options.specPath ?? specAbsPath,
     contract.status === 'complete',
   );
 
@@ -135,9 +188,9 @@ export async function runBrowserVerification(slug: string): Promise<void> {
   const baseURL = `http://127.0.0.1:${port}/`;
   console.log(`Starting Vite dev server for apps/${slug} on port ${port}...`);
 
-  const devProcess = Bun.spawn(
+  const devProcess = spawn(
+    'bun',
     [
-      'bun',
       'run',
       '--cwd',
       `apps/${slug}`,
@@ -148,10 +201,11 @@ export async function runBrowserVerification(slug: string): Promise<void> {
       '127.0.0.1',
     ],
     {
-      cwd: ROOT_DIR,
-      env: Bun.env,
-      stdout: 'ignore',
-      stderr: 'inherit',
+      cwd: rootDir,
+      env: process.env,
+      stdio: ['ignore', 'ignore', 'inherit'],
+      detached: process.platform !== 'win32',
+      windowsHide: true,
     },
   );
 
@@ -160,10 +214,14 @@ export async function runBrowserVerification(slug: string): Promise<void> {
   mkdirSync(testResultsDir, {recursive: true});
 
   try {
+    await new Promise<void>((resolve, reject) => {
+      devProcess.once('spawn', resolve);
+      devProcess.once('error', reject);
+    });
     await waitForServer(baseURL);
     console.log(`Vite server ready at ${baseURL}`);
 
-    browser = await chromium.launch(browserLaunchOptions);
+    browser = await chromium.launch({...browserLaunchOptions, timeout: 30000});
 
     const consoleErrors: string[] = [];
     const pageErrors: Error[] = [];
@@ -262,8 +320,11 @@ export async function runBrowserVerification(slug: string): Promise<void> {
     );
     throw error;
   } finally {
-    if (browser) await browser.close();
-    devProcess.kill();
+    try {
+      if (browser) await browser.close();
+    } finally {
+      await stopDevServer(devProcess);
+    }
   }
 }
 
@@ -272,7 +333,10 @@ async function main() {
   await runBrowserVerification(appSlug);
 }
 
-if (import.meta.main) {
+if (
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
   main().catch(err => {
     console.error(
       `app:browser:verify error: ${err instanceof Error ? err.message : String(err)}`,
