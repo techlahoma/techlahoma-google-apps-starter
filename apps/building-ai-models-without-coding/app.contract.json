@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "scaffold",
+  "status": "complete",
   "capabilities": ["static", "browser"],
   "browserSpec": "e2e/smoke.spec.ts",
   "requiredProof": {

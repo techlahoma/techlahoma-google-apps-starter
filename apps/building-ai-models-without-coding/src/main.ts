@@ -44,7 +44,7 @@ app.innerHTML = `
     <p class="eyebrow">GDG TULSA × TECHLAHOMA</p>
     <nav aria-label="Workshop demos"></nav>
     <div class="sidebar-bottom">
-      <a id="kit-link" href="https://app.notion.com/p/3dc012b9b020817e93b7dac0365ca614">Open the meetup kit ↗</a>
+      <a id="kit-link" href="https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614">Open the meetup kit ↗</a>
       <p>Four ways to change what AI does.<br>One small experiment at a time.</p>
     </div>
   </aside>

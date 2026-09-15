@@ -5,7 +5,7 @@ Oklahoma's public launchpad for building small Google-powered apps with agents.
 [Techlahoma](https://www.techlahoma.org/) maintains this Bun and TypeScript monorepo so Antigravity
 can turn one prompt into one isolated, runnable `apps/<slug>` project with a Google-aligned control
 plane and app-scoped Firebase Hosting configuration. New here? Open the
-[Model Workshop Kit in Notion](https://app.notion.com/p/3dc012b9b020817e93b7dac0365ca614)
+[Model Workshop Kit in Notion](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614)
 or follow the no-terminal setup below and let Antigravity be your developer.
 
 <!-- SBC4 compatibility: `Tease:` and `Lede:` render above without labels. `Why it matters:` and
@@ -322,7 +322,7 @@ Google Developer Group; its activities and opinions are not affiliated with or e
 
 ## GDG Tulsa Builder Kit
 
-For the four-demo Model Workshop, start with the [Model Workshop Kit in Notion](https://app.notion.com/p/3dc012b9b020817e93b7dac0365ca614) and its [app source and local instructions](apps/building-ai-models-without-coding/README.md). The kit links back to this repository.
+For the four-demo Model Workshop, start with the [Model Workshop Kit in Notion](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614) and its [app source and local instructions](apps/building-ai-models-without-coding/README.md). The kit links back to this repository.
 
 The August introduction resources remain below.
 

@@ -3,7 +3,7 @@
 - `Tease:` Four ways to change what AI does.
 - `Lede:` Try context, real semantic retrieval, FunctionGemma output-head LoRA, and editable Rust tiny-model training in one local-first application.
 - `Why it matters:` Each experiment exposes what changed and gives you a small next step you can reproduce.
-- `Go deeper:` Start with the [meetup kit](https://app.notion.com/p/3dc012b9b020817e93b7dac0365ca614), or follow the local commands below.
+- `Go deeper:` Start with the [meetup kit](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614), or follow the local commands below.
 
 ## Start locally
 
@@ -63,4 +63,4 @@ The ordinary smoke gate checks routes, basic controls, lexical retrieval, no-mat
 - [Browser FunctionGemma model preparation](scripts/functiongemma-browser/README.md)
 - [FunctionGemma model notice](public/functiongemma/NOTICE.txt) and [Gemma terms](public/functiongemma/TERMS.txt)
 
-Release, deployed URLs, and AI Studio import proof are not implied by a successful local build. Until those gates pass, the app contract stays at scaffold status.
+The [live workshop](https://gdg-model-workshop.web.app) has passed real browser checks and twelve consecutive default training runs. Model quality remains limited: the default browser fixture scored 2/3 held-out, while the other two task fixtures scored 1/3 each. These are teaching experiments. Google AI Studio import verification remains pending the account connection; do not equate local/live browser proof with a verified import.

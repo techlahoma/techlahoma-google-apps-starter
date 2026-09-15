@@ -53,3 +53,12 @@ WordPress crossover is tentatively October. Fly simulation is a stretch goal. Ne
 - Actual windowless probe passed on Chrome 151.0.7922.34 with Apple metal-3 and a compute result of 42. This confirms hardware GPU availability, not all model compatibility.
 - The prior headed 12-run wording is superseded by Sam's non-focus constraint. Retain 12 real end-to-end hardware GPU training runs, using windowless Chromium. If that mode cannot execute a required feature, use the connected existing Chrome instance through the browser integration.
 - Interrupted owned test browsers were cleaned up; existing user Chrome windows were left untouched.
+
+### Delivery checkpoint
+
+- Source commits `ea2de1d` and `bbc110b` pushed to the existing remote main and matching remote SHA verified.
+- `gdg-model-workshop` deployed. All four deep links passed live checks; real Context/RAG, Rust compile/train, and one complete browser LoRA run verified on the public site.
+- Twelve consecutive hardware-GPU training runs passed with identical saved adapter hashes; default held-out quality remains 2/3. The other two task fixtures run but each scored 1/3.
+- Notion kit published and opened anonymously. The kit links to all four demos and GitHub; repository/app links point back to the public kit.
+- AI Studio Import from GitHub remains at the user's account sign-in; no import success is claimed. The tab is preserved for user handoff.
+- CI repairs are under verification. The complete-history scanner's existing broad Google browser-key finding is left unresolved and unsuppressed; no shared credential was changed.

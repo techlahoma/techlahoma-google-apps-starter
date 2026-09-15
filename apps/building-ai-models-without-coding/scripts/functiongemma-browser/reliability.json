@@ -1,0 +1,178 @@
+{
+  "date": "2026-09-15",
+  "method": "full-vocabulary output-head LoRA; GPU gradient accumulation and averaged SGD updates",
+  "model": "onnx-community/functiongemma-270m-it-ONNX",
+  "modelRevision": "ba3c872ede162a5c4ab753f509b2260af5587143",
+  "browserMode": "unified-headless-hardware-gpu",
+  "hardwareGpu": "Apple metal-3; not a fallback adapter",
+  "sourceFiles": {
+    "src/lora-engine.ts": "7afbdb4ce7b5c30f49053177a9aec128088bcb075cf5ba569994984bed4765f0",
+    "src/tuning-demo.ts": "53b726067ff796980bddb8da1f9d6347b32febdbc800f6714cd820007da9f336",
+    "src/functiongemma-inference.ts": "2332c108e693fa2d9d496cab0a24628c8440370a814facdc954028940febd52a"
+  },
+  "completed": 12,
+  "allPassed": true,
+  "learningRate": 0.003,
+  "rank": 4,
+  "runs": [
+    {
+      "run": 1,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 2,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 3,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 4,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 5,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 6,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 7,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 8,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 9,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 10,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 11,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    },
+    {
+      "run": 12,
+      "passed": true,
+      "updates": 200,
+      "adapterSha256": "0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9",
+      "initialBatchLoss": 19.15222,
+      "lastPreUpdateBatchLoss": 0.44719,
+      "finalTrainingLoss": 0.4557989752988533,
+      "heldOutExactMatches": 2,
+      "heldOutCount": 3
+    }
+  ],
+  "heldOutExamples": [
+    [
+      "Urgent: attendees cannot join the call.",
+      "now",
+      "I cannot assist with this task as it requires me to register",
+      "now"
+    ],
+    [
+      "An optional article for next weekend.",
+      "later",
+      "I cannot assist with this request. My capabilities are limited to",
+      "now"
+    ],
+    [
+      "Spam offer for a miracle cure.",
+      "ignore",
+      "I cannot assist with this task. My capabilities are limited to",
+      "ignore"
+    ]
+  ],
+  "limitations": [
+    "Nine synthetic training inputs and three held-out inputs; not a benchmark.",
+    "The optional-article held-out example remains incorrectly classified as now.",
+    "Separate voice-note and workflow execution checks each scored one of three held-out examples.",
+    "Timings are omitted because other validation was running concurrently."
+  ],
+  "transformation": "Selected non-sensitive fields from twelve actual local run receipts. Local paths, network redirect URLs, browser user-agent and adapter weights omitted."
+}

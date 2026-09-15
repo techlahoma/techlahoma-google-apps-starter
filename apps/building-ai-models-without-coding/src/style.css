@@ -304,6 +304,12 @@ footer {
   color: #141518;
   padding: 10px 20px;
 }
+.skip:not(:focus) {
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
 .skip:focus {
   top: 8px;
   left: 8px;

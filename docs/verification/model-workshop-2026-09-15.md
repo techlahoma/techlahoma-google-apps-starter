@@ -9,7 +9,7 @@
 
 Local Apple Silicon macOS, Bun 1.3.14, Playwright 1.62.1 and Chromium 151.0.7922.34. Browser tests use the full Chromium binary in unified headless mode with browser sandboxing enabled. The GPU probe identifies Apple metal-3; no unsafe GPU flag or software-rendering substitute was used. Tests create no new visible Chrome window.
 
-Source release SHA is recorded after commit. Model and compiler revisions are pinned in the app's provenance files. Synthetic fixtures are explicitly labeled and contain no attendee records.
+Initial code release: `bbc110bf5db59e87eaedc249736928bc880c59d8`. Subsequent verification and CI repairs are recorded in Git. Model and compiler revisions are pinned in the app's provenance files. Synthetic fixtures are explicitly labeled and contain no attendee records.
 
 ## Evidence
 
@@ -27,10 +27,10 @@ Source release SHA is recorded after commit. Model and compiler revisions are pi
 | GPU adapter numerics | Independent CPU/GPU batch parity maximum error 3.71×10⁻⁸ | Synthetic numerical proof, separate from real-model training |
 | Browser adaptation, initial viable trial | Full-batch SGD, rank 4, rate 0.003, 200 updates; held-out exact matches 0/3 → 2/3 | Final training fit 6/9 and CE 0.4558; optional-article held-out example remains wrong. Saved adapter reloaded into fresh engine |
 | Native MLX adaptation | 80 updates, saved/reloaded adapter, held-out 0/9 → 3/9 | Different attention-adapter method and dataset; six failures remain. Measured training subprocess 14.413 seconds, not a general performance estimate |
-| Browser repeatability | In progress | Twelve consecutive real runs required; no completion claim yet |
-| Firebase deployment | Planned | New site `gdg-model-workshop` in the existing configured project; default site protected |
+| Browser repeatability | 12/12 consecutive real runs passed | Fresh adapter, actual features/baseline, 200 updates, export/reload, clean console. All saved adapters had SHA-256 `0a21ad3647dc55c2ac6b8b1fabb1d7143a8be57b8138cd06b6eefbde51e8b0c9`; all runs scored 2/3 held-out. |
+| Firebase deployment | Deployed and live-tested | `https://gdg-model-workshop.web.app`; all four routes, real Context/RAG generation, real Rust compilation/training, and one real 200-update FunctionGemma run passed. |
 | AI Studio import | Pending account connection | Import from GitHub confirmed in the UI. No imported demo is claimed verified |
-| Notion kit | Created privately | Public sharing and final links remain pending |
+| Notion kit | Published | [Public attendee kit](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614); all four live links and reciprocal GitHub link. A separate unauthenticated browser displayed the full kit with all four demo links and GitHub links; no sign-in was required. |
 
 ## What failed and changed
 
@@ -56,3 +56,11 @@ bun scripts/lora-proof.ts
 The model and training proof scripts require an already-running local workshop app or frozen snapshot. See their argument validation before running. They create disposable receipts under app `test-results/` or `.starter/cache/`; those are not public source files.
 
 See [app instructions](../../apps/building-ai-models-without-coding/README.md), [Rust provenance](../../apps/building-ai-models-without-coding/THIRD_PARTY_RUST.md), [native MLX proof](../../apps/building-ai-models-without-coding/THIRD_PARTY_MODELS.md), and [FunctionGemma graph proof](../../apps/building-ai-models-without-coding/scripts/functiongemma-browser/README.md).
+
+## CI follow-through
+
+The first pushed revision exposed three CI failures: the existing reference app depended on an undeclared Playwright Test runner, Windows package linking failed, and the secret-action wrapper required an unavailable organization license. The reference smoke now exports the actual runner directly and checks every original interaction; its missing favicon request is also fixed. Workflow repairs preserve checks and use the pinned open-source Gitleaks scanner.
+
+The full-history scan now identifies one existing Google API-key finding in the Gravity Rally client configuration from commit `89080f455bf38ab6ab926b4a6f833558d0672062`. Read-only key metadata confirmed browser restrictions and a broad API allowlist beyond Firebase. No value was printed, no allowlist was added, and no shared credential was changed. This is an unresolved historical finding, not a secret introduced by the Model Workshop. Do not report the remote secret check green.
+
+The [compact twelve-run receipt](../../apps/building-ai-models-without-coding/scripts/functiongemma-browser/reliability.json) preserves source hashes, actual losses, exact adapter hashes, and held-out outputs without local paths or weights.
