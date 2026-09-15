@@ -231,6 +231,11 @@
 
 ## Browser automation on managed macOS
 
+- Project browser checks use `scripts/browser-runtime.ts`: full Chromium in unified headless mode, with no new visible window.
+- Never run routine `headless: false` proof scripts or call `bringToFront()` during unattended work.
+- Verify hardware GPU availability before ML tests; do not substitute software rendering or bypass GPU blocklists. If unavailable, use the connected existing Chrome instance through the browser integration.
+- A stopped or timed-out proof must close only its own browser. Never kill Chrome by name or alter a shared user profile.
+
 - Never take over the user's existing Firefox windows or tabs. Create and use a
   dedicated Firefox window for the task, and close only that window.
 - Do not launch installed Chrome or Chromium binaries from `node_repl`.

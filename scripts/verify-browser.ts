@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import {browserLaunchOptions} from './browser-runtime';
 
 import {chromium, type Page} from 'playwright';
 import {existsSync, mkdirSync, readFileSync} from 'node:fs';
@@ -64,6 +65,34 @@ async function waitForServer(url: string, timeoutMs = 15000): Promise<void> {
   throw new Error(`Timed out waiting for server at ${url}`);
 }
 
+interface SmokeTestArgs {
+  page: Page;
+  baseURL: string;
+  viewport: 'desktop' | 'phone';
+}
+
+type SmokeTestRunner = (args: SmokeTestArgs) => Promise<void>;
+
+export async function loadBrowserSmokeRunner(
+  specPath: string,
+  requireRunner: boolean,
+): Promise<SmokeTestRunner | null> {
+  // Import failures must remain failures, never become screenshot-only passes.
+  const spec: Record<string, unknown> = await import(
+    pathToFileURL(specPath).href
+  );
+  const runner = spec.default !== undefined ? spec.default : spec.runSmokeTest;
+  if (runner === undefined && !requireRunner) return null;
+  if (typeof runner !== 'function') {
+    throw new Error(
+      `Browser spec ${specPath} must export a callable default or runSmokeTest runner`,
+    );
+  }
+  return async args => {
+    await runner(args);
+  };
+}
+
 export async function runBrowserVerification(slug: string): Promise<void> {
   const appDir = join(APPS_DIR, slug);
   console.log(`\n=== Browser Verification: apps/${slug} ===`);
@@ -97,6 +126,11 @@ export async function runBrowserVerification(slug: string): Promise<void> {
     }
   }
 
+  const runSpecFn = await loadBrowserSmokeRunner(
+    specAbsPath,
+    contract.status === 'complete',
+  );
+
   const port = await findAvailablePort();
   const baseURL = `http://127.0.0.1:${port}/`;
   console.log(`Starting Vite dev server for apps/${slug} on port ${port}...`);
@@ -129,7 +163,7 @@ export async function runBrowserVerification(slug: string): Promise<void> {
     await waitForServer(baseURL);
     console.log(`Vite server ready at ${baseURL}`);
 
-    browser = await chromium.launch({headless: true});
+    browser = await chromium.launch(browserLaunchOptions);
 
     const consoleErrors: string[] = [];
     const pageErrors: Error[] = [];
@@ -155,25 +189,6 @@ export async function runBrowserVerification(slug: string): Promise<void> {
         );
       });
     }
-
-    // Try importing custom smoke test runner from spec file if exported
-    let customModule: Record<string, unknown> | null = null;
-    try {
-      customModule = (await import(pathToFileURL(specAbsPath).href)) as Record<
-        string,
-        unknown
-      >;
-    } catch {
-      // Standard spec file without export runner
-    }
-
-    const runSpecFn = (customModule?.default || customModule?.runSmokeTest) as
-      | ((args: {
-          page: Page;
-          baseURL: string;
-          viewport: 'desktop' | 'phone';
-        }) => Promise<void>)
-      | undefined;
 
     // 1. Desktop Verification (1440x900)
     console.log('Testing Desktop Viewport (1440x900)...');

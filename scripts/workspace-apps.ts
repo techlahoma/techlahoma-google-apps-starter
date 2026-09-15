@@ -7,12 +7,20 @@ const ROOT_DIR = resolve(import.meta.dir, '..');
 const APPS_DIR = join(ROOT_DIR, 'apps');
 const SUPPORTED_COMMANDS = new Set(['build', 'check', 'test', 'typecheck']);
 
-async function appDirectories(): Promise<string[]> {
-  const entries = await readdir(APPS_DIR, {withFileTypes: true});
-  return entries
-    .filter(entry => entry.isDirectory())
-    .map(entry => entry.name)
-    .toSorted();
+export async function appDirectories(appsDir = APPS_DIR): Promise<string[]> {
+  const entries = await readdir(appsDir, {withFileTypes: true});
+  const apps: string[] = [];
+  for (const entry of entries) {
+    // Native demos can live alongside Bun workspaces without a package manifest.
+    // Check presence only: malformed manifests must still reach Bun and fail.
+    if (
+      entry.isDirectory() &&
+      (await Bun.file(join(appsDir, entry.name, 'package.json')).exists())
+    ) {
+      apps.push(entry.name);
+    }
+  }
+  return apps.toSorted();
 }
 
 async function runInApp(app: string, command: string): Promise<void> {
@@ -45,9 +53,11 @@ async function main(): Promise<void> {
   for (const app of apps) await runInApp(app, command);
 }
 
-main().catch((error: unknown) => {
-  console.error(
-    `workspace-apps: ${error instanceof Error ? error.message : String(error)}`,
-  );
-  process.exitCode = 1;
-});
+if (import.meta.main) {
+  main().catch((error: unknown) => {
+    console.error(
+      `workspace-apps: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exitCode = 1;
+  });
+}
