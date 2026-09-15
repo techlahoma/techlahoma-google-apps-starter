@@ -205,11 +205,7 @@ function App() {
           <h1>{demo.name}</h1>
           <p className="intro">{demo.description}</p>
           <div id="demo-content" key={demo.id}>
-            {Content ? (
-              <Content />
-            ) : (
-              <ImperativeDemo load={demo.loadMount} />
-            )}
+            {Content ? <Content /> : <ImperativeDemo load={demo.loadMount} />}
           </div>
           <RebuildPrompt demo={demo} />
         </div>
