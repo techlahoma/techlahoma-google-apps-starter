@@ -16,7 +16,8 @@
 - Passed: default FunctionGemma prediction before training, 200 Apple Metal GPU updates, adapter export/reload, and custom comparison. Default refusal changed to `now` for the same urgent notification; held-out result remains 2/3. Loss 19.15222 to 0.44719, 146.154 seconds including baseline and comparison.
 - Passed: real Rust train, invalid source, output limit, cancellation, and raw clipboard equality. Display emoji are separate from copied output.
 - Passed: final Context/RAG inference on production build in 101.942 seconds, with clean console and requests; hybrid/evaluation ranks and actual grounded answer preserved. Earlier Vite proof was interrupted by hot reload and is superseded by this built-app proof.
-- Pending: reviewed commit/push, site-only deployment, live check.
+- Delivered: runtime revision `dea5b0f21d7dc93823421b38690d0de83b60c055` committed, pushed to existing `origin/main`, and deployed only to `gdg-model-workshop` in project `sam-carlton-creative`. All four public routes passed desktop/phone live checks for source toggles, sticky behavior, baseline controls, compact outputs, bounded Xterm, console, and requests.
+- CI: [run 35116361068](https://github.com/techlahoma/techlahoma-google-apps-starter/actions/runs/35116361068) passed Linux, macOS, and Windows build/browser jobs for that runtime revision. The historical Google-key finding keeps the separate secret job red; no shared credential was changed or finding suppressed.
 
 ## Interpretation boundaries
 
