@@ -20,6 +20,22 @@ interface Lesson {
   train: Example[];
   test: Example[];
 }
+
+type PredictionPanelState =
+  | {kind: 'idle'; message: string}
+  | {kind: 'loading'; message: string}
+  | {kind: 'result'; prediction: string}
+  | {kind: 'unavailable'; message: string};
+
+const displayPrediction = (prediction: string): string => {
+  const normalized = prediction.trim().toLowerCase();
+  const labels: Record<string, string> = {
+    now: '🚨 now',
+    later: '🕒 later',
+    ignore: '🚫 ignore',
+  };
+  return labels[normalized] ?? (prediction.trim() || '(empty output)');
+};
 const lessons: Lesson[] = [
   {
     name: 'Notification → now / later / ignore',
@@ -132,7 +148,7 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     <output id="tuning-status" aria-live="polite">Ready. First use downloads a 426 MB model. Training needs WebGPU.</output>
     <progress id="tuning-progress" value="0" max="1" hidden></progress>
     <figure class="m-0" aria-labelledby="tuning-visual-title tuning-visual-caption">
-      <svg id="tuning-visual" class="h-auto w-full" viewBox="0 0 720 280" role="img" aria-labelledby="tuning-visual-title tuning-visual-desc">
+      <svg id="tuning-visual" class="h-auto w-full" viewBox="0 0 720 310" role="img" aria-labelledby="tuning-visual-title tuning-visual-desc">
         <title id="tuning-visual-title">How the adapter learns while the base model stays frozen</title>
         <desc id="tuning-visual-desc">Training examples flow through a frozen model into a small trainable adapter. The loss plot updates from the measurements produced by this run.</desc>
         <g id="tuning-visual-data" opacity="0.45">
@@ -153,19 +169,37 @@ export function mountTuningDemo(container: HTMLElement): () => void {
           <text x="519" y="85" text-anchor="middle" fill="#b2c9ff" font-size="12">rank 4 · updates here</text>
         </g>
         <defs><marker id="tuning-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#697386" /></marker></defs>
-        <g transform="translate(54 142)">
+        <g transform="translate(78 146)">
           <text x="0" y="-12" fill="#eceef2" font-size="14">Measured training loss</text>
-          <line x1="0" y1="100" x2="612" y2="100" stroke="#697386" />
+          <line x1="0" y1="0" x2="570" y2="0" stroke="#383b44" />
+          <line x1="0" y1="50" x2="570" y2="50" stroke="#383b44" />
+          <line x1="0" y1="100" x2="570" y2="100" stroke="#697386" />
           <line x1="0" y1="0" x2="0" y2="100" stroke="#697386" />
+          <text x="-10" y="4" text-anchor="end" fill="#a7abb6" font-size="11">20</text>
+          <text x="-10" y="54" text-anchor="end" fill="#a7abb6" font-size="11">10</text>
+          <text x="-10" y="104" text-anchor="end" fill="#a7abb6" font-size="11">0</text>
+          <text x="0" y="119" text-anchor="middle" fill="#a7abb6" font-size="11">0</text>
+          <text x="285" y="119" text-anchor="middle" fill="#a7abb6" font-size="11">100</text>
+          <text x="570" y="119" text-anchor="middle" fill="#a7abb6" font-size="11">200</text>
+          <text x="285" y="141" text-anchor="middle" fill="#a7abb6" font-size="12">training pass</text>
+          <text x="-50" y="50" text-anchor="middle" fill="#a7abb6" font-size="12" transform="rotate(-90 -50 50)">loss</text>
           <polyline id="tuning-loss-line" points="" fill="none" stroke="#b2c9ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
           <circle id="tuning-loss-point" cx="0" cy="100" r="5" fill="#b2c9ff" opacity="0" />
-          <text id="tuning-loss-label" x="612" y="122" text-anchor="end" fill="#a7abb6" font-size="12">Run training to plot loss</text>
+          <text id="tuning-loss-label" x="570" y="-12" text-anchor="end" fill="#a7abb6" font-size="12">Run training to plot loss</text>
         </g>
       </svg>
-      <figcaption id="tuning-visual-caption" class="text-sm text-slate-400">The large model remains fixed. Each pass changes only the small adapter; a falling loss means its next-token predictions are getting closer to the training labels.</figcaption>
+      <figcaption id="tuning-visual-caption" class="text-sm text-slate-400">Loss is the model’s penalty for predicting the wrong training label, so lower is better. The axes stay fixed at 200 passes and loss 0–20, making the shape comparable throughout the run. Only the small adapter changes; the large model remains fixed.</figcaption>
     </figure>
     <div id="tuning-results"></div>
-    <details id="tuning-try"><summary>Try your own input</summary><label for="tuning-input">A short note or notification</label><textarea id="tuning-input" maxlength="500" rows="3"></textarea><button id="tuning-compare" disabled>Compare before and after</button><div id="tuning-custom-result" aria-live="polite"></div></details>
+    <section id="tuning-try" aria-labelledby="tuning-try-title">
+      <h3 id="tuning-try-title">Try the default model first</h3>
+      <p class="hint">Pick an example or write your own. You can run the unchanged model before training, then use the same input to compare the tuned adapter.</p>
+      <div id="tuning-examples" class="toolbar" role="group" aria-label="Example inputs"></div>
+      <label for="tuning-input">A short note or notification</label>
+      <textarea id="tuning-input" maxlength="500" rows="3"></textarea>
+      <div class="toolbar"><button id="tuning-baseline">Run default model</button><button id="tuning-compare" disabled>Compare default vs tuned</button></div>
+      <div id="tuning-custom-result" class="grid gap-3 sm:grid-cols-2" aria-live="polite"></div>
+    </section>
     <details><summary>Examples and evaluation</summary><p>Training examples change the adapter. The test inputs below are withheld from those updates. These small authored examples are a teaching exercise, not a benchmark.</p><div id="tuning-data"></div></details>
     <details><summary>What changes inside the model?</summary><p>The original FunctionGemma body stays frozen. We train two small matrices on its output projection with full-vocabulary cross-entropy. GPU shaders calculate the adapter and weight updates; the CPU calculates softmax and loss. This is output-head LoRA, not the attention-layer QLoRA used in the CLI example.</p><p>The browser adapter is specific to this model and this demo. It is not an MLX or PEFT adapter file.</p><div id="tuning-loss"></div></details>
     <details><summary>Train with Antigravity or the CLI</summary><p>The repository includes a separate, verified MLX FunctionGemma experiment. It trains attention adapters, saves them, reloads them, and records held-out outputs.</p><p><a href="https://github.com/techlahoma/techlahoma-google-apps-starter/tree/main/apps/building-ai-models-without-coding/scripts/functiongemma">Open the CLI instructions ↗</a></p></details>
@@ -188,12 +222,11 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   const save = get<HTMLButtonElement>('#tuning-save');
   const progress = get<HTMLProgressElement>('#tuning-progress');
   const results = get('#tuning-results');
+  const examples = get('#tuning-examples');
+  const input = get<HTMLTextAreaElement>('#tuning-input');
+  const baseline = get<HTMLButtonElement>('#tuning-baseline');
   const compare = get<HTMLButtonElement>('#tuning-compare');
-  const customOutputRoot = mountTerminalOutput(
-    get('#tuning-custom-result'),
-    'Before and after',
-    'Custom input comparison',
-  );
+  const customResult = get('#tuning-custom-result');
   const dataOutputRoot = mountTerminalOutput(
     get('#tuning-data'),
     'Training and held-out examples',
@@ -230,7 +263,162 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   let adapter: OutputLora | undefined;
   let running = false;
   let loading: AbortController | undefined;
+  let model: FunctionGemmaInference | undefined;
   const currentLesson = () => lessons[Number(select.value)] ?? lessons[0]!;
+  function createPredictionPanel(
+    title: string,
+    state: PredictionPanelState,
+  ): HTMLElement {
+    const panel = document.createElement('article');
+    panel.className =
+      'min-h-28 rounded-lg border border-slate-700 bg-slate-900/50 p-4';
+    const heading = document.createElement('h4');
+    heading.className =
+      'm-0 text-xs font-semibold uppercase tracking-wide text-slate-400';
+    heading.textContent = title;
+    panel.append(heading);
+    if (state.kind === 'loading') {
+      panel.setAttribute('aria-busy', 'true');
+      const loadingMessage = document.createElement('span');
+      loadingMessage.className = 'sr-only';
+      loadingMessage.textContent = state.message;
+      const shimmer = document.createElement('div');
+      shimmer.className =
+        'mt-4 space-y-2 motion-safe:animate-pulse motion-reduce:animate-none';
+      shimmer.setAttribute('aria-hidden', 'true');
+      for (const width of ['w-3/4', 'w-full', 'w-1/2']) {
+        const line = document.createElement('div');
+        line.className = `h-3 rounded bg-slate-700 ${width}`;
+        shimmer.append(line);
+      }
+      panel.append(loadingMessage, shimmer);
+      return panel;
+    }
+    const message = document.createElement('p');
+    message.className =
+      state.kind === 'result'
+        ? 'mb-0 mt-3 text-lg font-semibold text-slate-100'
+        : 'mb-0 mt-3 text-sm text-slate-400';
+    message.textContent =
+      state.kind === 'result'
+        ? displayPrediction(state.prediction)
+        : state.message;
+    panel.append(message);
+    return panel;
+  }
+  function renderPredictionPanels(
+    defaultState: PredictionPanelState,
+    tunedState: PredictionPanelState,
+  ) {
+    customResult.replaceChildren(
+      createPredictionPanel('Default FunctionGemma', defaultState),
+      createPredictionPanel('After tuning', tunedState),
+    );
+  }
+  function renderExampleButtons() {
+    examples.replaceChildren();
+    for (const [index, example] of currentLesson().test.entries()) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'text-left text-sm';
+      button.textContent = example.input;
+      button.setAttribute(
+        'aria-label',
+        `Use example ${index + 1}: ${example.input}`,
+      );
+      button.addEventListener('click', () => {
+        input.value = example.input;
+        input.focus();
+        renderPredictionPanels(
+          {kind: 'idle', message: 'Ready to run this input.'},
+          adapter
+            ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
+            : {
+                kind: 'unavailable',
+                message: 'Train an adapter to unlock this comparison.',
+              },
+        );
+      });
+      examples.append(button);
+    }
+  }
+  function setInputControlsDisabled(disabled: boolean) {
+    input.disabled = disabled;
+    for (const button of examples.querySelectorAll('button')) {
+      button.disabled = disabled;
+    }
+  }
+  function renderTrainingLoading() {
+    const loadingSection = document.createElement('section');
+    loadingSection.setAttribute('aria-label', 'Preparing held-out comparison');
+    loadingSection.setAttribute('aria-busy', 'true');
+    loadingSection.className =
+      'space-y-3 motion-safe:animate-pulse motion-reduce:animate-none';
+    const message = document.createElement('span');
+    message.className = 'sr-only';
+    message.textContent = 'Preparing held-out comparison.';
+    loadingSection.append(message);
+    for (let index = 0; index < 3; index++) {
+      const row = document.createElement('div');
+      row.className = 'grid grid-cols-2 gap-3';
+      for (let column = 0; column < 2; column++) {
+        const block = document.createElement('div');
+        block.className = 'h-20 rounded-lg bg-slate-800';
+        row.append(block);
+      }
+      loadingSection.append(row);
+    }
+    results.replaceChildren(loadingSection);
+  }
+  function renderResultsTable(
+    lesson: Lesson,
+    before: string[],
+    after?: string[],
+  ) {
+    const table = document.createElement('table');
+    const header = document.createElement('tr');
+    for (const label of [
+      'Unseen input',
+      'Expected',
+      'Default',
+      'After tuning',
+    ]) {
+      const th = document.createElement('th');
+      th.textContent = label;
+      header.append(th);
+    }
+    const head = document.createElement('thead');
+    head.append(header);
+    table.append(head);
+    const body = document.createElement('tbody');
+    for (const [index, row] of lesson.test.entries()) {
+      const tr = document.createElement('tr');
+      for (const text of [
+        row.input,
+        displayPrediction(row.answer),
+        displayPrediction(before[index] ?? ''),
+      ]) {
+        const td = document.createElement('td');
+        td.textContent = text;
+        tr.append(td);
+      }
+      const tuned = document.createElement('td');
+      if (after) {
+        tuned.textContent = displayPrediction(after[index] ?? '');
+      } else {
+        tuned.setAttribute('aria-label', 'Training adapter');
+        const shimmer = document.createElement('div');
+        shimmer.className =
+          'h-3 w-3/4 rounded bg-slate-700 motion-safe:animate-pulse motion-reduce:animate-none';
+        shimmer.setAttribute('aria-hidden', 'true');
+        tuned.append(shimmer);
+      }
+      tr.append(tuned);
+      body.append(tr);
+    }
+    table.append(body);
+    results.replaceChildren(table);
+  }
   function showData() {
     const lesson = currentLesson();
     get('#tuning-task-explanation').textContent = lesson.explanation;
@@ -241,6 +429,7 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       `TRAIN\n${lesson.train.map(row => `${row.input} → ${row.answer}`).join('\n')}\n\nTEST\n${lesson.test.map(row => `${row.input} → ${row.answer}`).join('\n')}`,
     );
     results.replaceChildren();
+    renderExampleButtons();
     compare.disabled = true;
     customPrediction = undefined;
     save.disabled = true;
@@ -249,6 +438,14 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     losses = [];
     renderLoss();
     highlightStage('data');
+    input.value = lesson.test[0]?.input ?? '';
+    renderPredictionPanels(
+      {kind: 'idle', message: 'Run the unchanged model before training.'},
+      {
+        kind: 'unavailable',
+        message: 'Train an adapter to unlock this comparison.',
+      },
+    );
   }
   function highlightStage(stage: keyof typeof visualStages) {
     const changed = activeVisualStage !== stage;
@@ -273,14 +470,14 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       lossLabel.textContent = 'Run training to plot loss';
       return;
     }
-    const width = 612;
+    const width = 570;
     const height = 100;
-    const minimum = Math.min(...losses);
-    const maximum = Math.max(...losses);
-    const range = Math.max(maximum - minimum, 0.0001);
+    const maximumLoss = 20;
+    const totalPasses = 200;
     const points = losses.map((loss, index) => {
-      const x = losses.length === 1 ? 0 : (index / (losses.length - 1)) * width;
-      const y = ((maximum - loss) / range) * (height - 12) + 6;
+      const x = ((index + 1) / totalPasses) * width;
+      const boundedLoss = Math.min(Math.max(loss, 0), maximumLoss);
+      const y = height - (boundedLoss / maximumLoss) * height;
       return {x, y};
     });
     lossLine.setAttribute(
@@ -298,12 +495,6 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   select.addEventListener('change', showData);
   showData();
   renderTerminal(
-    customOutputRoot,
-    'Before and after',
-    'Custom input comparison',
-    'Train an adapter first. This text stays on your device.',
-  );
-  renderTerminal(
     lossOutputRoot,
     'Adapter training log',
     'Fine-tuning loss output',
@@ -318,6 +509,117 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     if (cancelled || !mounted)
       throw new Error('Stopped. No completed training run was recorded.');
   }
+  async function ensureModel(): Promise<FunctionGemmaInference> {
+    if (model) return model;
+    loading = new AbortController();
+    const loadedModel = await loadFunctionGemma(message => {
+      if (mounted) status.value = message;
+    }, loading.signal);
+    loading = undefined;
+    checkCancelled();
+    model = loadedModel;
+    return model;
+  }
+  async function generate(
+    activeModel: FunctionGemmaInference,
+    lesson: Lesson,
+    text: string,
+    outputAdapter?: OutputLora,
+  ): Promise<string> {
+    const ids = prompt(activeModel, lesson, text);
+    const output: number[] = [];
+    const end = activeModel.encode('<end_of_turn>');
+    for (let step = 0; step < 12; step++) {
+      checkCancelled();
+      const values = await activeModel.evaluateTokens(ids.concat(output));
+      const token = outputAdapter
+        ? (await outputAdapter.predict(values.hidden, values.logits)).token
+        : bestToken(values.logits);
+      if (end.includes(token) || token === 1) break;
+      output.push(token);
+      await yieldToPage();
+    }
+    return activeModel.decode(output).trim();
+  }
+  baseline.addEventListener('click', () => {
+    void runBaseline();
+  });
+  async function runBaseline() {
+    const text = input.value.trim();
+    if (!text) {
+      renderPredictionPanels(
+        {kind: 'idle', message: 'Enter a short input first.'},
+        adapter
+          ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
+          : {
+              kind: 'unavailable',
+              message: 'Train an adapter to unlock this comparison.',
+            },
+      );
+      return;
+    }
+    if (running) return;
+    running = true;
+    cancelled = false;
+    baseline.disabled = true;
+    compare.disabled = true;
+    run.disabled = true;
+    save.disabled = true;
+    select.disabled = true;
+    stop.disabled = false;
+    setInputControlsDisabled(true);
+    renderPredictionPanels(
+      {kind: 'loading', message: 'Running the unchanged model.'},
+      adapter
+        ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
+        : {
+            kind: 'unavailable',
+            message: 'Train an adapter to unlock this comparison.',
+          },
+    );
+    try {
+      const activeModel = await ensureModel();
+      highlightStage('model');
+      const prediction = await generate(activeModel, currentLesson(), text);
+      checkCancelled();
+      renderPredictionPanels(
+        {kind: 'result', prediction},
+        adapter
+          ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
+          : {
+              kind: 'unavailable',
+              message: 'Train an adapter to unlock this comparison.',
+            },
+      );
+      status.value =
+        'Default FunctionGemma inference complete. No adapter was used.';
+    } catch (error) {
+      if (mounted) {
+        const message = error instanceof Error ? error.message : String(error);
+        status.value = message;
+        renderPredictionPanels(
+          {kind: 'idle', message},
+          adapter
+            ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
+            : {
+                kind: 'unavailable',
+                message: 'Train an adapter to unlock this comparison.',
+              },
+        );
+      }
+    } finally {
+      running = false;
+      if (mounted) {
+        baseline.disabled = false;
+        compare.disabled = !adapter;
+        run.disabled = false;
+        save.disabled = !adapter;
+        select.disabled = false;
+        stop.disabled = true;
+        setInputControlsDisabled(false);
+      }
+    }
+  }
   save.addEventListener('click', () => {
     void saveAdapter();
   });
@@ -326,7 +628,10 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     running = true;
     save.disabled = true;
     run.disabled = true;
+    baseline.disabled = true;
+    compare.disabled = true;
     select.disabled = true;
+    setInputControlsDisabled(true);
     try {
       const snapshot = await adapter.export();
       if (!mounted) return;
@@ -347,7 +652,10 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       if (mounted) {
         save.disabled = false;
         run.disabled = false;
+        baseline.disabled = false;
+        compare.disabled = false;
         select.disabled = false;
+        setInputControlsDisabled(false);
       } else {
         adapter?.dispose();
         adapter = undefined;
@@ -358,13 +666,11 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     void compareInput();
   });
   async function compareInput() {
-    const text = get<HTMLTextAreaElement>('#tuning-input').value.trim();
+    const text = input.value.trim();
     if (!text) {
-      renderTerminal(
-        customOutputRoot,
-        'Before and after',
-        'Custom input comparison',
-        'Enter a short input first.',
+      renderPredictionPanels(
+        {kind: 'idle', message: 'Enter a short input first.'},
+        {kind: 'idle', message: 'Enter a short input first.'},
       );
       return;
     }
@@ -372,49 +678,49 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     running = true;
     cancelled = false;
     compare.disabled = true;
+    baseline.disabled = true;
     run.disabled = true;
     save.disabled = true;
     select.disabled = true;
     stop.disabled = false;
+    setInputControlsDisabled(true);
     try {
-      renderTerminal(
-        customOutputRoot,
-        'Before and after',
-        'Custom input comparison',
-        'Running the original model…',
+      renderPredictionPanels(
+        {kind: 'loading', message: 'Running the unchanged model.'},
+        {kind: 'idle', message: 'Waiting for the same input.'},
       );
       const before = await customPrediction(text, false);
       checkCancelled();
-      renderTerminal(
-        customOutputRoot,
-        'Before and after',
-        'Custom input comparison',
-        'Running the adapted model…',
+      renderPredictionPanels(
+        {kind: 'result', prediction: before},
+        {kind: 'loading', message: 'Running the tuned adapter.'},
       );
       const after = await customPrediction(text, true);
       checkCancelled();
-      renderTerminal(
-        customOutputRoot,
-        'Before and after',
-        'Custom input comparison',
-        `Before: ${before || '(empty output)'}\nAfter: ${after || '(empty output)'}`,
+      renderPredictionPanels(
+        {kind: 'result', prediction: before},
+        {kind: 'result', prediction: after},
       );
+      status.value =
+        'Default and tuned predictions are ready for the same input.';
     } catch (error) {
-      if (mounted)
-        renderTerminal(
-          customOutputRoot,
-          'Before and after',
-          'Custom input comparison',
-          error instanceof Error ? error.message : String(error),
+      if (mounted) {
+        const message = error instanceof Error ? error.message : String(error);
+        renderPredictionPanels(
+          {kind: 'idle', message},
+          {kind: 'idle', message},
         );
+      }
     } finally {
       running = false;
       if (mounted) {
         compare.disabled = false;
+        baseline.disabled = false;
         run.disabled = false;
         save.disabled = false;
         select.disabled = false;
         stop.disabled = true;
+        setInputControlsDisabled(false);
       } else {
         adapter?.dispose();
         adapter = undefined;
@@ -429,6 +735,7 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     running = true;
     cancelled = false;
     run.disabled = true;
+    baseline.disabled = true;
     select.disabled = true;
     stop.disabled = false;
     save.disabled = true;
@@ -436,7 +743,8 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     customPrediction = undefined;
     progress.hidden = false;
     progress.value = 0;
-    results.replaceChildren();
+    setInputControlsDisabled(true);
+    renderTrainingLoading();
     lossLog = '';
     renderTerminal(
       lossOutputRoot,
@@ -450,14 +758,16 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     adapter?.dispose();
     adapter = undefined;
     try {
-      loading = new AbortController();
-      const model = await loadFunctionGemma(message => {
-        if (mounted) status.value = message;
-      }, loading.signal);
+      const activeModel = await ensureModel();
       highlightStage('model');
-      loading = undefined;
       checkCancelled();
       const lesson = currentLesson();
+      const before: string[] = [];
+      for (const row of lesson.test) {
+        status.value = 'Testing the unchanged base model…';
+        before.push(await generate(activeModel, lesson, row.input));
+      }
+      renderResultsTable(lesson, before);
       let trained = await OutputLora.create({
         hiddenSize: 640,
         vocabSize: 262144,
@@ -467,43 +777,20 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       });
       adapter = trained;
       const features: Array<FunctionGemmaEvaluation & {target: number}> = [];
-      const end = model.encode('<end_of_turn>');
+      const end = activeModel.encode('<end_of_turn>');
       for (const [index, row] of lesson.train.entries()) {
         status.value = `Reading training example ${index + 1} of ${lesson.train.length}. The base model stays frozen.`;
-        const ids = prompt(model, lesson, row.input);
-        const target = model.encode(row.answer).concat(end);
+        const ids = prompt(activeModel, lesson, row.input);
+        const target = activeModel.encode(row.answer).concat(end);
         for (let i = 0; i < target.length; i++) {
           checkCancelled();
-          const values = await model.evaluateTokens(
+          const values = await activeModel.evaluateTokens(
             ids.concat(target.slice(0, i)),
           );
           features.push({...values, target: target[i]!});
           await yieldToPage();
         }
         progress.value = ((index + 1) / lesson.train.length) * 0.25;
-      }
-      const before: string[] = [];
-      async function generate(
-        input: string,
-        withAdapter: boolean,
-      ): Promise<string> {
-        const ids = prompt(model, lesson, input);
-        const output: number[] = [];
-        for (let step = 0; step < 12; step++) {
-          checkCancelled();
-          const values = await model.evaluateTokens(ids.concat(output));
-          const token = withAdapter
-            ? (await trained.predict(values.hidden, values.logits)).token
-            : bestToken(values.logits);
-          if (end.includes(token) || token === 1) break;
-          output.push(token);
-          await yieldToPage();
-        }
-        return model.decode(output).trim();
-      }
-      for (const row of lesson.test) {
-        status.value = 'Testing the unchanged base model…';
-        before.push(await generate(row.input, false));
       }
       for (let epoch = 0; epoch < 200; epoch++) {
         checkCancelled();
@@ -538,54 +825,46 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       adapter = trained;
       await trained.import(JSON.parse(JSON.stringify(snapshot)));
       checkCancelled();
-      const table = document.createElement('table');
-      const header = document.createElement('tr');
-      for (const label of ['Unseen input', 'Expected', 'Before', 'After']) {
-        const th = document.createElement('th');
-        th.textContent = label;
-        header.append(th);
-      }
-      const head = document.createElement('thead');
-      head.append(header);
-      table.append(head);
-      const body = document.createElement('tbody');
-      table.append(body);
-      results.append(table);
+      const after: string[] = [];
       let correct = 0;
       for (const [index, row] of lesson.test.entries()) {
         status.value = `Testing reloaded adapter ${index + 1} / ${lesson.test.length}…`;
-        const after = await generate(row.input, true);
-        if (after === row.answer) correct++;
-        const tr = document.createElement('tr');
-        for (const text of [
+        const prediction = await generate(
+          activeModel,
+          lesson,
           row.input,
-          row.answer,
-          before[index] || '(empty output)',
-          after || '(empty output)',
-        ]) {
-          const td = document.createElement('td');
-          td.textContent = text;
-          tr.append(td);
-        }
-        body.append(tr);
+          trained,
+        );
+        after.push(prediction);
+        if (prediction === row.answer) correct++;
       }
       checkCancelled();
+      renderResultsTable(lesson, before, after);
       progress.value = 1;
       status.value = `Training and reload complete. ${correct} / ${lesson.test.length} held-out outputs exactly match. Inspect the failures too.`;
       save.disabled = false;
-      customPrediction = generate;
+      customPrediction = (text, adapted) =>
+        generate(activeModel, lesson, text, adapted ? trained : undefined);
       compare.disabled = false;
     } catch (error) {
       if (mounted)
         status.value = error instanceof Error ? error.message : String(error);
       adapter?.dispose();
       adapter = undefined;
+      if (mounted) {
+        const errorMessage = document.createElement('p');
+        errorMessage.role = 'alert';
+        errorMessage.textContent = status.value;
+        results.replaceChildren(errorMessage);
+      }
     } finally {
       running = false;
       if (mounted) {
         run.disabled = false;
+        baseline.disabled = false;
         select.disabled = false;
         stop.disabled = true;
+        setInputControlsDisabled(false);
       } else {
         adapter?.dispose();
         adapter = undefined;
@@ -597,7 +876,6 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     cancelled = true;
     loading?.abort();
     if (!running) adapter?.dispose();
-    customOutputRoot.dispose();
     dataOutputRoot.dispose();
     lossOutputRoot.dispose();
   };

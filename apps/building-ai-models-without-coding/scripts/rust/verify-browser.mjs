@@ -33,6 +33,11 @@ try {
   );
   const result = await plainOutput.innerText();
   const runStatus = await page.getByRole('status').innerText();
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {origin: base});
+  await page.getByRole('button', {name: 'Copy Rust compiler and training output', exact: true}).click();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  if (copied !== result) throw new Error('Copy altered the raw compiler output');
+  await page.locator('.terminal-shell').screenshot({path: 'apps/building-ai-models-without-coding/test-results/rust-annotated-terminal.png'});
   console.log(result);
   await writeFile('/private/tmp/gdg-rust-browser-proof.txt', result);
   if (

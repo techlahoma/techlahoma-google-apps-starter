@@ -1,9 +1,11 @@
 import {FitAddon} from '@xterm/addon-fit';
 import {Terminal} from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
+import {annotateTerminalLines} from './terminal-lines';
 
 export interface MountedTerminal {
   setOutput(output: string): void;
+  setStatus(message: string, outcome: 'success' | 'error' | 'idle'): void;
   dispose(): void;
 }
 
@@ -32,7 +34,10 @@ export function mountTerminalOutput(
   accessibleOutput.className = 'sr-only';
   accessibleOutput.dataset.terminalPlain = '';
   toolbar.append(heading, copy);
-  host.replaceChildren(toolbar, viewport, accessibleOutput);
+  const statusLine = document.createElement('p');
+  statusLine.className = 'terminal-status';
+  statusLine.hidden = true;
+  host.replaceChildren(toolbar, viewport, accessibleOutput, statusLine);
 
   const terminal = new Terminal({
     convertEol: true,
@@ -60,10 +65,14 @@ export function mountTerminalOutput(
     ?.setAttribute('aria-label', ariaLabel);
 
   let output = '';
-  let frame = requestAnimationFrame(() => fit.fit());
+  // Fit only within a bounded viewport. An auto-height host grows on every fit.
+  const fitVisible = () => {
+    if (viewport.clientWidth > 0 && viewport.clientHeight > 0) fit.fit();
+  };
+  let frame = requestAnimationFrame(fitVisible);
   const observer = new ResizeObserver(() => {
     cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => fit.fit());
+    frame = requestAnimationFrame(fitVisible);
   });
   observer.observe(viewport);
   copy.addEventListener('click', () => {
@@ -78,11 +87,15 @@ export function mountTerminalOutput(
   });
 
   return {
+    setStatus(message, outcome) {
+      statusLine.hidden = !message;
+      statusLine.textContent = `${outcome === 'success' ? '✅ ' : outcome === 'error' ? '❌ ' : ''}${message}`;
+    },
     setOutput(next) {
       output = next;
       accessibleOutput.textContent = next;
       terminal.reset();
-      terminal.write(asTerminalText(next));
+      terminal.write(asTerminalText(annotateTerminalLines(next)));
     },
     dispose() {
       observer.disconnect();

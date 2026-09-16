@@ -138,6 +138,19 @@ try {
     const runStart = Date.now();
     const initialErrors = run === 1 ? 0 : errors.length;
     await page.locator('#tuning-lesson').selectOption(String(lessonIndex));
+    if (run === 1) {
+      await page.locator('#tuning-baseline').click();
+      await page.locator('#tuning-custom-result [aria-busy="true"]').waitFor();
+      await page.waitForFunction(
+        () => !(document.querySelector('#tuning-baseline') as HTMLButtonElement).disabled,
+        null,
+        {timeout: 300_000},
+      );
+      const baseline = await page.locator('#tuning-custom-result').innerText();
+      if (/failed|error|stopped/i.test(baseline)) throw new Error(`Baseline failed: ${baseline}`);
+      await writeFile(resolve(directory, 'baseline.txt'), baseline);
+      console.log(JSON.stringify({stage: 'baseline-before-training', baseline}));
+    }
     await page.locator('#tuning-run').click();
     // Observe real UI state; do not intercept model requests or replace computations.
     let previous = '';
@@ -191,6 +204,16 @@ try {
     ) {
       throw new Error('Missing actual held-out baseline/adapted result rows');
     }
+    await page.locator('#tuning-compare').click();
+    await page.waitForFunction(
+      () => !(document.querySelector('#tuning-compare') as HTMLButtonElement).disabled,
+      null,
+      {timeout: 180_000},
+    );
+    const compared = await page.locator('#tuning-custom-result').innerText();
+    if (/failed|error|stopped/i.test(compared)) throw new Error(`Comparison failed: ${compared}`);
+    await writeFile(resolve(directory, `run-${run}-comparison.txt`), compared);
+    await page.locator('#tuning-try').screenshot({path: resolve(directory, `run-${run}-comparison.png`)});
     await writeFile(
       resolve(directory, `run-${run}-observations.json`),
       JSON.stringify(

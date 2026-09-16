@@ -19,6 +19,8 @@ export default async function runSmokeTest({
     await page
       .getByRole('heading', {name: title, exact: true, level: 1})
       .waitFor();
+    if (slug === 'fine-tuning') await page.locator('#tuning-baseline').waitFor();
+    if (slug === 'train') await page.locator('#rust-source').waitFor();
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
@@ -51,6 +53,26 @@ export default async function runSmokeTest({
     .first()
     .waitFor();
   await page.goto(`${baseURL}#context`);
+  const rail = page.locator('.demo-system-rail');
+  await rail.waitFor();
+  while (await page.locator('button[aria-pressed="true"]').count()) {
+    await page.locator('button[aria-pressed="true"]').first().click();
+  }
+  if (!(await rail.textContent())?.includes('0 chunks'))
+    throw new Error('Live visual did not reflect empty context');
+  const equipment = page.getByRole('button', {name: /email: equipment/});
+  await equipment.click();
+  if (!(await rail.textContent())?.includes('1 chunk'))
+    throw new Error('Live visual did not reflect adding a source');
+  await equipment.click();
+  if (!(await rail.textContent())?.includes('0 chunks'))
+    throw new Error('Live visual did not reflect removing a source');
+  await page.getByRole('button', {name: 'Restore samples', exact: true}).click();
+  if (viewport === 'desktop') {
+    await page.evaluate(() => window.scrollTo(0, 650));
+    const top = await rail.evaluate(element => element.getBoundingClientRect().top);
+    if (top < 0 || top > 60) throw new Error(`Diagram did not stick while scrolling: ${top}`);
+  }
   const kit = page.getByRole('link', {name: 'Open the meetup kit'});
   if (
     !(await kit.getAttribute('href'))?.includes(
@@ -62,4 +84,18 @@ export default async function runSmokeTest({
     path: `apps/building-ai-models-without-coding/test-results/smoke-${viewport}.png`,
     fullPage: true,
   });
+  await page.goto(`${baseURL}#fine-tuning`);
+  await page.locator('#tuning-baseline').waitFor();
+  if (!(await page.locator('#tuning-baseline').isEnabled()))
+    throw new Error('Default model cannot be tried before training');
+  const panels = page.locator('#tuning-custom-result article');
+  if (await panels.count() !== 2) throw new Error('Missing default/tuned columns');
+  if (await panels.first().evaluate(element => element.getBoundingClientRect().height) > 260)
+    throw new Error('Prediction panel is too tall before use');
+  await page.getByText('What changes inside the model?', {exact: true}).click();
+  const terminal = page.locator('#tuning-loss .terminal-viewport');
+  await terminal.waitFor();
+  await page.waitForTimeout(500);
+  if (await terminal.evaluate(element => element.getBoundingClientRect().height) > 300)
+    throw new Error('Xterm viewport grew beyond its bound');
 }

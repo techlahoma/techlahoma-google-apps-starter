@@ -29,7 +29,9 @@ Open the printed local URL. The four direct destinations are `#context`, `#retri
 
 The small models can produce incomplete or wrong answers. Inspect the supplied sources and held-out results. A successful training run does not establish general task reliability.
 
-The React interface uses clickable synthetic emails, a chat transcript, Heroicons, shadcn-style source and evaluation tables, and Xterm for compiler or training logs. Animated SVG flows expose the active operation; measured loss charts update from the real fine-tuning and Rust outputs. See the [visual-language research](../../docs/research/model-workshop-visual-language-2026-09-15.md) for the 3Blue1Brown sources and accessibility choices.
+The React interface uses clickable synthetic emails, per-request source receipts, Heroicons, adapted shadcn tables, and bounded Xterm logs with copy controls. A vertical sticky panel shows live source counts and the current model operation; phone layouts use a compact sticky panel. Fine-tuning can run the default model before training and compare it with the adapter in compact adjacent panels. Measured loss charts update from real computation. See the [visual-language research](../../docs/research/model-workshop-visual-language-2026-09-15.md) for the 3Blue1Brown sources and accessibility choices.
+
+The table source is adapted from the official [shadcn/ui Table registry](https://ui.shadcn.com/r/styles/new-york-v4/table.json), with workshop colors and wrapping evidence cells. Components live in the repository, following shadcn's source distribution model. The button and chat layout are custom React components styled to match, rather than untouched registry installs.
 
 ## Make your own version
 

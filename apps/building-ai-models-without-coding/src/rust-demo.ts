@@ -55,6 +55,10 @@ export function mountRustDemo(container: HTMLElement): () => void {
   const fallback = document.createElement('p');
   fallback.textContent =
     'CLI fallback: from this app directory, run bun scripts/rust/prepare-assets.ts apply, then bun scripts/rust/run-cli.ts. Pass a saved .rs file as the final argument to run your edited source. This uses the same WASM compiler and needs no Xcode or native Rust install. Shell and PowerShell wrappers are also included.';
+  const warningNote = document.createElement('p');
+  warningNote.className = 'hint';
+  warningNote.textContent =
+    '⚠️ “sub and ptr_eq are never used” is a compiler warning about two unused helper methods. The program still runs. ✅ marks completed execution; ❌ marks a compiler or runtime failure. Rough generated fragments are expected after only 30 training steps.';
   container.append(
     heading,
     intro,
@@ -68,6 +72,7 @@ export function mountRustDemo(container: HTMLElement): () => void {
     lossFigure,
     outputLabel,
     output,
+    warningNote,
     fallback,
   );
 
@@ -154,6 +159,7 @@ export function mountRustDemo(container: HTMLElement): () => void {
     streamedOutput += `\n${error instanceof Error ? error.message : String(error)}`;
     streamedOutput = streamedOutput.slice(-100_000);
     renderOutput(streamedOutput);
+    outputTerminal.setStatus('Rust run failed.', 'error');
     renderLosses(streamedOutput);
   };
 
@@ -179,6 +185,7 @@ export function mountRustDemo(container: HTMLElement): () => void {
     run.disabled = true;
     cancel.disabled = false;
     streamedOutput = '';
+    outputTerminal.setStatus('', 'idle');
     renderOutput(streamedOutput);
     renderLosses(streamedOutput);
     status.textContent = 'Downloading and compiling the Rust compiler…';
@@ -253,12 +260,16 @@ export function mountRustDemo(container: HTMLElement): () => void {
             }
           }
           streamedOutput = lines.join('\n').slice(-100_000);
-          renderOutput(streamedOutput);
           renderLosses(streamedOutput);
           status.textContent =
             'ok' in result && result.ok === true
               ? 'Rust program completed. Losses and samples above came from this run.'
               : 'Rust compile or execution failed. Read the diagnostic above.';
+          renderOutput(streamedOutput);
+          outputTerminal.setStatus(
+            status.textContent,
+            'ok' in result && result.ok === true ? 'success' : 'error',
+          );
         }
       };
       jobWorker.postMessage({
