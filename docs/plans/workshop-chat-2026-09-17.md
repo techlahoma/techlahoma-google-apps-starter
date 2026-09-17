@@ -33,7 +33,12 @@
 
 - Target verified: existing public `techlahoma/techlahoma-google-apps-starter`, `origin/main`; no deploy-on-push workflow.
 - Hosting plan verified with host credentials: reuse `gdg-model-workshop` in `sam-carlton-creative`, protect the default site. The sandbox-only plan could not query the inventory; it was superseded by the host-verified plan.
-- Pending: task-scoped commit, remote SHA proof, selected-app deployment, and live route/interaction verification.
+- Runtime committed and pushed: `dfcd7dc382f8ebb237259cfe4f63ac9b1da89a22`, `feat(workshop): teach model workflows through chat`. Remote `refs/heads/main` matched the local SHA. Staged-file `prek` and Gitleaks passed. Final `bun run verify` passed; optional local actionlint/shellcheck remain unavailable and are enforced in CI.
+- Deployed only `building-ai-models-without-coding` to [gdg-model-workshop.web.app](https://gdg-model-workshop.web.app/). Deployment confirmed existing site reuse and live URL response.
+- Live proof passed for all four routes at desktop and phone widths: chat/composer geometry, source counts, preserved messages/receipts, default/tuned panels, bounded terminal, clean console/requests. The live receipt test also verified that changing files did not pull the reader away from earlier messages.
+- Live Rust proof passed against deployed assets: real training, checkpoint reload, `build w` and `learn w` continuations, zero prompt compilation, about 8.5–8.8 ms total worker execution per prompt, repeated training, failed source, output cap, clipboard equality, and compiler cancellation. The first run still downloads compiler assets; these prompt timings exclude that download.
+- CI [35283769876](https://github.com/techlahoma/techlahoma-google-apps-starter/actions/runs/35283769876), at the runtime SHA: the full-history secret scan reports one finding and fails; Linux guardrails and macOS/Windows portability jobs were still running when this record was written. No scan was suppressed. The pre-existing historical finding and AI Studio account-connection gap remain outside this interface update.
+- The task-owned local Vite server and proof browsers were closed. User browser windows were not used or moved.
 
 ## Performance references
 
