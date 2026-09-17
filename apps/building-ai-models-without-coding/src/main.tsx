@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import {useEffect, useMemo, useRef, useState, type ComponentType} from 'react';
 import {createRoot} from 'react-dom/client';
+import {followChatOutput} from './components/chat-scroll';
 import {ContextDemo} from './demos/context-demo';
 import {RagDemo} from './demos/rag-demo';
 
@@ -63,7 +64,7 @@ const demos: Demo[] = [
     name: 'From scratch',
     verb: 'Watch it learn',
     description:
-      'Compile a tiny Rust model, watch its loss change, and inspect what it generates.',
+      'Train a tiny Rust model, then send it a text prefix and watch it continue.',
     icon: CodeBracketSquareIcon,
     loadMount: async () => (await import('./rust-demo')).mountRustDemo,
   },
@@ -153,6 +154,9 @@ function App() {
   );
   useEffect(() => {
     document.title = `${demo.name} · Model Workshop`;
+    const content = document.getElementById('demo-content');
+    if (content) return followChatOutput(content);
+    return undefined;
   }, [demo]);
   const Content = demo.component;
   return (
@@ -197,13 +201,19 @@ function App() {
       </aside>
       <main id="workspace" ref={workspace} tabIndex={-1}>
         <header className="workspace-header">
-          <span>EXPERIMENT {demos.indexOf(demo) + 1} / 4</span>
+          <span className="workspace-title">
+            {demo.name} <span> / Model Workshop</span>
+          </span>
           <span className="local-label">Your files stay on this device</span>
         </header>
         <div className="workspace-content">
-          <p className="eyebrow">{demo.verb}</p>
-          <h1>{demo.name}</h1>
-          <p className="intro">{demo.description}</p>
+          <div className="conversation-heading">
+            <p className="eyebrow">
+              {demo.verb} · Experiment {demos.indexOf(demo) + 1} of 4
+            </p>
+            <h1>{demo.name}</h1>
+            <p className="intro">{demo.description}</p>
+          </div>
           <div id="demo-content" key={demo.id}>
             {Content ? <Content /> : <ImperativeDemo load={demo.loadMount} />}
           </div>

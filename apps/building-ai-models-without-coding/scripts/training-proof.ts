@@ -137,7 +137,7 @@ try {
   for (let run = 1; run <= runCount; run++) {
     const runStart = Date.now();
     const initialErrors = run === 1 ? 0 : errors.length;
-    await page.locator('#tuning-lesson').selectOption(String(lessonIndex));
+    if (run === 1) await page.locator('#tuning-lesson').selectOption(String(lessonIndex));
     if (run === 1) {
       await page.locator('#tuning-baseline').click();
       await page.locator('#tuning-custom-result [aria-busy="true"]').waitFor();
@@ -175,6 +175,13 @@ try {
     if (!currentStatus.startsWith('Training and reload complete.')) {
       throw new Error(`Run ${run} did not complete: ${currentStatus}`);
     }
+    const timingReceipts = await page.locator('[data-training-receipt]').evaluateAll(elements =>
+      elements.map(element => JSON.parse(element.getAttribute('data-training-receipt') ?? '{}')),
+    );
+    if (timingReceipts.length !== run) throw new Error('Training history was not preserved');
+    if (run > 1 && !timingReceipts.at(-1)?.reusedFrozenFeatures)
+      throw new Error('Repeated training did not reuse frozen features');
+    console.log(JSON.stringify({stage: 'training-timings', run, receipt: timingReceipts.at(-1)}));
     const lossText =
       (await page
         .locator('#tuning-loss [data-terminal-plain]')
@@ -217,7 +224,7 @@ try {
     await writeFile(
       resolve(directory, `run-${run}-observations.json`),
       JSON.stringify(
-        {run, learningRate, status: currentStatus, losses, rows},
+        {run, learningRate, status: currentStatus, losses, rows, timingReceipts},
         null,
         2,
       ),

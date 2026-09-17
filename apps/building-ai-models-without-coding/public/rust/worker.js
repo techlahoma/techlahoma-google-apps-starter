@@ -16,6 +16,7 @@
 //   ← { type:"status", id, text }*  then  { type:"result", id, result }
 import { Fd, File, Directory, PreopenDirectory, WASI } from "./vendor/browser_wasi_shim/index.js";
 
+let trainedProgram = null;
 let rustcModule = null;
 let stdSysroot = null; // Map(relPath -> File) per sysroot-wasip1 bundle index
 
@@ -78,6 +79,7 @@ async function initEngine(msg) {
 
 // ---- run: compile+link (one rustc.wasm invocation) then execute -------------
 async function runJob(msg, status) {
+  trainedProgram = null;
   status("Compiling + linking with rustc.wasm...");
   const tEnter = performance.now();
   let log = "";
@@ -149,7 +151,14 @@ async function runJob(msg, status) {
     return { ok: false, compileFailed: true, diagnostics, stdout: "", stderr: residue, exit, compileMs, execMs: 0 };
   }
 
-  status("Running...");
+  return executeProgram(bin.data.slice(), msg, status, {
+    setupMs, rustcInstantiateMs, compileMs, linkMs, linkPhases, diagnostics, tEnter,
+  });
+}
+
+async function executeProgram(bytes, msg, status, timing) {
+  const {setupMs, rustcInstantiateMs, compileMs, linkMs, linkPhases, diagnostics, tEnter} = timing;
+  status(msg.kind === "prompt" ? "Continuing from trained weights (no retraining)..." : "Training...");
   let progOut = "";
   let progErr = "";
   const dec1 = new TextDecoder();
@@ -190,10 +199,18 @@ async function runJob(msg, status) {
     }
   };
   const t1 = performance.now();
-  const pfds = [new CapOut(), new CapOut(), new CapErrStream(), new PreopenDirectory("/sandbox", [])];
-  const pw = new WASI(["prog"], [], pfds, { debug: false });
+  const sandbox = new PreopenDirectory("/sandbox", msg.kind === "prompt"
+    ? [["model.bin", new File(trainedProgram.checkpoint.slice())]] : []);
+  const pfds = [new CapOut(), new CapOut(), new CapErrStream(), sandbox];
+  const args = msg.kind === "prompt" ? ["prog", "--prompt", msg.prompt] : ["prog"];
+  const pw = new WASI(args, ["GDG_MODEL_PATH=/sandbox/model.bin"], pfds, { debug: false });
   const finish = (ok, exitCode, runtimeError, progInstantiateMs, execMs) => {
     flushStdout();
+    if (ok && msg.kind === "run") {
+      const checkpoint = sandbox.dir.contents.get("model.bin");
+      trainedProgram = checkpoint && checkpoint.data && checkpoint.data.length <= 16 * 1024 * 1024
+        ? {bytes: bytes.slice(), checkpoint: checkpoint.data.slice()} : null;
+    }
     const stages = {
       setupMs: +setupMs.toFixed(1),
       rustcInstantiateMs: +rustcInstantiateMs.toFixed(1),
@@ -206,7 +223,7 @@ async function runJob(msg, status) {
     console.log("[playground] stages:", JSON.stringify(stages), linkPhases ? "link phases: " + JSON.stringify(linkPhases) : "");
     // diagnostics: warnings survive successful compiles — the editor shows them.
     return {
-      ok, stdout: progOut.trimEnd(),
+      ok, promptReady: Boolean(trainedProgram), stdout: progOut.trimEnd(),
       // Panic locations point at the internal path — remap like diagnostics.
       stderr: progErr.replaceAll("/work/prog.rs", "program").trim(),
       exit: exitCode, runtimeError,
@@ -215,7 +232,7 @@ async function runJob(msg, status) {
   };
   try {
     const tPI = performance.now();
-    const { instance } = await WebAssembly.instantiate(bin.data.slice().buffer, {
+    const { instance } = await WebAssembly.instantiate(bytes.slice().buffer, {
       wasi_snapshot_preview1: pw.wasiImport,
     });
     const progInstantiateMs = performance.now() - tPI;
@@ -390,7 +407,15 @@ async function testsJob(msg, status) {
   return { ok: false, phase: "run", trapped, output: cleaned || "test harness aborted", compileMs, execMs };
 }
 
-const jobs = { run: runJob, check: checkJob, tests: testsJob };
+async function promptJob(msg, status) {
+  if (!trainedProgram) return {ok: false, stderr: "Train successfully before prompting."};
+  if (typeof msg.prompt !== "string" || msg.prompt.length > 256) return {ok: false, stderr: "Prefix is too long."};
+  return executeProgram(trainedProgram.bytes, msg, status, {
+    setupMs: 0, rustcInstantiateMs: 0, compileMs: 0, linkMs: 0, linkPhases: null,
+    diagnostics: [], tEnter: performance.now(),
+  });
+}
+const jobs = { run: runJob, prompt: promptJob, check: checkJob, tests: testsJob };
 
 self.onmessage = async (e) => {
   const msg = e.data;

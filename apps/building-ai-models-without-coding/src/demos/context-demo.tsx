@@ -134,155 +134,70 @@ export function ContextDemo() {
     : 0;
 
   return (
-    <section className="space-y-6">
-      <p className="description max-w-3xl">
-        This experiment answers a practical question about pretend emails. You
-        choose which files enter the context, inspect the exact prompt, and
-        compare what Gemma says with or without those notes. The model is
-        prompted, not retrained.
-      </p>
-
+    <section className="workshop-chat">
       <div className="demo-system-layout grid gap-6 min-[1101px]:grid-cols-[minmax(0,1fr)_15.625rem] min-[1101px]:items-start">
-        <div className="demo-system-main min-w-0 space-y-6">
-          <DocumentContext
-            disabled={busy}
-            onChange={(nextDocuments, message) => {
-              setDocuments(nextDocuments);
-              setActiveSuppliedCount(null);
-              setDiagramState('sources');
-              setStatus(message);
-            }}
-          />
-
-          <section
-            className="overflow-hidden rounded-md border border-[var(--border)]"
-            aria-label="Chat"
-          >
-            <p className="description m-0 border-b border-[var(--border)] px-4 py-2">
-              Each question is an independent model run. Earlier requests are
-              saved below but are not sent again.
-            </p>
-            <div className="max-h-[34rem] min-h-56 space-y-5 overflow-y-auto bg-[#101114] p-4">
-              {runs.length === 0 ? (
-                <div className="mx-auto max-w-md py-12 text-center">
-                  <SparklesIcon
-                    className="mx-auto size-7 text-[var(--accent)]"
-                    aria-hidden="true"
-                  />
-                  <h3 className="mb-1 mt-3 text-base">
-                    Ask about the attached files
-                  </h3>
-                  <p className="description m-0">
-                    Try “What should I bring?” or “Is the room accessible?”
+        <div className="demo-system-main min-w-0">
+          <section className="chat-thread" aria-label="Context conversation">
+            <article className="chat-turn">
+              <div className="chat-assistant-message">
+                <SparklesIcon
+                  className="size-5 shrink-0 text-[var(--accent)]"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 className="m-0 text-base">Ask about your files</h3>
+                  <p className="description mb-0 mt-1">
+                    Choose pretend emails or upload text in the composer, then
+                    ask a practical question. Every question is an independent
+                    model run; earlier turns remain here but are not sent again.
                   </p>
                 </div>
-              ) : (
-                runs.map(run => (
-                  <article key={run.id} className="space-y-3">
-                    <div className="ml-auto flex max-w-[85%] gap-3">
-                      <UserIcon
-                        className="mt-1 size-5 shrink-0"
-                        aria-hidden="true"
-                      />
-                      <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-                        <p className="m-0 whitespace-pre-wrap">
-                          {run.question}
-                        </p>
-                        <span className="description mt-1 block text-xs">
-                          {run.supplied.length > 0
-                            ? `${run.supplied.length} chunks selected for this request`
-                            : 'No file context supplied'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="answer flex max-w-[92%] gap-3">
-                      <SparklesIcon
-                        className="mt-1 size-5 shrink-0 text-[var(--accent)]"
-                        aria-hidden="true"
-                      />
-                      <div className="min-w-0 flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-                        {run.result.kind === 'pending' && (
-                          <p className="description m-0">
-                            Model run in progress…
-                          </p>
-                        )}
-                        {run.result.kind === 'complete' && (
-                          <p className="m-0 whitespace-pre-wrap">
-                            {run.result.answer}
-                          </p>
-                        )}
-                        {run.result.kind === 'failed' && (
-                          <p className="error m-0">{run.result.message}</p>
-                        )}
-                        <SourceReceipt
-                          prompt={run.prompt}
-                          retrieved={[]}
-                          supplied={run.supplied}
-                          generationRequested
-                        />
-                      </div>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-
-            <form
-              className="space-y-3 border-t border-[var(--border)] p-4"
-              onSubmit={event => void submit(event)}
-            >
-              <label className="m-0" htmlFor="context-question">
-                Your question
-              </label>
-              <textarea
-                id="context-question"
-                value={question}
-                maxLength={1000}
-                rows={3}
-                required
-                disabled={busy}
-                onChange={event => {
-                  setQuestion(event.currentTarget.value);
-                  if (!busy) setDiagramState('sources');
-                }}
-              />
-              <div className="flex flex-wrap items-center gap-3">
-                <label className="m-0 inline-flex items-center gap-2 font-normal">
-                  <input
-                    type="checkbox"
-                    checked={includeContext}
-                    disabled={busy}
-                    onChange={event => {
-                      setIncludeContext(event.currentTarget.checked);
-                      setDiagramState('sources');
-                    }}
-                  />
-                  Include attached files
-                </label>
-                <div className="ml-auto flex gap-2">
-                  {busy && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => client.cancel()}
-                    >
-                      <StopIcon className="size-4" aria-hidden="true" /> Cancel
-                    </Button>
-                  )}
-                  <Button type="submit" disabled={busy || !question.trim()}>
-                    <PaperAirplaneIcon className="size-4" aria-hidden="true" />{' '}
-                    Ask Gemma
-                  </Button>
-                </div>
               </div>
-            </form>
+            </article>
+
+            {runs.map(run => (
+              <article key={run.id} className="chat-turn">
+                <div className="chat-user-message">
+                  <UserIcon className="size-5 shrink-0" aria-hidden="true" />
+                  <div>
+                    <p className="m-0 whitespace-pre-wrap">{run.question}</p>
+                    <span className="description mt-1 block text-xs">
+                      {run.supplied.length > 0
+                        ? `${run.supplied.length} chunks selected for this request`
+                        : 'No file context supplied'}
+                    </span>
+                  </div>
+                </div>
+                <div className="chat-assistant-message answer">
+                  <SparklesIcon
+                    className="size-5 shrink-0 text-[var(--accent)]"
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0 flex-1">
+                    {run.result.kind === 'pending' && (
+                      <p className="description m-0">Model run in progress…</p>
+                    )}
+                    {run.result.kind === 'complete' && (
+                      <p className="m-0 whitespace-pre-wrap">
+                        {run.result.answer}
+                      </p>
+                    )}
+                    {run.result.kind === 'failed' && (
+                      <p className="error m-0">{run.result.message}</p>
+                    )}
+                    <SourceReceipt
+                      prompt={run.prompt}
+                      retrieved={[]}
+                      supplied={run.supplied}
+                      generationRequested
+                    />
+                  </div>
+                </div>
+              </article>
+            ))}
           </section>
 
-          <p className="status" role="status">
-            {status}
-          </p>
-
-          <details>
+          <details className="chat-details">
             <summary>Latest prompt · inspect what the model sees</summary>
             <div className="relative">
               <pre tabIndex={0} className="pr-14">
@@ -293,9 +208,85 @@ export function ContextDemo() {
               </div>
             </div>
           </details>
+
+          <form
+            className="chat-composer"
+            onSubmit={event => void submit(event)}
+          >
+            <label className="sr-only" htmlFor="context-question">
+              Your question
+            </label>
+            <textarea
+              id="context-question"
+              value={question}
+              maxLength={1000}
+              rows={3}
+              required
+              disabled={busy}
+              placeholder="Ask about the attached files…"
+              onKeyDown={event => {
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault();
+                  event.currentTarget.form?.requestSubmit();
+                }
+              }}
+              onChange={event => {
+                setQuestion(event.currentTarget.value);
+                if (!busy) setDiagramState('sources');
+              }}
+            />
+
+            <DocumentContext
+              disabled={busy}
+              onChange={(nextDocuments, message) => {
+                setDocuments(nextDocuments);
+                setActiveSuppliedCount(null);
+                setDiagramState('sources');
+                setStatus(message);
+              }}
+            />
+
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="m-0 inline-flex items-center gap-2 font-normal">
+                <input
+                  type="checkbox"
+                  checked={includeContext}
+                  disabled={busy}
+                  onChange={event => {
+                    setIncludeContext(event.currentTarget.checked);
+                    setDiagramState('sources');
+                  }}
+                />
+                Include attached files
+              </label>
+              <div className="ml-auto flex gap-2">
+                {busy && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => client.cancel()}
+                  >
+                    <StopIcon className="size-4" aria-hidden="true" /> Cancel
+                  </Button>
+                )}
+                <Button type="submit" disabled={busy || !question.trim()}>
+                  <PaperAirplaneIcon className="size-4" aria-hidden="true" />{' '}
+                  Ask Gemma
+                </Button>
+              </div>
+            </div>
+
+            <p className="status m-0" role="status">
+              {status}
+            </p>
+          </form>
         </div>
 
-        <aside className="demo-system-rail sticky top-0 z-10 order-first min-[1101px]:top-5 min-[1101px]:order-last">
+        <aside className="chat-inspector demo-system-rail sticky top-0 z-10 order-first min-[1101px]:top-5 min-[1101px]:order-last">
           <SystemDiagram
             state={diagramState}
             runId={runId}

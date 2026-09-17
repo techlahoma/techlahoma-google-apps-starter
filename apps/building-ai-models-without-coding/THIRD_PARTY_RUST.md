@@ -55,3 +55,11 @@ RUST_DEMO_URL=http://127.0.0.1:5190 bun scripts/rust/verify-browser.mjs
 ```
 
 The script uses the shared windowless Chromium launch helper and verifies actual training output, invalid source diagnostics, and cancellation. Local browser proof does not establish deployment or Google AI Studio import compatibility.
+
+## Prompting and conversation follow-up (September 17, 2026)
+
+Training now writes actual f64 parameter bytes into a worker-local WASI `model.bin`. The worker retains the successful compiled program and this checkpoint. Follow-up prefixes execute that same compiled binary with `--prompt`, reload the parameters, and skip optimizer updates and compilation. The checkpoint is memory-only, not a disk export; leaving or cancelling destroys it. A fresh training turn replaces it and keeps the prior turn's source snapshot, actual loss curve and logs in the chat (at most 12 turns).
+
+The source validates every prefix character against its actual vocabulary and requires fewer than the configured context length (16 characters by default). These are independent character continuations, not assistant answers or context-aware chat. Native direct execution now writes `model.bin` in its current directory; the Bun CLI still uses only its in-memory WASI sandbox.
+
+Windowless Chromium proof passed with real training followed by `build` → `build w` and `learn` → `learn w`. Both prompt runs measured zero compile/link time and about 7.5–7.6 ms execution in this local observation. The proof also verifies unsupported-character errors, repeat training, preserved turns, failed compilation disabling stale prompting, the output cap and cancellation. The portable Bun CLI still completes 30 training steps and 5 samples after the checkpoint change.

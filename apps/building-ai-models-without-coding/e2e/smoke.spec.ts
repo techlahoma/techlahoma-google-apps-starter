@@ -20,7 +20,16 @@ export default async function runSmokeTest({
       .getByRole('heading', {name: title, exact: true, level: 1})
       .waitFor();
     if (slug === 'fine-tuning') await page.locator('#tuning-baseline').waitFor();
-    if (slug === 'train') await page.locator('#rust-source').waitFor();
+    if (slug === 'train') await page.locator('#rust-run').waitFor();
+    await page.locator('.chat-composer').waitFor();
+    const geometry = await page.locator('.chat-composer').evaluate(element => {
+      const composer = element.getBoundingClientRect();
+      const parent = element.parentElement!.getBoundingClientRect();
+      const thread = element.parentElement!.querySelector('.chat-thread')!.getBoundingClientRect();
+      return {composerBottom: composer.bottom, parentBottom: parent.bottom, threadBottom: thread.bottom, composerTop: composer.top};
+    });
+    if (geometry.composerBottom > geometry.parentBottom + 1 || geometry.threadBottom > geometry.composerTop + 1)
+      throw new Error(`${slug} composer overlaps conversation or following content at ${viewport}`);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
@@ -52,9 +61,12 @@ export default async function runSmokeTest({
     .getByText(/No keyword matches/)
     .first()
     .waitFor();
+  if (await page.locator('.request-receipt').count() !== 2)
+    throw new Error('Retrieval did not retain both chat turns');
   await page.goto(`${baseURL}#context`);
   const rail = page.locator('.demo-system-rail');
   await rail.waitFor();
+  await page.locator('summary').filter({hasText: 'Attachments'}).click();
   while (await page.locator('button[aria-pressed="true"]').count()) {
     await page.locator('button[aria-pressed="true"]').first().click();
   }
@@ -68,6 +80,7 @@ export default async function runSmokeTest({
   if (!(await rail.textContent())?.includes('0 chunks'))
     throw new Error('Live visual did not reflect removing a source');
   await page.getByRole('button', {name: 'Restore samples', exact: true}).click();
+  await page.locator('summary').filter({hasText: 'Attachments'}).click();
   if (viewport === 'desktop') {
     await page.evaluate(() => window.scrollTo(0, 650));
     const top = await rail.evaluate(element => element.getBoundingClientRect().top);

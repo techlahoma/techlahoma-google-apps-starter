@@ -5,6 +5,7 @@
 /// @karpathy (original Python), converted to Rust
 
 use std::cell::RefCell;
+use std::fs;
 use std::collections::BTreeSet;
 use std::rc::Rc;
 
@@ -264,6 +265,11 @@ fn rmsnorm(x: &[Value]) -> Vec1 {
 
 fn main() {
     let mut rng = Rng::new(42);
+    let arguments: Vec<String> = std::env::args().collect();
+    let prompt = if arguments.get(1).map(String::as_str) == Some("--prompt") {
+        Some(arguments.get(2).cloned().unwrap_or_default())
+    } else { None };
+    let model_path = std::env::var("GDG_MODEL_PATH").unwrap_or("model.bin".to_string());
 
     // Let there be an input dataset
     // Synthetic workshop topics, not real meetup records.
@@ -344,6 +350,17 @@ fn main() {
     }
     println!("num params: {}", params.len());
 
+    if prompt.is_some() {
+        let bytes = fs::read(&model_path).expect("Train a model before prompting.");
+        assert_eq!(bytes.len(), params.len() * 8, "Checkpoint dimensions differ from this source.");
+        for (p, chunk) in params.iter().zip(bytes.chunks_exact(8)) {
+            let mut array = [0u8; 8];
+            array.copy_from_slice(chunk);
+            p.set_data(f64::from_le_bytes(array));
+        }
+        println!("Loaded trained checkpoint; no training or optimizer updates.");
+    }
+
     // GPT function
     let gpt = |token_id: usize, pos_id: usize,
                keys: &mut Vec<Vec<Vec1>>, values: &mut Vec<Vec<Vec1>>| -> Vec1 {
@@ -415,7 +432,7 @@ fn main() {
 
     // Repeat in sequence
     let num_steps: usize = 30;
-    for step in 0..num_steps {
+    for step in 0..if prompt.is_some() { 0 } else { num_steps } {
         // Take single document, tokenize it
         let doc = &docs[step % docs.len()];
         let mut tokens: Vec<usize> = Vec::new();
@@ -459,10 +476,27 @@ fn main() {
         println!("step {:4} / {:4} | loss {:.4}", step + 1, num_steps, loss.data());
     }
 
+    if prompt.is_none() {
+        let bytes: Vec<u8> = params.iter().flat_map(|p| p.data().to_le_bytes()).collect();
+        fs::write(&model_path, bytes).expect("Could not save trained checkpoint.");
+        println!("Saved trained checkpoint: {} parameters.", params.len());
+    }
+    let prefix: Vec<char> = prompt.as_deref().unwrap_or("").chars().collect();
+    if prefix.len() >= block_size {
+        eprintln!("Prefix must contain fewer than {} characters.", block_size);
+        std::process::exit(2);
+    }
+    for character in &prefix {
+        if !uchars.contains(character) {
+            eprintln!("Unsupported character {:?}. Use characters from the training dataset: {}", character, uchars.iter().collect::<String>());
+            std::process::exit(2);
+        }
+    }
+
     // Inference
     let temperature: f64 = 0.5;
     println!("\n--- inference (synthetic generated topic fragments; not actual meetup events) ---");
-    for sample_idx in 0..5 {
+    for sample_idx in 0..if prompt.is_some() { 1 } else { 5 } {
         let mut keys: Vec<Vec<Vec1>> = (0..n_layer).map(|_| Vec::new()).collect();
         let mut vals: Vec<Vec<Vec1>> = (0..n_layer).map(|_| Vec::new()).collect();
         let mut token_id = bos;
@@ -472,12 +506,15 @@ fn main() {
             let temp_logits: Vec1 = logits.iter().map(|l| l.div_scalar(temperature)).collect();
             let probs = softmax(&temp_logits);
             let weights: Vec<f64> = probs.iter().map(|p| p.data()).collect();
-            token_id = rng.weighted_choice(&weights);
+            token_id = if pos_id < prefix.len() {
+                char_index(prefix[pos_id])
+            } else { rng.weighted_choice(&weights) };
             if token_id == bos {
                 break;
             }
             sample.push(uchars[token_id]);
         }
-        println!("sample {:2}: {}", sample_idx + 1, sample);
+        if prompt.is_some() { println!("continuation: {}", sample); }
+        else { println!("sample {:2}: {}", sample_idx + 1, sample); }
     }
 }

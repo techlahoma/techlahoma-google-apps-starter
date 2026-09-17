@@ -105,7 +105,7 @@ export function SourceReceipt({
   generationRequested,
 }: SourceReceiptProps) {
   return (
-    <details className="request-receipt mt-3 border-t border-[var(--border)] pt-2">
+    <details className="chat-details request-receipt mt-3 border-t border-[var(--border)] pt-2">
       <summary className="min-h-0 py-1 text-xs text-[var(--accent)]">
         {generationRequested
           ? `Request receipt · ${supplied.length} ${supplied.length === 1 ? 'chunk' : 'chunks'} selected for model prompt`
@@ -210,120 +210,133 @@ export function DocumentContext({disabled, onChange}: DocumentContextProps) {
   };
 
   return (
-    <section className="space-y-3" aria-labelledby={`${inputId}-heading`}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 id={`${inputId}-heading`} className="m-0 text-base font-semibold">
-            Files in this conversation
-          </h3>
-          <p className="description m-0">
-            Add a pretend email instantly, or choose your own text files.
-            Uploading replaces the current documents. Everything stays in this
-            tab.
-          </p>
-        </div>
-        <label
-          className="m-0 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--border)] px-3 py-2 font-medium hover:bg-[#2b303b]"
-          htmlFor={inputId}
-        >
-          <DocumentArrowUpIcon className="size-5" aria-hidden="true" />
-          Upload files
-        </label>
-        <input
-          hidden
-          id={inputId}
-          type="file"
-          accept=".txt,.md,.json,.eml"
-          multiple
-          disabled={disabled}
-          onChange={event => void upload(event.currentTarget.files)}
-        />
-      </div>
-
-      {documentSummaries.some(document => document.kind === 'local file') && (
-        <div>
-          <p className="description mb-2 text-xs">Uploaded documents</p>
-          <ul className="m-0 space-y-1 p-0" role="list">
-            {documentSummaries
-              .filter(document => document.kind === 'local file')
-              .map(document => (
-                <li
-                  key={document.id}
-                  className="flex items-center gap-2 rounded-md border border-[var(--border)] px-3 py-2"
-                >
-                  <DocumentArrowUpIcon
-                    className="size-4 shrink-0 text-[var(--accent)]"
-                    aria-hidden="true"
-                  />
-                  <span className="min-w-0 flex-1 truncate">
-                    {document.title}
-                  </span>
-                  <span className="description shrink-0 text-xs">
-                    {document.chunkCount}{' '}
-                    {document.chunkCount === 1 ? 'chunk' : 'chunks'}
-                  </span>
-                  <button
-                    className="min-h-0 p-1"
-                    type="button"
-                    aria-label={`Remove ${document.title}`}
-                    disabled={disabled}
-                    onClick={() => removeDocument(document.id)}
-                  >
-                    <XMarkIcon className="size-4" aria-hidden="true" />
-                  </button>
-                </li>
-              ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="grid gap-2 sm:grid-cols-2">
-        {sampleCorpus.map(sample => {
-          const selected = documents.some(
-            document => document.id === sample.id,
-          );
-          return (
-            <button
-              key={sample.id}
-              className="flex min-h-0 items-start gap-3 p-3 text-left"
-              type="button"
-              aria-pressed={selected}
-              disabled={disabled}
-              onClick={() => toggleSample(sample.id)}
-            >
-              <EnvelopeIcon
-                className="mt-0.5 size-5 shrink-0"
-                aria-hidden="true"
-              />
-              <span>
-                <span className="block font-medium">
-                  {sample.title.replace('Synthetic ', '')}
-                </span>
-                <span className="description block">
-                  {selected ? 'Added · click to remove' : 'Click to add'}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <PaperClipIcon className="size-4" aria-hidden="true" />
-        <span className="description">
-          {documentCount} {documentCount === 1 ? 'document' : 'documents'} ·{' '}
-          {documents.length} {documents.length === 1 ? 'chunk' : 'chunks'}{' '}
-          attached
+    <details className="chat-tools">
+      <summary>
+        <span className="inline-flex items-center gap-2">
+          <PaperClipIcon className="size-4" aria-hidden="true" />
+          Attachments
+          <span className="description text-xs">
+            {documentCount} {documentCount === 1 ? 'document' : 'documents'} ·{' '}
+            {documents.length} {documents.length === 1 ? 'chunk' : 'chunks'}
+          </span>
         </span>
-        <button
-          className="min-h-0 px-2 py-1 text-xs"
-          type="button"
-          disabled={disabled}
-          onClick={restore}
-        >
-          Restore samples
-        </button>
-      </div>
-    </section>
+      </summary>
+      <section
+        className="space-y-3 pb-2"
+        aria-labelledby={`${inputId}-heading`}
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 id={`${inputId}-heading`} className="m-0 text-sm font-semibold">
+              Files in this conversation
+            </h3>
+            <p className="description m-0 text-xs">
+              Toggle a pretend email or upload local text. Uploading replaces
+              the current documents; everything stays in this tab.
+            </p>
+          </div>
+          <label
+            className="m-0 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-[var(--border)] px-3 py-2 text-sm font-medium hover:bg-[#2b303b]"
+            htmlFor={inputId}
+          >
+            <DocumentArrowUpIcon className="size-4" aria-hidden="true" />
+            Upload files
+          </label>
+          <input
+            hidden
+            id={inputId}
+            type="file"
+            accept=".txt,.md,.json,.eml"
+            multiple
+            disabled={disabled}
+            onChange={event => void upload(event.currentTarget.files)}
+          />
+        </div>
+
+        {documentSummaries.some(document => document.kind === 'local file') && (
+          <div>
+            <p className="description mb-2 text-xs">Uploaded documents</p>
+            <ul className="m-0 space-y-1 p-0" role="list">
+              {documentSummaries
+                .filter(document => document.kind === 'local file')
+                .map(document => (
+                  <li
+                    key={document.id}
+                    className="flex items-center gap-2 rounded-md border border-[var(--border)] px-3 py-2"
+                  >
+                    <DocumentArrowUpIcon
+                      className="size-4 shrink-0 text-[var(--accent)]"
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 flex-1 truncate">
+                      {document.title}
+                    </span>
+                    <span className="description shrink-0 text-xs">
+                      {document.chunkCount}{' '}
+                      {document.chunkCount === 1 ? 'chunk' : 'chunks'}
+                    </span>
+                    <button
+                      className="min-h-0 p-1"
+                      type="button"
+                      aria-label={`Remove ${document.title}`}
+                      disabled={disabled}
+                      onClick={() => removeDocument(document.id)}
+                    >
+                      <XMarkIcon className="size-4" aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {sampleCorpus.map(sample => {
+            const selected = documents.some(
+              document => document.id === sample.id,
+            );
+            return (
+              <button
+                key={sample.id}
+                className="flex min-h-0 items-start gap-3 p-3 text-left"
+                type="button"
+                aria-pressed={selected}
+                disabled={disabled}
+                onClick={() => toggleSample(sample.id)}
+              >
+                <EnvelopeIcon
+                  className="mt-0.5 size-5 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>
+                  <span className="block font-medium">
+                    {sample.title.replace('Synthetic ', '')}
+                  </span>
+                  <span className="description block">
+                    {selected ? 'Added · click to remove' : 'Click to add'}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="description text-xs">
+            {documentCount} {documentCount === 1 ? 'document' : 'documents'} ·{' '}
+            {documents.length} {documents.length === 1 ? 'chunk' : 'chunks'}{' '}
+            attached
+          </span>
+          <button
+            className="min-h-0 px-2 py-1 text-xs"
+            type="button"
+            disabled={disabled}
+            onClick={restore}
+          >
+            Restore samples
+          </button>
+        </div>
+      </section>
+    </details>
   );
 }

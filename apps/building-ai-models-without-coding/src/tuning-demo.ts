@@ -4,6 +4,7 @@ import {
 } from './components/mount-terminal';
 import {
   loadFunctionGemma,
+  FUNCTIONGEMMA_REVISION,
   type FunctionGemmaInference,
   type FunctionGemmaEvaluation,
 } from './functiongemma-inference';
@@ -137,17 +138,7 @@ function bestToken(logits: Float32Array): number {
 }
 const yieldToPage = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
-export function mountTuningDemo(container: HTMLElement): () => void {
-  container.innerHTML = `<section aria-label="FunctionGemma fine-tuning">
-    <h2>Teach a repeatable task</h2>
-    <p>Compare FunctionGemma before and after a small, real adapter update. The examples are fictional. No actions are executed.</p>
-    <p id="tuning-task-explanation"></p>
-    <p class="hint"><a href="functiongemma/NOTICE.txt">Model source and modification notice</a> · <a href="functiongemma/TERMS.txt">Gemma terms and use restrictions</a></p>
-    <label for="tuning-lesson">Choose an everyday task</label><select id="tuning-lesson"></select>
-    <div class="toolbar"><button id="tuning-run" class="primary">Train and compare</button><button id="tuning-cancel" disabled>Stop</button><button id="tuning-save" disabled>Save adapter</button></div>
-    <output id="tuning-status" aria-live="polite">Ready. First use downloads a 426 MB model. Training needs WebGPU.</output>
-    <progress id="tuning-progress" value="0" max="1" hidden></progress>
-    <figure class="m-0" aria-labelledby="tuning-visual-title tuning-visual-caption">
+const trainingFigure = `<figure class="m-0" aria-labelledby="tuning-visual-title tuning-visual-caption">
       <svg id="tuning-visual" class="h-auto w-full" viewBox="0 0 720 310" role="img" aria-labelledby="tuning-visual-title tuning-visual-desc">
         <title id="tuning-visual-title">How the adapter learns while the base model stays frozen</title>
         <desc id="tuning-visual-desc">Training examples flow through a frozen model into a small trainable adapter. The loss plot updates from the measurements produced by this run.</desc>
@@ -189,343 +180,262 @@ export function mountTuningDemo(container: HTMLElement): () => void {
         </g>
       </svg>
       <figcaption id="tuning-visual-caption" class="text-sm text-slate-400">Loss is the model’s penalty for predicting the wrong training label, so lower is better. The axes stay fixed at 200 passes and loss 0–20, making the shape comparable throughout the run. Only the small adapter changes; the large model remains fixed.</figcaption>
-    </figure>
-    <div id="tuning-results"></div>
-    <section id="tuning-try" aria-labelledby="tuning-try-title">
-      <h3 id="tuning-try-title">Try the default model first</h3>
-      <p class="hint">Pick an example or write your own. You can run the unchanged model before training, then use the same input to compare the tuned adapter.</p>
-      <div id="tuning-examples" class="toolbar" role="group" aria-label="Example inputs"></div>
-      <label for="tuning-input">A short note or notification</label>
-      <textarea id="tuning-input" maxlength="500" rows="3"></textarea>
-      <div class="toolbar"><button id="tuning-baseline">Run default model</button><button id="tuning-compare" disabled>Compare default vs tuned</button></div>
-      <div id="tuning-custom-result" class="grid gap-3 sm:grid-cols-2" aria-live="polite"></div>
+    </figure>`;
+
+interface FrozenFeature extends FunctionGemmaEvaluation {
+  target: number;
+}
+
+/** Retain only exact frozen computations for the currently selected lesson.
+ * Adapters and measured update passes are never cached or reused on retrain.
+ */
+interface LessonCache {
+  key: string;
+  features: FrozenFeature[] | undefined;
+  baseline: Map<string, string>;
+}
+
+export function mountTuningDemo(container: HTMLElement): () => void {
+  container.innerHTML = `<div class="demo-system-layout">
+    <section class="workshop-chat" aria-label="FunctionGemma fine-tuning">
+      <div id="tuning-thread" class="chat-thread" role="log" aria-label="Fine-tuning conversation" aria-relevant="additions">
+        <article class="chat-turn chat-assistant-message">
+          <h2>Teach a repeatable task</h2>
+          <p>Try a note with the default model, train on a few fictional examples, then compare. Your previous messages and training runs stay here until you leave this demo.</p>
+          <div id="tuning-try"><div id="tuning-custom-result" class="grid gap-3 sm:grid-cols-2"></div></div>
+        </article>
+      </div>
+      <form id="tuning-composer" class="chat-composer">
+        <label for="tuning-input">Send a short note or notification</label>
+        <textarea id="tuning-input" maxlength="500" rows="3" placeholder="Try a notification…"></textarea>
+        <div class="chat-tools"><button type="submit" id="tuning-baseline" class="primary">Run default model</button><button type="button" id="tuning-compare" disabled>Compare default vs tuned</button><button type="button" id="tuning-run">Train and compare</button><button type="button" id="tuning-cancel" disabled>Stop</button></div>
+        <output id="tuning-status" aria-live="polite">Ready. First use downloads a 426 MB model. Training needs WebGPU.</output>
+      </form>
     </section>
-    <details><summary>Examples and evaluation</summary><p>Training examples change the adapter. The test inputs below are withheld from those updates. These small authored examples are a teaching exercise, not a benchmark.</p><div id="tuning-data"></div></details>
-    <details><summary>What changes inside the model?</summary><p>The original FunctionGemma body stays frozen. We train two small matrices on its output projection with full-vocabulary cross-entropy. GPU shaders calculate the adapter and weight updates; the CPU calculates softmax and loss. This is output-head LoRA, not the attention-layer QLoRA used in the CLI example.</p><p>The browser adapter is specific to this model and this demo. It is not an MLX or PEFT adapter file.</p><div id="tuning-loss"></div></details>
-    <details><summary>Train with Antigravity or the CLI</summary><p>The repository includes a separate, verified MLX FunctionGemma experiment. It trains attention adapters, saves them, reloads them, and records held-out outputs.</p><p><a href="https://github.com/techlahoma/techlahoma-google-apps-starter/tree/main/apps/building-ai-models-without-coding/scripts/functiongemma">Open the CLI instructions ↗</a></p></details>
-  </section>`;
+    <aside class="chat-inspector" aria-label="Fine-tuning controls">
+      <h3>Teach a habit</h3>
+      <label for="tuning-lesson">Everyday task</label><select id="tuning-lesson"></select>
+      <p id="tuning-task-explanation" class="hint"></p>
+      <div id="tuning-examples" class="chat-tools" role="group" aria-label="Example inputs"></div>
+      <button type="button" id="tuning-save" disabled>Save latest adapter</button>
+      <details><summary>Examples and evaluation</summary><p>Test inputs are withheld from updates. These authored examples are a teaching exercise, not a benchmark.</p><div id="tuning-data"></div></details>
+      <details><summary>What changes inside the model?</summary><p>The original model stays frozen. WebGPU trains an output-head LoRA adapter with full-vocabulary cross-entropy. Each retrain starts a fresh adapter and repeats all 200 passes. Frozen features and default predictions can be reused exactly for this task, in this tab.</p><p>Saving an adapter uses this demo’s own format, not MLX or PEFT. No tool actions are executed.</p><div id="tuning-loss"></div></details>
+      <details><summary>Continue with the CLI</summary><p>The separate MLX example trains attention adapters and records actual held-out outputs.</p><a href="https://github.com/techlahoma/techlahoma-google-apps-starter/tree/main/apps/building-ai-models-without-coding/scripts/functiongemma">CLI instructions ↗</a></details>
+      <p class="hint"><a href="functiongemma/NOTICE.txt">Model source</a> · <a href="functiongemma/TERMS.txt">Gemma terms</a></p>
+    </aside>
+  </div>`;
   function get<T extends Element>(selector: string): T {
     const element = container.querySelector<T>(selector);
     if (!element) throw new Error(`Missing tuning element ${selector}`);
     return element;
   }
+  function node<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    text = '',
+    className = '',
+  ) {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    element.className = className;
+    return element;
+  }
   const select = get<HTMLSelectElement>('#tuning-lesson');
   lessons.forEach((lesson, index) => {
-    const option = document.createElement('option');
+    const option = node('option', lesson.name);
     option.value = String(index);
-    option.textContent = lesson.name;
     select.append(option);
   });
+  const thread = get<HTMLElement>('#tuning-thread');
   const status = get<HTMLOutputElement>('#tuning-status');
   const run = get<HTMLButtonElement>('#tuning-run');
   const stop = get<HTMLButtonElement>('#tuning-cancel');
   const save = get<HTMLButtonElement>('#tuning-save');
-  const progress = get<HTMLProgressElement>('#tuning-progress');
-  const results = get('#tuning-results');
-  const examples = get('#tuning-examples');
+  const examples = get<HTMLElement>('#tuning-examples');
   const input = get<HTMLTextAreaElement>('#tuning-input');
   const baseline = get<HTMLButtonElement>('#tuning-baseline');
   const compare = get<HTMLButtonElement>('#tuning-compare');
-  const customResult = get('#tuning-custom-result');
-  const dataOutputRoot = mountTerminalOutput(
+  const terminals: MountedTerminal[] = [];
+  function terminal(host: HTMLElement, title: string) {
+    const output = mountTerminalOutput(host, title);
+    terminals.push(output);
+    return output;
+  }
+  const dataOutput = terminal(
     get('#tuning-data'),
     'Training and held-out examples',
-    'Fine-tuning examples and evaluation data',
   );
-  const lossOutputRoot = mountTerminalOutput(
-    get('#tuning-loss'),
-    'Adapter training log',
-    'Fine-tuning loss output',
+  terminal(get('#tuning-loss'), 'Adapter training log').setOutput(
+    'Train to add a measured loss plot and log to the conversation.',
   );
-  function renderTerminal(
-    root: MountedTerminal,
-    _title: string,
-    _ariaLabel: string,
-    output: string,
-  ) {
-    root.setOutput(output);
-  }
-  let lossLog = '';
-  const lossLine = get<SVGPolylineElement>('#tuning-loss-line');
-  const lossPoint = get<SVGCircleElement>('#tuning-loss-point');
-  const lossLabel = get<SVGTextElement>('#tuning-loss-label');
-  const visualStages = {
-    data: get<SVGGElement>('#tuning-visual-data'),
-    model: get<SVGGElement>('#tuning-visual-model'),
-    adapter: get<SVGGElement>('#tuning-visual-adapter'),
-  };
-  let activeVisualStage: keyof typeof visualStages | undefined;
-  let losses: number[] = [];
-  let customPrediction:
-    ((text: string, adapted: boolean) => Promise<string>) | undefined;
   let cancelled = false;
   let mounted = true;
-  let adapter: OutputLora | undefined;
   let running = false;
   let loading: AbortController | undefined;
   let model: FunctionGemmaInference | undefined;
+  let adapter: OutputLora | undefined;
+  let runCount = 0;
+  let retiredId = 0;
+  let cache: LessonCache | undefined;
   const currentLesson = () => lessons[Number(select.value)] ?? lessons[0]!;
-  function createPredictionPanel(
-    title: string,
-    state: PredictionPanelState,
-  ): HTMLElement {
-    const panel = document.createElement('article');
-    panel.className =
-      'min-h-28 rounded-lg border border-slate-700 bg-slate-900/50 p-4';
-    const heading = document.createElement('h4');
-    heading.className =
-      'm-0 text-xs font-semibold uppercase tracking-wide text-slate-400';
-    heading.textContent = title;
-    panel.append(heading);
+  const cacheFor = (lesson: Lesson): LessonCache => {
+    // Model identity plus exact prompt/data and decode limit. Changing any
+    // input invalidates the cached body computations, without touching history.
+    const key = JSON.stringify([
+      FUNCTIONGEMMA_REVISION,
+      'user-template-v1',
+      12,
+      lesson,
+    ]);
+    if (!cache || cache.key !== key)
+      cache = {key, features: undefined, baseline: new Map()};
+    return cache;
+  };
+  function latestId(element: Element, id: string) {
+    const previous = container.querySelector(`#${id}`);
+    if (previous) previous.id = `${id}-history-${++retiredId}`;
+    element.id = id;
+  }
+  function createTurn(message: string, lesson: Lesson) {
+    const turn = node('article', '', 'chat-turn');
+    turn.dataset.lesson = lesson.name;
+    const user = node('div', '', 'chat-user-message');
+    user.append(node('p', message));
+    const assistant = node('div', '', 'chat-assistant-message');
+    assistant.append(node('p', lesson.name, 'hint'));
+    turn.append(user, assistant);
+    thread.append(turn);
+    // Scroll only when a user starts a new turn, not at every training step.
+    turn.scrollIntoView({block: 'nearest', behavior: 'instant'});
+    return {turn, assistant};
+  }
+  function predictionPanel(title: string, state: PredictionPanelState) {
+    const panel = node(
+      'article',
+      '',
+      'min-h-28 rounded-lg border border-slate-700 bg-slate-900/50 p-4',
+    );
+    panel.append(
+      node(
+        'h4',
+        title,
+        'm-0 text-xs font-semibold uppercase tracking-wide text-slate-400',
+      ),
+    );
     if (state.kind === 'loading') {
       panel.setAttribute('aria-busy', 'true');
-      const loadingMessage = document.createElement('span');
-      loadingMessage.className = 'sr-only';
-      loadingMessage.textContent = state.message;
-      const shimmer = document.createElement('div');
-      shimmer.className =
-        'mt-4 space-y-2 motion-safe:animate-pulse motion-reduce:animate-none';
+      panel.append(node('span', state.message, 'sr-only'));
+      const shimmer = node(
+        'div',
+        '',
+        'mt-4 space-y-2 motion-safe:animate-pulse motion-reduce:animate-none',
+      );
       shimmer.setAttribute('aria-hidden', 'true');
-      for (const width of ['w-3/4', 'w-full', 'w-1/2']) {
-        const line = document.createElement('div');
-        line.className = `h-3 rounded bg-slate-700 ${width}`;
-        shimmer.append(line);
-      }
-      panel.append(loadingMessage, shimmer);
-      return panel;
+      for (const width of ['w-3/4', 'w-full', 'w-1/2'])
+        shimmer.append(node('div', '', `h-3 rounded bg-slate-700 ${width}`));
+      panel.append(shimmer);
+    } else {
+      panel.append(
+        node(
+          'p',
+          state.kind === 'result'
+            ? displayPrediction(state.prediction)
+            : state.message,
+          state.kind === 'result'
+            ? 'mb-0 mt-3 text-lg font-semibold text-slate-100'
+            : 'mb-0 mt-3 text-sm text-slate-400',
+        ),
+      );
     }
-    const message = document.createElement('p');
-    message.className =
-      state.kind === 'result'
-        ? 'mb-0 mt-3 text-lg font-semibold text-slate-100'
-        : 'mb-0 mt-3 text-sm text-slate-400';
-    message.textContent =
-      state.kind === 'result'
-        ? displayPrediction(state.prediction)
-        : state.message;
-    panel.append(message);
     return panel;
   }
-  function renderPredictionPanels(
+  function renderPanels(
+    host: HTMLElement,
     defaultState: PredictionPanelState,
     tunedState: PredictionPanelState,
   ) {
-    customResult.replaceChildren(
-      createPredictionPanel('Default FunctionGemma', defaultState),
-      createPredictionPanel('After tuning', tunedState),
+    host.replaceChildren(
+      predictionPanel('Default FunctionGemma', defaultState),
+      predictionPanel('After tuning', tunedState),
     );
   }
-  function renderExampleButtons() {
-    examples.replaceChildren();
-    for (const [index, example] of currentLesson().test.entries()) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'text-left text-sm';
-      button.textContent = example.input;
-      button.setAttribute(
-        'aria-label',
-        `Use example ${index + 1}: ${example.input}`,
-      );
-      button.addEventListener('click', () => {
-        input.value = example.input;
-        input.focus();
-        renderPredictionPanels(
-          {kind: 'idle', message: 'Ready to run this input.'},
-          adapter
-            ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
-            : {
-                kind: 'unavailable',
-                message: 'Train an adapter to unlock this comparison.',
-              },
-        );
-      });
-      examples.append(button);
-    }
-  }
-  function setInputControlsDisabled(disabled: boolean) {
-    input.disabled = disabled;
-    for (const button of examples.querySelectorAll('button')) {
-      button.disabled = disabled;
-    }
-  }
-  function renderTrainingLoading() {
-    const loadingSection = document.createElement('section');
-    loadingSection.setAttribute('aria-label', 'Preparing held-out comparison');
-    loadingSection.setAttribute('aria-busy', 'true');
-    loadingSection.className =
-      'space-y-3 motion-safe:animate-pulse motion-reduce:animate-none';
-    const message = document.createElement('span');
-    message.className = 'sr-only';
-    message.textContent = 'Preparing held-out comparison.';
-    loadingSection.append(message);
-    for (let index = 0; index < 3; index++) {
-      const row = document.createElement('div');
-      row.className = 'grid grid-cols-2 gap-3';
-      for (let column = 0; column < 2; column++) {
-        const block = document.createElement('div');
-        block.className = 'h-20 rounded-lg bg-slate-800';
-        row.append(block);
-      }
-      loadingSection.append(row);
-    }
-    results.replaceChildren(loadingSection);
-  }
-  function renderResultsTable(
-    lesson: Lesson,
-    before: string[],
-    after?: string[],
-  ) {
-    const table = document.createElement('table');
-    const header = document.createElement('tr');
-    for (const label of [
-      'Unseen input',
-      'Expected',
-      'Default',
-      'After tuning',
-    ]) {
-      const th = document.createElement('th');
-      th.textContent = label;
-      header.append(th);
-    }
-    const head = document.createElement('thead');
-    head.append(header);
-    table.append(head);
-    const body = document.createElement('tbody');
-    for (const [index, row] of lesson.test.entries()) {
-      const tr = document.createElement('tr');
-      for (const text of [
-        row.input,
-        displayPrediction(row.answer),
-        displayPrediction(before[index] ?? ''),
-      ]) {
-        const td = document.createElement('td');
-        td.textContent = text;
-        tr.append(td);
-      }
-      const tuned = document.createElement('td');
-      if (after) {
-        tuned.textContent = displayPrediction(after[index] ?? '');
-      } else {
-        tuned.setAttribute('aria-label', 'Training adapter');
-        const shimmer = document.createElement('div');
-        shimmer.className =
-          'h-3 w-3/4 rounded bg-slate-700 motion-safe:animate-pulse motion-reduce:animate-none';
-        shimmer.setAttribute('aria-hidden', 'true');
-        tuned.append(shimmer);
-      }
-      tr.append(tuned);
-      body.append(tr);
-    }
-    table.append(body);
-    results.replaceChildren(table);
+  renderPanels(
+    get('#tuning-custom-result'),
+    {kind: 'idle', message: 'Send a message to try the default model.'},
+    {kind: 'unavailable', message: 'Train an adapter to compare.'},
+  );
+  function controls(active: boolean) {
+    running = active;
+    run.disabled = active;
+    baseline.disabled = active;
+    compare.disabled = active || !adapter;
+    save.disabled = active || !adapter;
+    select.disabled = active;
+    input.disabled = active;
+    stop.disabled = !active;
+    for (const button of examples.querySelectorAll('button'))
+      button.disabled = active;
+    run.textContent = adapter ? 'Retrain and compare' : 'Train and compare';
   }
   function showData() {
     const lesson = currentLesson();
     get('#tuning-task-explanation').textContent = lesson.explanation;
-    renderTerminal(
-      dataOutputRoot,
-      'Training and held-out examples',
-      'Fine-tuning examples and evaluation data',
+    dataOutput.setOutput(
       `TRAIN\n${lesson.train.map(row => `${row.input} → ${row.answer}`).join('\n')}\n\nTEST\n${lesson.test.map(row => `${row.input} → ${row.answer}`).join('\n')}`,
     );
-    results.replaceChildren();
-    renderExampleButtons();
-    compare.disabled = true;
-    customPrediction = undefined;
-    save.disabled = true;
     adapter?.dispose();
     adapter = undefined;
-    losses = [];
-    renderLoss();
-    highlightStage('data');
+    cache = undefined;
+    examples.replaceChildren();
+    for (const [index, example] of lesson.test.entries()) {
+      const button = node('button', example.input, 'text-left text-sm');
+      button.type = 'button';
+      button.setAttribute(
+        'aria-label',
+        `Use example ${index + 1}: ${example.input}`,
+      );
+      button.onclick = () => {
+        input.value = example.input;
+        input.focus();
+      };
+      examples.append(button);
+    }
     input.value = lesson.test[0]?.input ?? '';
-    renderPredictionPanels(
-      {kind: 'idle', message: 'Run the unchanged model before training.'},
-      {
-        kind: 'unavailable',
-        message: 'Train an adapter to unlock this comparison.',
-      },
-    );
-  }
-  function highlightStage(stage: keyof typeof visualStages) {
-    const changed = activeVisualStage !== stage;
-    activeVisualStage = stage;
-    for (const [name, element] of Object.entries(visualStages)) {
-      element.setAttribute('opacity', name === stage ? '1' : '0.45');
-    }
-    if (
-      changed &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      visualStages[stage].animate([{opacity: 0.55}, {opacity: 1}], {
-        duration: 240,
-        easing: 'ease-out',
-      });
-    }
-  }
-  function renderLoss() {
-    if (losses.length === 0) {
-      lossLine.setAttribute('points', '');
-      lossPoint.setAttribute('opacity', '0');
-      lossLabel.textContent = 'Run training to plot loss';
-      return;
-    }
-    const width = 570;
-    const height = 100;
-    const maximumLoss = 20;
-    const totalPasses = 200;
-    const points = losses.map((loss, index) => {
-      const x = ((index + 1) / totalPasses) * width;
-      const boundedLoss = Math.min(Math.max(loss, 0), maximumLoss);
-      const y = height - (boundedLoss / maximumLoss) * height;
-      return {x, y};
-    });
-    lossLine.setAttribute(
-      'points',
-      points
-        .map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`)
-        .join(' '),
-    );
-    const lastPoint = points[points.length - 1]!;
-    lossPoint.setAttribute('cx', lastPoint.x.toFixed(1));
-    lossPoint.setAttribute('cy', lastPoint.y.toFixed(1));
-    lossPoint.setAttribute('opacity', '1');
-    lossLabel.textContent = `Pass ${losses.length} · loss ${losses[losses.length - 1]!.toFixed(3)}`;
+    controls(false);
   }
   select.addEventListener('change', showData);
   showData();
-  renderTerminal(
-    lossOutputRoot,
-    'Adapter training log',
-    'Fine-tuning loss output',
-    '',
-  );
-  stop.addEventListener('click', () => {
+  stop.onclick = () => {
     cancelled = true;
     loading?.abort();
     status.value = 'Stopping after the current model operation…';
-  });
+  };
   function checkCancelled() {
     if (cancelled || !mounted)
-      throw new Error('Stopped. No completed training run was recorded.');
+      throw new Error('Stopped. This operation did not complete.');
   }
   async function ensureModel(): Promise<FunctionGemmaInference> {
     if (model) return model;
     loading = new AbortController();
-    const loadedModel = await loadFunctionGemma(message => {
-      if (mounted) status.value = message;
-    }, loading.signal);
-    loading = undefined;
-    checkCancelled();
-    model = loadedModel;
-    return model;
+    try {
+      const loaded = await loadFunctionGemma(message => {
+        if (mounted) status.value = message;
+      }, loading.signal);
+      checkCancelled();
+      model = loaded;
+      return loaded;
+    } finally {
+      loading = undefined;
+    }
   }
   async function generate(
     activeModel: FunctionGemmaInference,
     lesson: Lesson,
     text: string,
     outputAdapter?: OutputLora,
-  ): Promise<string> {
+  ) {
+    const lessonCache = cacheFor(lesson);
+    const cached = outputAdapter ? undefined : lessonCache.baseline.get(text);
+    if (cached !== undefined) return cached;
     const ids = prompt(activeModel, lesson, text);
     const output: number[] = [];
     const end = activeModel.encode('<end_of_turn>');
@@ -539,333 +449,406 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       output.push(token);
       await yieldToPage();
     }
-    return activeModel.decode(output).trim();
+    checkCancelled();
+    const prediction = activeModel.decode(output).trim();
+    if (!outputAdapter) {
+      // Bound custom-prompt retention independently from the conversation DOM.
+      if (lessonCache.baseline.size >= 32)
+        lessonCache.baseline.delete(lessonCache.baseline.keys().next().value!);
+      lessonCache.baseline.set(text, prediction);
+    }
+    return prediction;
   }
-  baseline.addEventListener('click', () => {
-    void runBaseline();
-  });
-  async function runBaseline() {
+  async function predict(compareAdapter: boolean) {
     const text = input.value.trim();
     if (!text) {
-      renderPredictionPanels(
-        {kind: 'idle', message: 'Enter a short input first.'},
-        adapter
-          ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
-          : {
-              kind: 'unavailable',
-              message: 'Train an adapter to unlock this comparison.',
-            },
-      );
+      status.value = 'Enter a short input first.';
+      input.focus();
       return;
     }
-    if (running) return;
-    running = true;
-    cancelled = false;
-    baseline.disabled = true;
-    compare.disabled = true;
-    run.disabled = true;
-    save.disabled = true;
-    select.disabled = true;
-    stop.disabled = false;
-    setInputControlsDisabled(true);
-    renderPredictionPanels(
+    if (running || (compareAdapter && !adapter)) return;
+    const lesson = currentLesson();
+    const selectedAdapter = compareAdapter ? adapter : undefined;
+    const {turn, assistant} = createTurn(text, lesson);
+    latestId(turn, 'tuning-try');
+    const panels = node('div', '', 'grid gap-3 sm:grid-cols-2');
+    latestId(panels, 'tuning-custom-result');
+    const receipt = node('p', '', 'hint');
+    assistant.append(panels, receipt);
+    renderPanels(
+      panels,
       {kind: 'loading', message: 'Running the unchanged model.'},
-      adapter
-        ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
+      selectedAdapter
+        ? {kind: 'loading', message: 'Waiting for the same input.'}
         : {
             kind: 'unavailable',
-            message: 'Train an adapter to unlock this comparison.',
+            message: 'Train an adapter, then send this input again to compare.',
           },
     );
+    controls(true);
+    cancelled = false;
+    const started = performance.now();
+    const reused = cacheFor(lesson).baseline.has(text);
+    let before: string | undefined;
     try {
       const activeModel = await ensureModel();
-      highlightStage('model');
-      const prediction = await generate(activeModel, currentLesson(), text);
+      before = await generate(activeModel, lesson, text);
       checkCancelled();
-      renderPredictionPanels(
-        {kind: 'result', prediction},
-        adapter
-          ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
-          : {
-              kind: 'unavailable',
-              message: 'Train an adapter to unlock this comparison.',
-            },
+      renderPanels(
+        panels,
+        {kind: 'result', prediction: before},
+        selectedAdapter
+          ? {kind: 'loading', message: 'Running the tuned adapter.'}
+          : {kind: 'unavailable', message: 'No adapter used in this message.'},
       );
-      status.value =
-        'Default FunctionGemma inference complete. No adapter was used.';
+      if (selectedAdapter) {
+        const after = await generate(
+          activeModel,
+          lesson,
+          text,
+          selectedAdapter,
+        );
+        checkCancelled();
+        renderPanels(
+          panels,
+          {kind: 'result', prediction: before},
+          {kind: 'result', prediction: after},
+        );
+      }
+      receipt.textContent = `${((performance.now() - started) / 1000).toFixed(2)} s · ${reused ? 'Exact default prediction reused from this task.' : 'Default model evaluated locally.'}${selectedAdapter ? ' Tuned model evaluated locally.' : ''}`;
+      status.value = selectedAdapter
+        ? 'Default and tuned predictions are ready for the same input.'
+        : 'Default FunctionGemma inference complete. No adapter was used.';
     } catch (error) {
       if (mounted) {
         const message = error instanceof Error ? error.message : String(error);
-        status.value = message;
-        renderPredictionPanels(
-          {kind: 'idle', message},
-          adapter
-            ? {kind: 'idle', message: 'Use compare to run the tuned adapter.'}
-            : {
-                kind: 'unavailable',
-                message: 'Train an adapter to unlock this comparison.',
-              },
+        renderPanels(
+          panels,
+          before === undefined
+            ? {kind: 'idle', message}
+            : {kind: 'result', prediction: before},
+          {kind: 'unavailable', message},
         );
+        receipt.textContent = message;
+        status.value = message;
       }
     } finally {
-      running = false;
-      if (mounted) {
-        baseline.disabled = false;
-        compare.disabled = !adapter;
-        run.disabled = false;
-        save.disabled = !adapter;
-        select.disabled = false;
-        stop.disabled = true;
-        setInputControlsDisabled(false);
+      if (mounted) controls(false);
+      else {
+        running = false;
+        adapter?.dispose();
+        adapter = undefined;
       }
     }
   }
-  save.addEventListener('click', () => {
-    void saveAdapter();
+  const composer = get<HTMLFormElement>('#tuning-composer');
+  composer.onsubmit = event => {
+    event.preventDefault();
+    void predict(false);
+  };
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+    event.preventDefault();
+    if (!running) composer.requestSubmit(baseline);
   });
+  compare.onclick = () => {
+    void predict(true);
+  };
+  save.onclick = () => {
+    void saveAdapter();
+  };
   async function saveAdapter() {
     if (!adapter || running) return;
-    running = true;
-    save.disabled = true;
-    run.disabled = true;
-    baseline.disabled = true;
-    compare.disabled = true;
-    select.disabled = true;
-    setInputControlsDisabled(true);
+    controls(true);
+    stop.disabled = true;
     try {
       const snapshot = await adapter.export();
       if (!mounted) return;
-      const blob = new Blob([JSON.stringify(snapshot)], {
-        type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'functiongemma-output-adapter.json';
-      a.click();
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(snapshot)], {type: 'application/json'}),
+      );
+      const link = node('a');
+      link.href = url;
+      link.download = 'functiongemma-output-adapter.json';
+      link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.value =
+        'Latest adapter saved. Previous result messages remain in this conversation.';
     } catch (error) {
       if (mounted)
         status.value = `Could not save adapter: ${error instanceof Error ? error.message : String(error)}`;
     } finally {
-      running = false;
-      if (mounted) {
-        save.disabled = false;
-        run.disabled = false;
-        baseline.disabled = false;
-        compare.disabled = false;
-        select.disabled = false;
-        setInputControlsDisabled(false);
-      } else {
+      if (mounted) controls(false);
+      else {
+        running = false;
         adapter?.dispose();
         adapter = undefined;
       }
     }
   }
-  compare.addEventListener('click', () => {
-    void compareInput();
-  });
-  async function compareInput() {
-    const text = input.value.trim();
-    if (!text) {
-      renderPredictionPanels(
-        {kind: 'idle', message: 'Enter a short input first.'},
-        {kind: 'idle', message: 'Enter a short input first.'},
-      );
-      return;
+  function resultsTable(
+    host: HTMLElement,
+    lesson: Lesson,
+    before: string[],
+    after?: string[],
+  ) {
+    const table = node('table');
+    const head = node('thead');
+    const header = node('tr');
+    for (const label of ['Unseen input', 'Expected', 'Default', 'After tuning'])
+      header.append(node('th', label));
+    head.append(header);
+    const body = node('tbody');
+    for (const [index, example] of lesson.test.entries()) {
+      const row = node('tr');
+      for (const text of [
+        example.input,
+        displayPrediction(example.answer),
+        displayPrediction(before[index] ?? ''),
+        after ? displayPrediction(after[index] ?? '') : 'Training…',
+      ])
+        row.append(node('td', text));
+      body.append(row);
     }
-    if (running || !customPrediction) return;
-    running = true;
-    cancelled = false;
-    compare.disabled = true;
-    baseline.disabled = true;
-    run.disabled = true;
-    save.disabled = true;
-    select.disabled = true;
-    stop.disabled = false;
-    setInputControlsDisabled(true);
-    try {
-      renderPredictionPanels(
-        {kind: 'loading', message: 'Running the unchanged model.'},
-        {kind: 'idle', message: 'Waiting for the same input.'},
-      );
-      const before = await customPrediction(text, false);
-      checkCancelled();
-      renderPredictionPanels(
-        {kind: 'result', prediction: before},
-        {kind: 'loading', message: 'Running the tuned adapter.'},
-      );
-      const after = await customPrediction(text, true);
-      checkCancelled();
-      renderPredictionPanels(
-        {kind: 'result', prediction: before},
-        {kind: 'result', prediction: after},
-      );
-      status.value =
-        'Default and tuned predictions are ready for the same input.';
-    } catch (error) {
-      if (mounted) {
-        const message = error instanceof Error ? error.message : String(error);
-        renderPredictionPanels(
-          {kind: 'idle', message},
-          {kind: 'idle', message},
-        );
-      }
-    } finally {
-      running = false;
-      if (mounted) {
-        compare.disabled = false;
-        baseline.disabled = false;
-        run.disabled = false;
-        save.disabled = false;
-        select.disabled = false;
-        stop.disabled = true;
-        setInputControlsDisabled(false);
-      } else {
-        adapter?.dispose();
-        adapter = undefined;
-      }
-    }
+    table.append(head, body);
+    host.replaceChildren(table);
   }
-  run.addEventListener('click', () => {
-    void execute();
-  });
-  async function execute() {
+  run.onclick = () => {
+    void train();
+  };
+  async function train() {
     if (running) return;
-    running = true;
-    cancelled = false;
-    run.disabled = true;
-    baseline.disabled = true;
-    select.disabled = true;
-    stop.disabled = false;
-    save.disabled = true;
-    compare.disabled = true;
-    customPrediction = undefined;
-    progress.hidden = false;
-    progress.value = 0;
-    setInputControlsDisabled(true);
-    renderTrainingLoading();
-    lossLog = '';
-    renderTerminal(
-      lossOutputRoot,
-      'Adapter training log',
-      'Fine-tuning loss output',
-      lossLog,
+    const lesson = currentLesson();
+    const lessonCache = cacheFor(lesson);
+    const reusedFeatures = lessonCache.features !== undefined;
+    const baselineReusedCount = lesson.test.filter(row =>
+      lessonCache.baseline.has(row.input),
+    ).length;
+    const baselineTotal = lesson.test.length;
+    const reusedBaseline = baselineReusedCount === baselineTotal;
+    const modelAlreadyLoaded = model !== undefined;
+    const {turn, assistant} = createTurn(
+      `${adapter ? 'Retrain' : 'Train'} on the ${lesson.train.length} examples and compare with the default model.`,
+      lesson,
     );
-    losses = [];
-    renderLoss();
-    highlightStage('data');
+    const runNumber = ++runCount;
+    turn.dataset.trainingRun = String(runNumber);
+    const runStatus = node('p', 'Preparing training…');
+    const progress = node('progress');
+    progress.max = 1;
+    progress.value = 0;
+    progress.setAttribute('aria-label', `Training run ${runNumber} progress`);
+    latestId(progress, 'tuning-progress');
+    const visual = node('div');
+    visual.innerHTML = trainingFigure.replaceAll(
+      'tuning-',
+      `tuning-run-${runNumber}-`,
+    );
+    const plot = visual.querySelector<SVGPolylineElement>('polyline')!;
+    const point = visual.querySelector<SVGCircleElement>('circle')!;
+    const lossLabel = visual.querySelector<SVGTextElement>(
+      `#tuning-run-${runNumber}-loss-label`,
+    )!;
+    const results = node('div');
+    latestId(results, 'tuning-results');
+    const timings = node('p', '', 'hint');
+    timings.dataset.trainingTimings = '';
+    const details = node('details');
+    details.append(node('summary', `Training log · run ${runNumber}`));
+    const logHost = node('div');
+    latestId(logHost, 'tuning-loss');
+    details.append(logHost);
+    assistant.append(
+      node('h3', `Training run ${runNumber}`),
+      runStatus,
+      progress,
+      visual,
+      results,
+      timings,
+      details,
+    );
+    const log = terminal(logHost, `Adapter training log · run ${runNumber}`);
+    const updateStatus = (message: string) => {
+      if (!mounted) return;
+      runStatus.textContent = message;
+      status.value = message;
+    };
+    const highlight = (stage: 'data' | 'model' | 'adapter') => {
+      for (const name of ['data', 'model', 'adapter'])
+        visual
+          .querySelector(`#tuning-run-${runNumber}-visual-${name}`)
+          ?.setAttribute('opacity', stage === name ? '1' : '0.45');
+    };
+    const losses: number[] = [];
+    function renderLoss() {
+      const points = losses.map((loss, index) => ({
+        x: ((index + 1) / 200) * 570,
+        y: 100 - (Math.min(Math.max(loss, 0), 20) / 20) * 100,
+      }));
+      plot.setAttribute(
+        'points',
+        points
+          .map(value => `${value.x.toFixed(1)},${value.y.toFixed(1)}`)
+          .join(' '),
+      );
+      const last = points[points.length - 1]!;
+      point.setAttribute('cx', last.x.toFixed(1));
+      point.setAttribute('cy', last.y.toFixed(1));
+      point.setAttribute('opacity', '1');
+      lossLabel.textContent = `Pass ${losses.length} · loss ${losses[losses.length - 1]!.toFixed(3)}`;
+    }
+    controls(true);
+    cancelled = false;
     adapter?.dispose();
     adapter = undefined;
+    const started = performance.now();
+    const measured: Record<string, number> = {};
+    let lossLog = '';
     try {
+      let stageStarted = performance.now();
       const activeModel = await ensureModel();
-      highlightStage('model');
+      measured.modelLoadMs = performance.now() - stageStarted;
       checkCancelled();
-      const lesson = currentLesson();
+      highlight('model');
+      stageStarted = performance.now();
       const before: string[] = [];
       for (const row of lesson.test) {
-        status.value = 'Testing the unchanged base model…';
+        updateStatus(
+          lessonCache.baseline.has(row.input)
+            ? 'Reusing an exact default prediction for this input…'
+            : 'Testing the unchanged base model…',
+        );
         before.push(await generate(activeModel, lesson, row.input));
       }
-      renderResultsTable(lesson, before);
-      let trained = await OutputLora.create({
+      measured.baselineMs = performance.now() - stageStarted;
+      resultsTable(results, lesson, before);
+      stageStarted = performance.now();
+      let features = lessonCache.features;
+      if (!features) {
+        const pending: FrozenFeature[] = [];
+        const end = activeModel.encode('<end_of_turn>');
+        for (const [index, row] of lesson.train.entries()) {
+          updateStatus(
+            `Reading training example ${index + 1} of ${lesson.train.length}. The base model stays frozen.`,
+          );
+          const ids = prompt(activeModel, lesson, row.input);
+          const target = activeModel.encode(row.answer).concat(end);
+          for (let i = 0; i < target.length; i++) {
+            checkCancelled();
+            const values = await activeModel.evaluateTokens(
+              ids.concat(target.slice(0, i)),
+            );
+            pending.push({...values, target: target[i]!});
+            await yieldToPage();
+          }
+          progress.value = ((index + 1) / lesson.train.length) * 0.25;
+        }
+        checkCancelled();
+        features = pending;
+        lessonCache.features = features;
+      } else {
+        updateStatus(
+          'Reusing exact frozen model features. A fresh adapter still trains for all 200 passes.',
+        );
+        progress.value = 0.25;
+      }
+      measured.featuresMs = performance.now() - stageStarted;
+      stageStarted = performance.now();
+      const options = {
         hiddenSize: 640,
         vocabSize: 262144,
         rank: 4,
         learningRate: 0.003,
         seed: 137,
-      });
+      };
+      let trained = await OutputLora.create(options);
       adapter = trained;
-      const features: Array<FunctionGemmaEvaluation & {target: number}> = [];
-      const end = activeModel.encode('<end_of_turn>');
-      for (const [index, row] of lesson.train.entries()) {
-        status.value = `Reading training example ${index + 1} of ${lesson.train.length}. The base model stays frozen.`;
-        const ids = prompt(activeModel, lesson, row.input);
-        const target = activeModel.encode(row.answer).concat(end);
-        for (let i = 0; i < target.length; i++) {
-          checkCancelled();
-          const values = await activeModel.evaluateTokens(
-            ids.concat(target.slice(0, i)),
-          );
-          features.push({...values, target: target[i]!});
-          await yieldToPage();
-        }
-        progress.value = ((index + 1) / lesson.train.length) * 0.25;
-      }
+      measured.adapterSetupMs = performance.now() - stageStarted;
+      stageStarted = performance.now();
+      highlight('adapter');
       for (let epoch = 0; epoch < 200; epoch++) {
         checkCancelled();
         const {loss} = await trained.trainBatch(features);
         if (!Number.isFinite(loss))
           throw new Error('Training became unstable. This run did not pass.');
         lossLog += `Pass ${epoch + 1}: mean pre-update batch loss ${loss.toFixed(5)}\n`;
-        renderTerminal(
-          lossOutputRoot,
-          'Adapter training log',
-          'Fine-tuning loss output',
-          lossLog,
-        );
+        log.setOutput(lossLog);
         losses.push(loss);
         renderLoss();
-        highlightStage('adapter');
-        status.value = `Training pass ${epoch + 1} / 200 · mean loss ${loss.toFixed(3)}`;
+        updateStatus(
+          `Training pass ${epoch + 1} / 200 · mean loss ${loss.toFixed(3)}`,
+        );
         progress.value = 0.25 + ((epoch + 1) / 200) * 0.55;
         await yieldToPage();
       }
-      // Prove exported adapter values can be loaded before comparing results.
+      measured.updatesMs = performance.now() - stageStarted;
+      stageStarted = performance.now();
       const snapshot = await trained.export();
       trained.dispose();
       adapter = undefined;
-      trained = await OutputLora.create({
-        hiddenSize: 640,
-        vocabSize: 262144,
-        rank: 4,
-        learningRate: 0.003,
-        seed: 137,
-      });
+      trained = await OutputLora.create(options);
       adapter = trained;
       await trained.import(JSON.parse(JSON.stringify(snapshot)));
+      measured.reloadMs = performance.now() - stageStarted;
       checkCancelled();
+      stageStarted = performance.now();
       const after: string[] = [];
-      let correct = 0;
       for (const [index, row] of lesson.test.entries()) {
-        status.value = `Testing reloaded adapter ${index + 1} / ${lesson.test.length}…`;
-        const prediction = await generate(
-          activeModel,
-          lesson,
-          row.input,
-          trained,
+        updateStatus(
+          `Testing reloaded adapter ${index + 1} / ${lesson.test.length}…`,
         );
-        after.push(prediction);
-        if (prediction === row.answer) correct++;
+        after.push(await generate(activeModel, lesson, row.input, trained));
       }
+      measured.evaluationMs = performance.now() - stageStarted;
       checkCancelled();
-      renderResultsTable(lesson, before, after);
+      resultsTable(results, lesson, before, after);
+      const correct = after.filter(
+        (prediction, index) => prediction === lesson.test[index]!.answer,
+      ).length;
       progress.value = 1;
-      status.value = `Training and reload complete. ${correct} / ${lesson.test.length} held-out outputs exactly match. Inspect the failures too.`;
-      save.disabled = false;
-      customPrediction = (text, adapted) =>
-        generate(activeModel, lesson, text, adapted ? trained : undefined);
-      compare.disabled = false;
+      updateStatus(
+        `Training and reload complete. ${correct} / ${lesson.test.length} held-out outputs exactly match. Inspect the failures too.`,
+      );
+      measured.totalMs = performance.now() - started;
+      const receipt = {
+        modelRevision: FUNCTIONGEMMA_REVISION,
+        lesson: lesson.name,
+        passes: 200,
+        reusedFrozenFeatures: reusedFeatures,
+        reusedBaseline,
+        baselineReusedCount,
+        baselineTotal,
+        modelAlreadyLoaded,
+        featureCount: features.length,
+        frozenBytes: features.reduce(
+          (total, feature) =>
+            total + feature.hidden.byteLength + feature.logits.byteLength,
+          0,
+        ),
+        timingsMs: measured,
+      };
+      turn.dataset.trainingReceipt = JSON.stringify(receipt);
+      timings.textContent = `Total ${(measured.totalMs / 1000).toFixed(2)} s · model preparation ${(measured.modelLoadMs! / 1000).toFixed(2)} s${modelAlreadyLoaded ? ' (already loaded)' : ''} · default ${(measured.baselineMs! / 1000).toFixed(2)} s (${baselineReusedCount}/${baselineTotal} reused) · frozen features ${(measured.featuresMs! / 1000).toFixed(2)} s${reusedFeatures ? ' (reused)' : ''} · 200 update passes ${(measured.updatesMs! / 1000).toFixed(2)} s · reload ${(measured.reloadMs! / 1000).toFixed(2)} s · held-out ${(measured.evaluationMs! / 1000).toFixed(2)} s.`;
+      log.setStatus('Training and adapter reload completed.', 'success');
     } catch (error) {
-      if (mounted)
-        status.value = error instanceof Error ? error.message : String(error);
+      if (mounted) {
+        const message = error instanceof Error ? error.message : String(error);
+        updateStatus(message);
+        assistant.append(
+          node(
+            'p',
+            'This run is incomplete. Any partial loss plot or predictions above are retained.',
+            'hint',
+          ),
+        );
+        log.setStatus(message, 'error');
+      }
       adapter?.dispose();
       adapter = undefined;
-      if (mounted) {
-        const errorMessage = document.createElement('p');
-        errorMessage.role = 'alert';
-        errorMessage.textContent = status.value;
-        results.replaceChildren(errorMessage);
-      }
     } finally {
-      running = false;
-      if (mounted) {
-        run.disabled = false;
-        baseline.disabled = false;
-        select.disabled = false;
-        stop.disabled = true;
-        setInputControlsDisabled(false);
-      } else {
+      if (mounted) controls(false);
+      else {
+        running = false;
         adapter?.dispose();
         adapter = undefined;
       }
@@ -875,8 +858,8 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     mounted = false;
     cancelled = true;
     loading?.abort();
+    cache = undefined;
     if (!running) adapter?.dispose();
-    dataOutputRoot.dispose();
-    lossOutputRoot.dispose();
+    for (const output of terminals) output.dispose();
   };
 }

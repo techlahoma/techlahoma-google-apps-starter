@@ -60,6 +60,7 @@ interface RagRun {
   id: number;
   question: string;
   mode: RetrievalMode;
+  ranked: readonly SearchHit[];
   retrieved: readonly DocumentChunk[];
   supplied: readonly DocumentChunk[];
   prompt: string;
@@ -94,6 +95,65 @@ function freezeSources(sources: readonly DocumentChunk[]): DocumentChunk[] {
   return sources.map(source => ({...source}));
 }
 
+function RankedSources({run, latest}: {run: RagRun; latest: boolean}) {
+  if (run.ranked.length === 0) return null;
+  return (
+    <section
+      className="mt-3"
+      aria-labelledby={latest ? 'ranked-sources-heading' : undefined}
+    >
+      <h4
+        id={latest ? 'ranked-sources-heading' : undefined}
+        className="mb-1 mt-0 text-sm font-semibold"
+      >
+        Ranked sources
+      </h4>
+      <p className="description mt-0 text-xs">
+        Percentages are normalized within this result set, not confidence
+        probabilities. Focus or hover one for the raw {scoreNames[run.mode]}.
+      </p>
+      <Table>
+        <caption className="sr-only">Retrieved source ranking</caption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Rank</TableHead>
+            <TableHead>Source</TableHead>
+            <TableHead>Match</TableHead>
+            <TableHead className="hidden sm:table-cell">Evidence</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {run.ranked.map((hit, index) => (
+            <TableRow key={hit.document.id}>
+              <TableCell>{index + 1}</TableCell>
+              <TableCell>
+                <h4 className="m-0 text-sm font-medium">
+                  [{index + 1}] {hit.document.title}
+                </h4>
+                <span className="description block text-xs">
+                  {hit.document.source}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span
+                  className="inline-block whitespace-nowrap rounded-sm px-1 focus-visible:outline"
+                  tabIndex={0}
+                  title={`${scoreNames[run.mode]}: ${hit.score.toFixed(6)}`}
+                >
+                  {normalizedPercentage(hit.score, [...run.ranked])}%
+                </span>
+              </TableCell>
+              <TableCell className="hidden max-w-md sm:table-cell">
+                {hit.document.text}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </section>
+  );
+}
+
 export function RagDemo() {
   const [question, setQuestion] = useState('What should I bring?');
   const [mode, setMode] = useState<RetrievalMode>('hybrid');
@@ -105,7 +165,6 @@ export function RagDemo() {
   const [runId, setRunId] = useState(0);
   const [documents, setDocuments] = useState(getCorpus);
   const [activeSuppliedCount, setActiveSuppliedCount] = useState(0);
-  const [hits, setHits] = useState<SearchHit[]>([]);
   const [prompt, setPrompt] = useState(
     'Find sources to inspect the exact grounded prompt.',
   );
@@ -167,6 +226,7 @@ export function RagDemo() {
         id,
         question: query,
         mode,
+        ranked: [],
         retrieved: [],
         supplied: [],
         prompt: emptyPrompt,
@@ -176,7 +236,6 @@ export function RagDemo() {
     ]);
     setRunId(current => current + 1);
     setBusy(true);
-    setHits([]);
     setActiveSuppliedCount(0);
     setDiagramState('sources');
     setStatus(`Ranking attached files with ${mode} search…`);
@@ -184,15 +243,19 @@ export function RagDemo() {
     try {
       const ranked = await retrieve(query, mode);
       const top = ranked.slice(0, 3);
+      const frozenRanked = top.map(hit => ({
+        score: hit.score,
+        document: {...hit.document},
+      }));
       const retrieved = freezeSources(top.map(hit => hit.document));
       const exactPrompt = groundingPrompt(query, retrieved);
-      setHits(top);
       setPrompt(exactPrompt);
       setDiagramState('context');
 
       if (!top.length) {
         updateRun(id, {
           retrieved,
+          ranked: frozenRanked,
           prompt: exactPrompt,
           result: {kind: 'complete', outcome: 'no-results'},
         });
@@ -207,6 +270,7 @@ export function RagDemo() {
       if (!generate) {
         updateRun(id, {
           retrieved,
+          ranked: frozenRanked,
           prompt: exactPrompt,
           result: {kind: 'complete', outcome: 'sources-only'},
         });
@@ -220,6 +284,7 @@ export function RagDemo() {
       setActiveSuppliedCount(supplied.length);
       updateRun(id, {
         retrieved,
+        ranked: frozenRanked,
         supplied,
         prompt: exactPrompt,
       });
@@ -316,171 +381,47 @@ export function RagDemo() {
   };
 
   return (
-    <section className="space-y-6">
-      <p className="description max-w-3xl">
-        This experiment searches pretend emails before asking Gemma a question.
-        Keyword, embedding, or hybrid retrieval ranks the available evidence;
-        only the three strongest chunks enter the final prompt. No model weights
-        change.
-      </p>
-
+    <section className="workshop-chat">
       <div className="demo-system-layout grid gap-6 min-[1101px]:grid-cols-[minmax(0,1fr)_15.625rem] min-[1101px]:items-start">
-        <div className="demo-system-main min-w-0 space-y-6">
-          <DocumentContext
-            disabled={busy}
-            onChange={(nextDocuments, message) => {
-              setDocuments(nextDocuments);
-              setDiagramState('sources');
-              setStatus(message);
-              setHits([]);
-              setActiveSuppliedCount(0);
-            }}
-          />
-
-          <form
-            className="space-y-3 rounded-md border border-[var(--border)] p-4"
-            onSubmit={submit}
-          >
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-              <div>
-                <label className="m-0" htmlFor="rag-question">
-                  Your question
-                </label>
-                <textarea
-                  id="rag-question"
-                  value={question}
-                  maxLength={1000}
-                  rows={3}
-                  required
-                  disabled={busy}
-                  onChange={event => {
-                    setQuestion(event.currentTarget.value);
-                    if (!busy) setDiagramState('sources');
-                  }}
+        <div className="demo-system-main min-w-0">
+          <section className="chat-thread" aria-label="Retrieval conversation">
+            <article className="chat-turn">
+              <div className="chat-assistant-message">
+                <SparklesIcon
+                  className="size-5 shrink-0 text-[var(--accent)]"
+                  aria-hidden="true"
                 />
+                <div>
+                  <h3 className="m-0 text-base">Search, then ask</h3>
+                  <p className="description mb-0 mt-1">
+                    Choose files in the composer. Keyword, embedding, or hybrid
+                    retrieval ranks evidence first; only the strongest chunks
+                    enter a generated answer. Model weights do not change.
+                  </p>
+                </div>
               </div>
-              <div>
-                <label className="m-0" htmlFor="retrieval-mode">
-                  Retrieval method
-                </label>
-                <select
-                  id="retrieval-mode"
-                  value={mode}
-                  disabled={busy}
-                  onChange={event => {
-                    const value = event.currentTarget.value;
-                    setMode(
-                      value === 'semantic' || value === 'hybrid'
-                        ? value
-                        : 'lexical',
-                    );
-                    setHits([]);
-                    setActiveSuppliedCount(0);
-                    setDiagramState('sources');
-                  }}
-                >
-                  <option value="lexical">Keywords · BM25</option>
-                  <option value="semantic">Semantic · EmbeddingGemma</option>
-                  <option value="hybrid">Hybrid · rank fusion</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-wrap justify-end gap-2">
-              {busy && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => client.cancel()}
-                >
-                  <StopIcon className="size-4" aria-hidden="true" /> Cancel
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy || !question.trim()}
-                onClick={() => void execute(false)}
-              >
-                <MagnifyingGlassIcon className="size-4" aria-hidden="true" />{' '}
-                Find sources only
-              </Button>
-              <Button type="submit" disabled={busy || !question.trim()}>
-                <PaperAirplaneIcon className="size-4" aria-hidden="true" />{' '}
-                Retrieve and ask
-              </Button>
-            </div>
-          </form>
+            </article>
 
-          <p className="status" role="status">
-            {status}
-          </p>
-
-          {hits.length > 0 && (
-            <section aria-labelledby="ranked-sources-heading">
-              <h3 id="ranked-sources-heading">Ranked sources</h3>
-              <p className="description">
-                Percentages are normalized to the strongest result, not
-                confidence probabilities. Focus or hover a percentage for the
-                original {scoreNames[mode]}.
-              </p>
-              <Table>
-                <caption className="sr-only">Retrieved source ranking</caption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Rank</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Match</TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Evidence
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {hits.map((hit, index) => (
-                    <TableRow key={hit.document.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>
-                        <h3 className="m-0 text-sm font-medium">
-                          [{index + 1}] {hit.document.title}
-                        </h3>
-                        <span className="description block text-xs">
-                          {hit.document.source}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className="inline-block whitespace-nowrap rounded-sm px-1 focus-visible:outline"
-                          tabIndex={0}
-                          title={`${scoreNames[mode]}: ${hit.score.toFixed(6)}`}
-                        >
-                          {normalizedPercentage(hit.score, hits)}%
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden max-w-md sm:table-cell">
-                        {hit.document.text}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </section>
-          )}
-
-          {runs.length > 0 && (
-            <section aria-labelledby="request-history-heading">
-              <h3 id="request-history-heading">Request history</h3>
-              <div className="space-y-3">
-                {runs.map(run => (
-                  <article
-                    key={run.id}
-                    className="rounded-md border border-[var(--border)] bg-[#101114] p-4"
-                  >
-                    <p className="description m-0 text-xs">
-                      {run.mode} retrieval
-                    </p>
-                    <h4 className="mb-2 mt-1 text-sm font-semibold">
-                      {run.question}
-                    </h4>
+            <h3 id="request-history-heading" className="sr-only">
+              Request history
+            </h3>
+            {runs.map((run, index) => (
+              <article key={run.id} className="chat-turn">
+                <div className="chat-user-message">
+                  <p className="m-0 whitespace-pre-wrap">{run.question}</p>
+                  <span className="description mt-1 block text-xs">
+                    {run.mode} retrieval ·{' '}
+                    {run.generationRequested
+                      ? 'retrieve and ask'
+                      : 'sources only'}
+                  </span>
+                </div>
+                <div className="chat-assistant-message">
+                  <SparklesIcon
+                    className="size-5 shrink-0 text-[var(--accent)]"
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0 flex-1">
                     {run.result.kind === 'pending' && (
                       <p className="description m-0">Request in progress…</p>
                     )}
@@ -504,29 +445,27 @@ export function RagDemo() {
                       )}
                     {run.result.kind === 'complete' &&
                       run.result.outcome === 'answer' && (
-                        <div className="answer flex gap-3">
-                          <SparklesIcon
-                            className="mt-1 size-5 shrink-0 text-[var(--accent)]"
-                            aria-hidden="true"
-                          />
-                          <p className="m-0 whitespace-pre-wrap">
-                            {run.result.answer}
-                          </p>
-                        </div>
+                        <p className="answer m-0 whitespace-pre-wrap">
+                          {run.result.answer}
+                        </p>
                       )}
+                    <RankedSources
+                      run={run}
+                      latest={index === runs.length - 1}
+                    />
                     <SourceReceipt
                       prompt={run.prompt}
                       retrieved={run.retrieved}
                       supplied={run.supplied}
                       generationRequested={run.generationRequested}
                     />
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </section>
 
-          <details>
+          <details className="chat-details">
             <summary>Latest prompt · inspect what the model sees</summary>
             <div className="relative">
               <pre tabIndex={0} className="pr-14">
@@ -538,7 +477,7 @@ export function RagDemo() {
             </div>
           </details>
 
-          <details>
+          <details className="chat-details">
             <summary>
               Evaluation · check retrieval on synthetic examples
             </summary>
@@ -586,9 +525,101 @@ export function RagDemo() {
               </Table>
             )}
           </details>
+
+          <form className="chat-composer" onSubmit={submit}>
+            <label className="sr-only" htmlFor="rag-question">
+              Your question
+            </label>
+            <textarea
+              id="rag-question"
+              value={question}
+              maxLength={1000}
+              rows={3}
+              required
+              disabled={busy}
+              placeholder="Ask a question about the attached files…"
+              onKeyDown={event => {
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault();
+                  event.currentTarget.form?.requestSubmit();
+                }
+              }}
+              onChange={event => {
+                setQuestion(event.currentTarget.value);
+                if (!busy) setDiagramState('sources');
+              }}
+            />
+
+            <DocumentContext
+              disabled={busy}
+              onChange={(nextDocuments, message) => {
+                setDocuments(nextDocuments);
+                setDiagramState('sources');
+                setStatus(message);
+                setActiveSuppliedCount(0);
+              }}
+            />
+
+            <div className="chat-tools flex flex-wrap items-end gap-3">
+              <label className="m-0" htmlFor="retrieval-mode">
+                Retrieval method
+                <select
+                  id="retrieval-mode"
+                  value={mode}
+                  disabled={busy}
+                  onChange={event => {
+                    const value = event.currentTarget.value;
+                    setMode(
+                      value === 'semantic' || value === 'hybrid'
+                        ? value
+                        : 'lexical',
+                    );
+                    setActiveSuppliedCount(0);
+                    setDiagramState('sources');
+                  }}
+                >
+                  <option value="lexical">Keywords · BM25</option>
+                  <option value="semantic">Semantic · EmbeddingGemma</option>
+                  <option value="hybrid">Hybrid · rank fusion</option>
+                </select>
+              </label>
+              <div className="ml-auto flex flex-wrap justify-end gap-2">
+                {busy && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => client.cancel()}
+                  >
+                    <StopIcon className="size-4" aria-hidden="true" /> Cancel
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy || !question.trim()}
+                  onClick={() => void execute(false)}
+                >
+                  <MagnifyingGlassIcon className="size-4" aria-hidden="true" />{' '}
+                  Find sources only
+                </Button>
+                <Button type="submit" disabled={busy || !question.trim()}>
+                  <PaperAirplaneIcon className="size-4" aria-hidden="true" />{' '}
+                  Retrieve and ask
+                </Button>
+              </div>
+            </div>
+
+            <p className="status m-0" role="status">
+              {status}
+            </p>
+          </form>
         </div>
 
-        <aside className="demo-system-rail sticky top-0 z-10 order-first min-[1101px]:top-5 min-[1101px]:order-last">
+        <aside className="chat-inspector demo-system-rail sticky top-0 z-10 order-first min-[1101px]:top-5 min-[1101px]:order-last">
           <SystemDiagram
             state={diagramState}
             runId={runId}

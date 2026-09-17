@@ -19,6 +19,13 @@ page.on('console', message => {
 const started = Date.now();
 try {
   await page.goto(`${base}/#context`);
+  const hardware = await page.evaluate(async () => {
+    const adapter = await navigator.gpu?.requestAdapter();
+    if (!adapter || adapter.info.isFallbackAdapter)
+      throw new Error('A hardware WebGPU adapter is required for model proof.');
+    return {vendor: adapter.info.vendor, architecture: adapter.info.architecture};
+  });
+  console.log(JSON.stringify({stage: 'hardware', ...hardware}));
   await page.getByRole('button', {name: 'Ask Gemma', exact: true}).click();
   let previous = '';
   for (let step = 0; step < 600; step++) {
