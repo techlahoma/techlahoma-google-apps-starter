@@ -354,6 +354,143 @@ main {
   font-size: 13px;
   color: var(--muted);
 }
+.jev-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: 28px;
+}
+.jev-main {
+  min-width: 0;
+}
+.jev-mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.jev-inline-status {
+  display: none;
+}
+.jev-feed {
+  height: 460px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #111215;
+}
+.jev-post {
+  min-height: 240px;
+  padding: 22px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #1c1e23;
+  transition: border-color 160ms ease;
+}
+.jev-post:last-child {
+  margin-bottom: 120px;
+}
+.jev-post[data-active="true"] {
+  border-color: var(--accent);
+}
+.jev-post[data-verdict="Slop"] {
+  border-color: #f0b67f;
+}
+.jev-post[data-verdict="Clear"] {
+  border-color: #87d8b7;
+}
+.jev-post-heading,
+.jev-score-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.jev-badge {
+  border: 1px solid currentColor;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.jev-post > button {
+  font-size: 12px;
+  background: transparent;
+  padding: 5px 10px;
+}
+.jev-inspector h2,
+.jev-inspector button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.jev-inspector svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.jev-verdict {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  margin: 18px 0;
+}
+.jev-verdict > strong {
+  display: block;
+  margin: 8px 0;
+  font-size: 22px;
+}
+.jev-verdict > p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+.jev-verdict[data-verdict="Slop"] > strong {
+  color: #f0b67f;
+}
+.jev-verdict[data-verdict="Clear"] > strong {
+  color: #87d8b7;
+}
+.jev-scores meter {
+  width: 100%;
+  height: 12px;
+  margin: 6px 0 12px;
+}
+@media (max-width: 1100px) {
+  .jev-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  .jev-main {
+    width: 100%;
+  }
+  .jev-inline-status {
+    display: block;
+    position: sticky;
+    top: 8px;
+    z-index: 3;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    background: #222326;
+    font-size: 13px;
+  }
+  .jev-layout > .jev-inspector {
+    order: -1;
+  }
+  .jev-feed {
+    height: 400px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jev-post {
+    transition: none;
+  }
+}
 .chat-composer {
   position: relative;
   flex-shrink: 0;

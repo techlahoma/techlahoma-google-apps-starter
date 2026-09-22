@@ -10,8 +10,8 @@
     "test": "bun test src",
     "typecheck": "tsc --noEmit",
     "check": "bun run typecheck && bun run test && bun run build",
-    "assets:plan": "bun scripts/rust/prepare-assets.ts plan",
-    "assets:apply": "bun scripts/rust/prepare-assets.ts apply"
+    "assets:plan": "bun scripts/rust/prepare-assets.ts plan && bun scripts/semif/prepare-assets.ts plan",
+    "assets:apply": "bun scripts/rust/prepare-assets.ts apply && bun scripts/semif/prepare-assets.ts apply"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",

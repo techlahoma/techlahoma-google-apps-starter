@@ -37,6 +37,14 @@ Fine-tuning already uses WebGPU for FunctionGemma inference and adapter matrix o
 
 The table source is adapted from the official [shadcn/ui Table registry](https://ui.shadcn.com/r/styles/new-york-v4/table.json), with workshop colors and wrapping evidence cells. Components live in the repository, following shadcn's source distribution model. The button and chat layout are custom React components styled to match, rather than untouched registry installs.
 
+## Secret fifth demo: Local Jev
+
+Open [Local Jev](https://gdg-model-workshop.web.app/#local-jev) directly. It is omitted from the four-stage navigation, not access-controlled. Scroll a feed of authored examples or edit your own paragraph to test a live, local slop detector. The rule is editable; the results describe writing style, not AI authorship.
+
+The independent demo adapts [SemIf](https://github.com/TheoLeeCJ/SemIf)'s browser setup, using pinned wllama 3.6.1 and a quantized model to read scores for two allowed labels. It is not Jev's hosted service and is not affiliated with Jev or TypeSafe. The model downloads only after clicking Load: MiniCPM5 2B is 1.56 GB; the smaller Qwen3 0.6B is 639 MB. WebGPU, WebAssembly JSPI, and memory64 are required. Text travels only to the local worker. Scores are uncalibrated and normalized over the displayed options.
+
+See [runtime provenance and reproduction](scripts/semif/README.md). Asset preparation downloads checksum-verified runtime files; model weights remain external and are fetched by the browser. The explicit real-model proof is `bun apps/building-ai-models-without-coding/scripts/semif/prove-browser.ts http://127.0.0.1:5201` from the repository root.
+
 ## Make your own version
 
 The [Google AI Studio Build documentation](https://ai.google.dev/gemini-api/docs/aistudio-build-mode) describes Add files → Import from GitHub. Select `techlahoma/techlahoma-google-apps-starter` and ask it to run this app workspace. Browser import verification is tracked separately in the delivery plan; do not assume the default repository welcome app is this workshop.

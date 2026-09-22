@@ -14,6 +14,7 @@ import {createRoot} from 'react-dom/client';
 import {followChatOutput} from './components/chat-scroll';
 import {ContextDemo} from './demos/context-demo';
 import {RagDemo} from './demos/rag-demo';
+import {LocalJevDemo} from './demos/local-jev-demo';
 
 type MountDemo = (container: HTMLElement) => () => void;
 
@@ -69,6 +70,17 @@ const demos: Demo[] = [
     loadMount: async () => (await import('./rust-demo')).mountRustDemo,
   },
 ];
+
+const localJev: Demo = {
+  id: 'local-jev',
+  name: 'Local Jev',
+  verb: 'A secret fifth experiment',
+  description:
+    'A local semantic slop detector. Scroll, edit, and watch the decision change.',
+  icon: CpuChipIcon,
+  component: LocalJevDemo,
+};
+const allDemos = [...demos, localJev];
 
 function ImperativeDemo({load}: {load: () => Promise<MountDemo>}) {
   const ref = useRef<HTMLDivElement>(null);
@@ -134,22 +146,25 @@ function RebuildPrompt({demo}: {demo: Demo}) {
 function App() {
   const initial = location.hash.slice(1);
   const [slug, setSlug] = useState(
-    demos.some(item => item.id === initial) ? initial : 'context',
+    allDemos.some(item => item.id === initial) ? initial : 'context',
   );
   const workspace = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (!location.hash || !demos.some(item => `#${item.id}` === location.hash))
+    if (
+      !location.hash ||
+      !allDemos.some(item => `#${item.id}` === location.hash)
+    )
       history.replaceState(null, '', '#context');
     const onHash = () => {
       const next = location.hash.slice(1);
-      setSlug(demos.some(item => item.id === next) ? next : 'context');
+      setSlug(allDemos.some(item => item.id === next) ? next : 'context');
       workspace.current?.focus();
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
   const demo = useMemo(
-    () => demos.find(item => item.id === slug) ?? demos[0]!,
+    () => allDemos.find(item => item.id === slug) ?? demos[0]!,
     [slug],
   );
   useEffect(() => {
@@ -209,7 +224,9 @@ function App() {
         <div className="workspace-content">
           <div className="conversation-heading">
             <p className="eyebrow">
-              {demo.verb} · Experiment {demos.indexOf(demo) + 1} of 4
+              {demo === localJev
+                ? demo.verb
+                : `${demo.verb} · Experiment ${demos.indexOf(demo) + 1} of 4`}
             </p>
             <h1>{demo.name}</h1>
             <p className="intro">{demo.description}</p>

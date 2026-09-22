@@ -111,4 +111,21 @@ export default async function runSmokeTest({
   await page.waitForTimeout(500);
   if (await terminal.evaluate(element => element.getBoundingClientRect().height) > 300)
     throw new Error('Xterm viewport grew beyond its bound');
+
+  const modelDownloads: string[] = [];
+  page.on('request', request => {if (request.url().includes('.gguf')) modelDownloads.push(request.url());});
+  await page.goto(`${baseURL}#local-jev`);
+  await page.getByRole('heading', {name: 'Local Jev', exact: true}).waitFor();
+  if (await page.locator('nav[aria-label="Workshop demos"] a').count() !== 4)
+    throw new Error('Secret demo changed the four-stage navigation');
+  if (await page.locator('meter').count()) throw new Error('Secret demo fabricated initial scores');
+  await page.locator('[data-post="release"]').evaluate(element => element.scrollIntoView({block: 'center'}));
+  await page.waitForFunction(() => document.querySelector('[data-post="release"]')?.getAttribute('data-active') === 'true');
+  await page.getByRole('button', {name: 'Try your own text', exact: true}).click();
+  await page.locator('#jev-draft').fill('A private local editing example.');
+  await page.waitForTimeout(700);
+  if (modelDownloads.length) throw new Error('Secret demo downloaded a model without consent');
+  if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth))
+    throw new Error(`Local Jev overflows at ${viewport} width`);
+  await page.screenshot({path: `apps/building-ai-models-without-coding/test-results/smoke-local-jev-${viewport}.png`, fullPage: true});
 }
