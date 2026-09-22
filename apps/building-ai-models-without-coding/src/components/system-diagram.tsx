@@ -179,10 +179,8 @@ export function SystemDiagram({
           );
         })}
       </ol>
-      <div className="mt-3 hidden border-t border-[var(--border)] pt-3 min-[1101px]:block">
-        <p className="mb-2 text-xs font-semibold text-[var(--muted)]">
-          Selected sources
-        </p>
+      <details className="system-source-details">
+        <summary>Selected files · {sources.length}</summary>
         {sources.length === 0 ? (
           <p className="description m-0 text-xs">No documents selected.</p>
         ) : (
@@ -216,11 +214,14 @@ export function SystemDiagram({
             })}
           </ul>
         )}
-      </div>
-      <p className="description mb-0 mt-3 hidden border-t border-[var(--border)] pt-3 text-xs min-[1101px]:block">
-        “Supplied” means included in the prompt. A browser app cannot observe
-        which supplied text changed the model’s internal computation.
-      </p>
+      </details>
+      <details className="system-source-details">
+        <summary>About this visual</summary>
+        <p className="description">
+          “Supplied” means included in the prompt. A browser app cannot observe
+          which supplied text changed the model’s internal computation.
+        </p>
+      </details>
     </figure>
   );
 }

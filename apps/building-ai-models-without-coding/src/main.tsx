@@ -38,7 +38,7 @@ const demos: Demo[] = [
     name: 'Context',
     verb: 'Tell it',
     description:
-      'Build the exact input a local model can see, then ask it about your files.',
+      'Ask a plain question, then add files and compare what changes.',
     icon: BookOpenIcon,
     component: ContextDemo,
   },
@@ -47,7 +47,7 @@ const demos: Demo[] = [
     name: 'Retrieval',
     verb: 'Let it look',
     description:
-      'Rank the evidence first, then give only the strongest matches to the model.',
+      'Compare a plain answer with an answer based on retrieved files.',
     icon: CircleStackIcon,
     component: RagDemo,
   },

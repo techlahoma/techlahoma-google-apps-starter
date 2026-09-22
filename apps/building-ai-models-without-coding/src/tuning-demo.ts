@@ -200,28 +200,23 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     <section class="workshop-chat" aria-label="FunctionGemma fine-tuning">
       <div id="tuning-thread" class="chat-thread" role="log" aria-label="Fine-tuning conversation" aria-relevant="additions">
         <article class="chat-turn chat-assistant-message">
-          <h2>Teach a repeatable task</h2>
-          <p>Try a note with the default model, train on a few fictional examples, then compare. Your previous messages and training runs stay here until you leave this demo.</p>
+          <p>Try the default model, train on a few examples, then compare what changed.</p>
           <div id="tuning-try"><div id="tuning-custom-result" class="grid gap-3 sm:grid-cols-2"></div></div>
         </article>
       </div>
       <form id="tuning-composer" class="chat-composer">
         <label for="tuning-input">Send a short note or notification</label>
-        <textarea id="tuning-input" maxlength="500" rows="3" placeholder="Try a notification…"></textarea>
-        <div class="chat-tools"><button type="submit" id="tuning-baseline" class="primary">Run default model</button><button type="button" id="tuning-compare" disabled>Compare default vs tuned</button><button type="button" id="tuning-run">Train and compare</button><button type="button" id="tuning-cancel" disabled>Stop</button></div>
+        <textarea id="tuning-input" maxlength="500" rows="2" placeholder="Try a notification…"></textarea>
+        <div class="chat-tools"><button type="submit" id="tuning-baseline" class="primary">Run default model</button><button type="button" id="tuning-compare" hidden disabled>Compare default vs tuned</button><button type="button" id="tuning-run">Train and compare</button><button type="button" id="tuning-cancel" hidden disabled>Stop</button></div>
         <output id="tuning-status" aria-live="polite">Ready. First use downloads a 426 MB model. Training needs WebGPU.</output>
       </form>
     </section>
     <aside class="chat-inspector" aria-label="Fine-tuning controls">
-      <h3>Teach a habit</h3>
       <label for="tuning-lesson">Everyday task</label><select id="tuning-lesson"></select>
-      <p id="tuning-task-explanation" class="hint"></p>
-      <div id="tuning-examples" class="chat-tools" role="group" aria-label="Example inputs"></div>
-      <button type="button" id="tuning-save" disabled>Save latest adapter</button>
+      <details><summary>Try an example</summary><p id="tuning-task-explanation" class="hint"></p><div id="tuning-examples" class="chat-tools" role="group" aria-label="Example inputs"></div></details>
       <details><summary>Examples and evaluation</summary><p>Test inputs are withheld from updates. These authored examples are a teaching exercise, not a benchmark.</p><div id="tuning-data"></div></details>
-      <details><summary>What changes inside the model?</summary><p>The original model stays frozen. WebGPU trains an output-head LoRA adapter with full-vocabulary cross-entropy. Each retrain starts a fresh adapter and repeats all 200 passes. Frozen features and default predictions can be reused exactly for this task, in this tab.</p><p>Saving an adapter uses this demo’s own format, not MLX or PEFT. No tool actions are executed.</p><div id="tuning-loss"></div></details>
+      <details><summary>What changes inside the model?</summary><p>The original model stays frozen. WebGPU trains an output-head LoRA adapter with full-vocabulary cross-entropy. Each retrain starts a fresh adapter and repeats all 200 passes. Frozen features and default predictions can be reused exactly for this task, in this tab.</p><p>Saving an adapter uses this demo’s own format, not MLX or PEFT. No tool actions are executed. Messages and training runs remain here until you leave the demo.</p><button type="button" id="tuning-save" disabled>Save latest adapter</button><div id="tuning-loss"></div><p class="hint"><a href="functiongemma/NOTICE.txt">Model source</a> · <a href="functiongemma/TERMS.txt">Gemma terms</a></p></details>
       <details><summary>Continue with the CLI</summary><p>The separate MLX example trains attention adapters and records actual held-out outputs.</p><a href="https://github.com/techlahoma/techlahoma-google-apps-starter/tree/main/apps/building-ai-models-without-coding/scripts/functiongemma">CLI instructions ↗</a></details>
-      <p class="hint"><a href="functiongemma/NOTICE.txt">Model source</a> · <a href="functiongemma/TERMS.txt">Gemma terms</a></p>
     </aside>
   </div>`;
   function get<T extends Element>(selector: string): T {
@@ -358,20 +353,21 @@ export function mountTuningDemo(container: HTMLElement): () => void {
       predictionPanel('After tuning', tunedState),
     );
   }
-  renderPanels(
-    get('#tuning-custom-result'),
-    {kind: 'idle', message: 'Send a message to try the default model.'},
-    {kind: 'unavailable', message: 'Train an adapter to compare.'},
-  );
   function controls(active: boolean) {
     running = active;
     run.disabled = active;
     baseline.disabled = active;
     compare.disabled = active || !adapter;
+    compare.hidden = !adapter;
+    compare.classList.toggle('primary', !!adapter);
+    compare.type = adapter ? 'submit' : 'button';
+    baseline.classList.toggle('primary', !adapter);
+    baseline.type = adapter ? 'button' : 'submit';
     save.disabled = active || !adapter;
     select.disabled = active;
     input.disabled = active;
     stop.disabled = !active;
+    stop.hidden = !active;
     for (const button of examples.querySelectorAll('button'))
       button.disabled = active;
     run.textContent = adapter ? 'Retrain and compare' : 'Train and compare';
@@ -544,15 +540,18 @@ export function mountTuningDemo(container: HTMLElement): () => void {
   const composer = get<HTMLFormElement>('#tuning-composer');
   composer.onsubmit = event => {
     event.preventDefault();
-    void predict(false);
+    void predict(!!adapter);
   };
   input.addEventListener('keydown', event => {
     if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
     event.preventDefault();
-    if (!running) composer.requestSubmit(baseline);
+    if (!running) composer.requestSubmit(adapter ? compare : baseline);
   });
+  baseline.onclick = () => {
+    if (baseline.type === 'button') void predict(false);
+  };
   compare.onclick = () => {
-    void predict(true);
+    if (compare.type === 'button') void predict(true);
   };
   save.onclick = () => {
     void saveAdapter();
@@ -651,20 +650,21 @@ export function mountTuningDemo(container: HTMLElement): () => void {
     )!;
     const results = node('div');
     latestId(results, 'tuning-results');
+    const comparison = node('details');
+    comparison.append(node('summary', 'Held-out comparison'), results);
     const timings = node('p', '', 'hint');
     timings.dataset.trainingTimings = '';
     const details = node('details');
     details.append(node('summary', `Training log · run ${runNumber}`));
     const logHost = node('div');
     latestId(logHost, 'tuning-loss');
-    details.append(logHost);
+    details.append(logHost, timings);
     assistant.append(
       node('h3', `Training run ${runNumber}`),
       runStatus,
       progress,
       visual,
-      results,
-      timings,
+      comparison,
       details,
     );
     const log = terminal(logHost, `Adapter training log · run ${runNumber}`);

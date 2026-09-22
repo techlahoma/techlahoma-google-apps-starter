@@ -12,14 +12,12 @@ try {
   });
   await page.goto(base + '/#train');
   const source = page.locator('#rust-source');
-  const run = page.getByRole('button', {name: 'Compile and train'});
+  const run = page.locator('#rust-run');
   const plainOutput = () => page.locator('[data-terminal-plain]').last();
   const idle = () =>
     page.waitForFunction(
       () =>
-        ![...document.querySelectorAll('button')].find(
-          b => b.textContent === 'Compile and train',
-        ).disabled,
+        !document.querySelector('#rust-run').disabled,
       null,
       {timeout: 300_000},
     );
@@ -39,6 +37,7 @@ try {
   )
     throw new Error('Training/checkpoint missing');
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {origin: base});
+  await page.getByText('Actual compiler and model output', {exact: true}).first().click();
   await page.getByRole('button', {name: 'Copy Rust compiler and training output', exact: true}).click();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   if (copied !== training) throw new Error('Copy altered raw compiler output');
@@ -86,7 +85,7 @@ try {
   if (
     !(await plainOutput().textContent()).includes('error') ||
     !(await page
-      .getByRole('button', {name: 'Continue text', exact: true})
+      .getByRole('button', {name: 'Continue text', exact: true, includeHidden: true})
       .isDisabled())
   )
     throw new Error('Compiler failure left stale model active');

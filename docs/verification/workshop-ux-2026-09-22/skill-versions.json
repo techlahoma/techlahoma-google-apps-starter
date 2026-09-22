@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-09-22T15:31:43.654Z",
+  "wrapper": {
+    "skillSha256": "9019011f9cead3ab246b249a1a34bdeca86c4bd4e8ca0597165068aaccd4e6f5",
+    "referencesIntegrity": "sha256-uULXj6ze9BMAEh/ufIpWEuolIEoCprV5z0gr1ngjoz4=",
+    "scriptsIntegrity": "sha256-pXU1WV2W3aDJvM/MLbqPhH8u7kbTSYZ9nObGXpeP62o="
+  },
+  "lockSha256": "e17cf40d0da70a9070d93a19bd639bea0f4dee9ff04819d64f00fd774ea49583",
+  "manager": "https://codeload.github.com/luisalima/skills-lock/tar.gz/4e37719a163b6022d4a2828850567421f9de7825",
+  "status": "installed-content-verified",
+  "skills": [
+    {
+      "name": "a11y",
+      "source": "addyosmani/web-quality-skills",
+      "commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+      "path": "skills/accessibility",
+      "integrity": "sha256-qMiDPllFTw2Y67U7AxFuQfp9xrSNdOCB+qCegaiz9X4=",
+      "entrypoint": "<locked skill package>/.runtime/skills/a11y/SKILL.md"
+    },
+    {
+      "name": "core-web-vitals",
+      "source": "addyosmani/web-quality-skills",
+      "commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+      "path": "skills/core-web-vitals",
+      "integrity": "sha256-jDudK46ldtnZNRlaMixb5w/wCgqASTCZIGDmRyWgaDk=",
+      "entrypoint": "<locked skill package>/.runtime/skills/core-web-vitals/SKILL.md"
+    },
+    {
+      "name": "hig",
+      "source": "dickwu/apple-design-skill",
+      "commit": "da2da6dd03aacf06da3fecf205347601d38bb141",
+      "path": ".",
+      "integrity": "sha256-IVX+F5J8XSp2cpH5dZnftKZhmu8TOEakfeMh1+W26d8=",
+      "entrypoint": "<locked skill package>/.runtime/skills/hig/SKILL.md"
+    },
+    {
+      "name": "motion",
+      "source": "emilkowalski/skills",
+      "commit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+      "path": "skills/review-animations",
+      "integrity": "sha256-q+a0sSZT5I3lZpxztGsAeFXockWNCuIy4kdTwuypCfI=",
+      "entrypoint": "<locked skill package>/.runtime/skills/motion/SKILL.md"
+    },
+    {
+      "name": "performance",
+      "source": "addyosmani/web-quality-skills",
+      "commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+      "path": "skills/performance",
+      "integrity": "sha256-hOtmGLxt/XAdQvqonF2Vcf32nnwAy4MZc2zcXjzP9hw=",
+      "entrypoint": "<locked skill package>/.runtime/skills/performance/SKILL.md"
+    }
+  ]
+}

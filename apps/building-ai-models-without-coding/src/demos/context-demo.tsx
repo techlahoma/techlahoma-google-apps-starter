@@ -12,7 +12,12 @@ import {
 } from '../components/system-diagram';
 import {Button} from '../components/ui/button';
 import {CopyButton} from '../components/ui/copy-button';
-import {getCorpus, groundingPrompt, type DocumentChunk} from '../corpus';
+import {
+  clearCorpus,
+  getCorpus,
+  groundingPrompt,
+  type DocumentChunk,
+} from '../corpus';
 import {ModelClient} from '../model-client';
 import {
   DocumentContext,
@@ -46,15 +51,16 @@ export function ContextDemo() {
   const [question, setQuestion] = useState('What should I bring?');
   const [includeContext, setIncludeContext] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState(
-    'Ready. Pick an email or ask about the samples.',
-  );
+  const [status, setStatus] = useState('Ready. Ask Gemma.');
   const [prompt, setPrompt] = useState(
     'Run a question to inspect the exact prompt.',
   );
   const [diagramState, setDiagramState] = useState<SystemDiagramState>('idle');
   const [runId, setRunId] = useState(0);
-  const [documents, setDocuments] = useState(getCorpus);
+  const [documents, setDocuments] = useState(() => {
+    clearCorpus();
+    return getCorpus();
+  });
   const [activeSuppliedCount, setActiveSuppliedCount] = useState<number | null>(
     null,
   );
@@ -76,9 +82,10 @@ export function ContextDemo() {
     const supplied = freezeSources(
       includeContext ? getCorpus().slice(0, 6) : [],
     );
-    const exactPrompt = includeContext
-      ? groundingPrompt(cleanQuestion, supplied)
-      : cleanQuestion;
+    const exactPrompt =
+      includeContext && supplied.length > 0
+        ? groundingPrompt(cleanQuestion, supplied)
+        : cleanQuestion;
     const id = Date.now();
     setRuns(current => [
       ...current,
@@ -145,11 +152,11 @@ export function ContextDemo() {
                   aria-hidden="true"
                 />
                 <div>
-                  <h3 className="m-0 text-base">Ask about your files</h3>
+                  <h3 className="m-0 text-base">Start with a plain question</h3>
                   <p className="description mb-0 mt-1">
-                    Choose pretend emails or upload text in the composer, then
-                    ask a practical question. Every question is an independent
-                    model run; earlier turns remain here but are not sent again.
+                    Ask first with no files. Preview and add a sample, then ask
+                    again. Each question runs independently; earlier turns are
+                    not sent again.
                   </p>
                 </div>
               </div>
@@ -197,18 +204,6 @@ export function ContextDemo() {
             ))}
           </section>
 
-          <details className="chat-details">
-            <summary>Latest prompt · inspect what the model sees</summary>
-            <div className="relative">
-              <pre tabIndex={0} className="pr-14">
-                <code>{prompt}</code>
-              </pre>
-              <div className="absolute right-2 top-2">
-                <CopyButton value={prompt} label="Copy exact prompt" />
-              </div>
-            </div>
-          </details>
-
           <form
             className="chat-composer"
             onSubmit={event => void submit(event)}
@@ -220,7 +215,7 @@ export function ContextDemo() {
               id="context-question"
               value={question}
               maxLength={1000}
-              rows={3}
+              rows={2}
               required
               disabled={busy}
               placeholder="Ask about the attached files…"
@@ -251,18 +246,20 @@ export function ContextDemo() {
             />
 
             <div className="flex flex-wrap items-center gap-3">
-              <label className="m-0 inline-flex items-center gap-2 font-normal">
-                <input
-                  type="checkbox"
-                  checked={includeContext}
-                  disabled={busy}
-                  onChange={event => {
-                    setIncludeContext(event.currentTarget.checked);
-                    setDiagramState('sources');
-                  }}
-                />
-                Include attached files
-              </label>
+              {documents.length > 0 && (
+                <label className="m-0 inline-flex items-center gap-2 font-normal">
+                  <input
+                    type="checkbox"
+                    checked={includeContext}
+                    disabled={busy}
+                    onChange={event => {
+                      setIncludeContext(event.currentTarget.checked);
+                      setDiagramState('sources');
+                    }}
+                  />
+                  Use attached files ({documents.length})
+                </label>
+              )}
               <div className="ml-auto flex gap-2">
                 {busy && (
                   <Button
@@ -293,6 +290,17 @@ export function ContextDemo() {
             sources={summarizeDocuments(documents)}
             suppliedChunkCount={activeSuppliedCount ?? previewSuppliedCount}
           />
+          <details className="chat-details">
+            <summary>Latest prompt · inspect what the model sees</summary>
+            <div className="relative">
+              <pre tabIndex={0} className="pr-14">
+                <code>{prompt}</code>
+              </pre>
+              <div className="absolute right-2 top-2">
+                <CopyButton value={prompt} label="Copy exact prompt" />
+              </div>
+            </div>
+          </details>
         </aside>
       </div>
     </section>

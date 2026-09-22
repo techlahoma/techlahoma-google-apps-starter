@@ -76,7 +76,7 @@ export function groundingPrompt(
 
 // Tab-local source of truth shared by Context and Retrieval route mounts.
 // No localStorage, IndexedDB, or remote persistence: a page reload clears it.
-let activeCorpus = sampleCorpus.map(document => ({...document}));
+let activeCorpus: DocumentChunk[] = [];
 
 export function getCorpus(): DocumentChunk[] {
   return activeCorpus.map(document => ({...document}));
@@ -85,16 +85,24 @@ export function getCorpus(): DocumentChunk[] {
 export function importCorpus(files: {name: string; text: string}[]): void {
   if (!files.length || files.length > 8)
     throw new Error('Choose between 1 and 8 files.');
+  const nextFileIndex =
+    activeCorpus.reduce((highest, document) => {
+      if (document.source !== 'local file') return highest;
+      const prefix = Number.parseInt(document.id.split(':', 1)[0] ?? '', 10);
+      return Number.isFinite(prefix) ? Math.max(highest, prefix + 1) : highest;
+    }, 0) || 0;
   const imported = files.flatMap((file, index) =>
     chunkDocument(file.name, file.text).map(chunk => ({
       ...chunk,
-      id: `${index}:${chunk.id}`,
+      id: `${nextFileIndex + index}:${chunk.id}`,
     })),
   );
-  if (imported.length > MAX_CHUNKS)
-    throw new Error('Import exceeds 48 chunks; choose fewer or smaller files.');
+  if (activeCorpus.length + imported.length > MAX_CHUNKS)
+    throw new Error(
+      'Import exceeds 48 chunks total; remove documents or choose smaller files.',
+    );
   // Commit only after every file validates, preserving the current data on error.
-  activeCorpus = imported;
+  activeCorpus = [...activeCorpus, ...imported];
 }
 
 export function addSampleDocument(id: string): void {
@@ -114,4 +122,8 @@ export function removeCorpusDocument(id: string): void {
 
 export function restoreExampleCorpus(): void {
   activeCorpus = sampleCorpus.map(document => ({...document}));
+}
+
+export function clearCorpus(): void {
+  activeCorpus = [];
 }

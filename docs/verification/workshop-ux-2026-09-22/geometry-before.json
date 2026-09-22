@@ -1,0 +1,194 @@
+[
+  {
+    "route": "context",
+    "width": 1440,
+    "height": 900,
+    "thread": {
+      "height": 302,
+      "top": 202,
+      "bottom": 504
+    },
+    "composer": {
+      "height": 269,
+      "top": 593,
+      "bottom": 862
+    },
+    "selectedSources": "5 chunks"
+  },
+  {
+    "route": "retrieval",
+    "width": 1440,
+    "height": 900,
+    "thread": {
+      "height": 232,
+      "top": 202,
+      "bottom": 434
+    },
+    "composer": {
+      "height": 270,
+      "top": 592,
+      "bottom": 862
+    },
+    "selectedSources": "5 chunks"
+  },
+  {
+    "route": "fine-tuning",
+    "width": 1440,
+    "height": 900,
+    "thread": {
+      "height": 405,
+      "top": 202,
+      "bottom": 607
+    },
+    "composer": {
+      "height": 235,
+      "top": 627,
+      "bottom": 862
+    },
+    "selectedSources": null
+  },
+  {
+    "route": "train",
+    "width": 1440,
+    "height": 900,
+    "thread": {
+      "height": 131,
+      "top": 338,
+      "bottom": 469
+    },
+    "composer": {
+      "height": 297,
+      "top": 489,
+      "bottom": 786
+    },
+    "selectedSources": null
+  },
+  {
+    "route": "context",
+    "width": 1280,
+    "height": 720,
+    "thread": {
+      "height": 262,
+      "top": 202,
+      "bottom": 464
+    },
+    "composer": {
+      "height": 269,
+      "top": 553,
+      "bottom": 822
+    },
+    "selectedSources": "5 chunks"
+  },
+  {
+    "route": "retrieval",
+    "width": 1280,
+    "height": 720,
+    "thread": {
+      "height": 140,
+      "top": 202,
+      "bottom": 342
+    },
+    "composer": {
+      "height": 322,
+      "top": 500,
+      "bottom": 822
+    },
+    "selectedSources": "5 chunks"
+  },
+  {
+    "route": "fine-tuning",
+    "width": 1280,
+    "height": 720,
+    "thread": {
+      "height": 365,
+      "top": 202,
+      "bottom": 567
+    },
+    "composer": {
+      "height": 235,
+      "top": 587,
+      "bottom": 822
+    },
+    "selectedSources": null
+  },
+  {
+    "route": "train",
+    "width": 1280,
+    "height": 720,
+    "thread": {
+      "height": 91,
+      "top": 338,
+      "bottom": 429
+    },
+    "composer": {
+      "height": 297,
+      "top": 449,
+      "bottom": 746
+    },
+    "selectedSources": null
+  },
+  {
+    "route": "context",
+    "width": 390,
+    "height": 844,
+    "thread": {
+      "height": 439,
+      "top": 370,
+      "bottom": 809
+    },
+    "composer": {
+      "height": 261,
+      "top": 898,
+      "bottom": 1159
+    },
+    "selectedSources": "5 chunks"
+  },
+  {
+    "route": "retrieval",
+    "width": 390,
+    "height": 844,
+    "thread": {
+      "height": 439,
+      "top": 207,
+      "bottom": 646
+    },
+    "composer": {
+      "height": 366,
+      "top": 804,
+      "bottom": 1170
+    },
+    "selectedSources": "5 chunks"
+  },
+  {
+    "route": "fine-tuning",
+    "width": 390,
+    "height": 844,
+    "thread": {
+      "height": 439,
+      "top": 342,
+      "bottom": 781
+    },
+    "composer": {
+      "height": 355,
+      "top": 801,
+      "bottom": 1156
+    },
+    "selectedSources": null
+  },
+  {
+    "route": "train",
+    "width": 390,
+    "height": 844,
+    "thread": {
+      "height": 439,
+      "top": 526,
+      "bottom": 965
+    },
+    "composer": {
+      "height": 289,
+      "top": 985,
+      "bottom": 1274
+    },
+    "selectedSources": null
+  }
+]

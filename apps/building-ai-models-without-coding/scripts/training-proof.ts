@@ -229,6 +229,9 @@ try {
         2,
       ),
     );
+    const adapterDetails = page.locator('details').filter({has: page.locator('#tuning-save')});
+    if (!(await adapterDetails.evaluate(element => element.hasAttribute('open'))))
+      await adapterDetails.locator('summary').first().click();
     const downloadPromise = page.waitForEvent('download');
     await page.locator('#tuning-save').click();
     const download = await downloadPromise;

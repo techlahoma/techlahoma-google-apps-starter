@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '../components/ui/table';
 import {
+  clearCorpus,
   getCorpus,
   groundingPrompt,
   sampleCorpus,
@@ -59,6 +60,7 @@ type RagRunResult =
 interface RagRun {
   id: number;
   question: string;
+  retrievalEnabled: boolean;
   mode: RetrievalMode;
   ranked: readonly SearchHit[];
   retrieved: readonly DocumentChunk[];
@@ -98,17 +100,11 @@ function freezeSources(sources: readonly DocumentChunk[]): DocumentChunk[] {
 function RankedSources({run, latest}: {run: RagRun; latest: boolean}) {
   if (run.ranked.length === 0) return null;
   return (
-    <section
-      className="mt-3"
-      aria-labelledby={latest ? 'ranked-sources-heading' : undefined}
-    >
-      <h4
-        id={latest ? 'ranked-sources-heading' : undefined}
-        className="mb-1 mt-0 text-sm font-semibold"
-      >
-        Ranked sources
-      </h4>
-      <p className="description mt-0 text-xs">
+    <details className="chat-details mt-3">
+      <summary id={latest ? 'ranked-sources-heading' : undefined}>
+        Ranked sources · {run.ranked.length}
+      </summary>
+      <p className="description text-xs">
         Percentages are normalized within this result set, not confidence
         probabilities. Focus or hover one for the raw {scoreNames[run.mode]}.
       </p>
@@ -150,20 +146,22 @@ function RankedSources({run, latest}: {run: RagRun; latest: boolean}) {
           ))}
         </TableBody>
       </Table>
-    </section>
+    </details>
   );
 }
 
 export function RagDemo() {
   const [question, setQuestion] = useState('What should I bring?');
   const [mode, setMode] = useState<RetrievalMode>('hybrid');
+  const [retrievalEnabled, setRetrievalEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState(
-    'Ready. Retrieval runs locally in your browser.',
-  );
+  const [status, setStatus] = useState('Ready. Ask Gemma.');
   const [diagramState, setDiagramState] = useState<SystemDiagramState>('idle');
   const [runId, setRunId] = useState(0);
-  const [documents, setDocuments] = useState(getCorpus);
+  const [documents, setDocuments] = useState(() => {
+    clearCorpus();
+    return getCorpus();
+  });
   const [activeSuppliedCount, setActiveSuppliedCount] = useState(0);
   const [prompt, setPrompt] = useState(
     'Find sources to inspect the exact grounded prompt.',
@@ -219,28 +217,61 @@ export function RagDemo() {
     const query = question.trim();
     if (!query || busy) return;
     const id = Date.now();
-    const emptyPrompt = groundingPrompt(query, []);
+    const retrievalForRun = retrievalEnabled && documents.length > 0;
+    const generationRequested = retrievalForRun ? generate : true;
+    const initialPrompt = retrievalForRun ? groundingPrompt(query, []) : query;
     setRuns(current => [
       ...current,
       {
         id,
         question: query,
+        retrievalEnabled: retrievalForRun,
         mode,
         ranked: [],
         retrieved: [],
         supplied: [],
-        prompt: emptyPrompt,
-        generationRequested: generate,
+        prompt: initialPrompt,
+        generationRequested,
         result: {kind: 'pending'},
       },
     ]);
     setRunId(current => current + 1);
     setBusy(true);
     setActiveSuppliedCount(0);
-    setDiagramState('sources');
-    setStatus(`Ranking attached files with ${mode} search…`);
+    setPrompt(initialPrompt);
+    setDiagramState(retrievalForRun ? 'sources' : 'loading');
+    setStatus(
+      retrievalForRun
+        ? `Ranking attached files with ${mode} search…`
+        : 'Running Gemma without retrieval or file context…',
+    );
 
     try {
+      if (!retrievalForRun) {
+        const request = client.run(
+          {kind: 'generate', prompt: query},
+          message => {
+            setDiagramState(
+              message.startsWith('Generating') ? 'generating' : 'loading',
+            );
+            setStatus(message);
+          },
+        );
+        const result = await request;
+        if (result.kind !== 'text')
+          throw new Error('Unexpected generation response.');
+        updateRun(id, {
+          result: {
+            kind: 'complete',
+            outcome: 'answer',
+            answer: result.text || '(The model produced no text.)',
+          },
+        });
+        setDiagramState('answer');
+        setStatus('Finished locally without retrieval or file context.');
+        return;
+      }
+
       const ranked = await retrieve(query, mode);
       const top = ranked.slice(0, 3);
       const frozenRanked = top.map(hit => ({
@@ -392,11 +423,13 @@ export function RagDemo() {
                   aria-hidden="true"
                 />
                 <div>
-                  <h3 className="m-0 text-base">Search, then ask</h3>
+                  <h3 className="m-0 text-base">
+                    Ask first, then add retrieval
+                  </h3>
                   <p className="description mb-0 mt-1">
-                    Choose files in the composer. Keyword, embedding, or hybrid
-                    retrieval ranks evidence first; only the strongest chunks
-                    enter a generated answer. Model weights do not change.
+                    Start with plain Gemma. Preview and attach files, then
+                    switch on Use retrieval to find relevant evidence. Each
+                    question runs independently; model weights do not change.
                   </p>
                 </div>
               </div>
@@ -410,10 +443,9 @@ export function RagDemo() {
                 <div className="chat-user-message">
                   <p className="m-0 whitespace-pre-wrap">{run.question}</p>
                   <span className="description mt-1 block text-xs">
-                    {run.mode} retrieval ·{' '}
-                    {run.generationRequested
-                      ? 'retrieve and ask'
-                      : 'sources only'}
+                    {run.retrievalEnabled
+                      ? `${run.mode} retrieval · ${run.generationRequested ? 'retrieve and ask' : 'sources only'}`
+                      : 'plain model · no retrieval'}
                   </span>
                 </div>
                 <div className="chat-assistant-message">
@@ -465,6 +497,129 @@ export function RagDemo() {
             ))}
           </section>
 
+          <form className="chat-composer" onSubmit={submit}>
+            <label className="sr-only" htmlFor="rag-question">
+              Your question
+            </label>
+            <textarea
+              id="rag-question"
+              value={question}
+              maxLength={1000}
+              rows={2}
+              required
+              disabled={busy}
+              placeholder="Ask a question about the attached files…"
+              onKeyDown={event => {
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault();
+                  event.currentTarget.form?.requestSubmit();
+                }
+              }}
+              onChange={event => {
+                setQuestion(event.currentTarget.value);
+                if (!busy) setDiagramState('sources');
+              }}
+            />
+
+            <DocumentContext
+              disabled={busy}
+              onChange={(nextDocuments, message) => {
+                setDocuments(nextDocuments);
+                if (nextDocuments.length === 0) setRetrievalEnabled(false);
+                setDiagramState('sources');
+                setStatus(message);
+                setActiveSuppliedCount(0);
+              }}
+            />
+
+            <div className="chat-tools flex flex-wrap items-end gap-3">
+              {documents.length > 0 && (
+                <label className="m-0 inline-flex items-center gap-2 font-normal">
+                  <input
+                    type="checkbox"
+                    checked={retrievalEnabled}
+                    disabled={busy}
+                    onChange={event => {
+                      setRetrievalEnabled(event.currentTarget.checked);
+                      setActiveSuppliedCount(0);
+                      setDiagramState('sources');
+                    }}
+                  />
+                  Use retrieval
+                </label>
+              )}
+              {retrievalEnabled && (
+                <label className="m-0" htmlFor="retrieval-mode">
+                  Retrieval method
+                  <select
+                    id="retrieval-mode"
+                    value={mode}
+                    disabled={busy}
+                    onChange={event => {
+                      const value = event.currentTarget.value;
+                      setMode(
+                        value === 'semantic' || value === 'hybrid'
+                          ? value
+                          : 'lexical',
+                      );
+                      setActiveSuppliedCount(0);
+                      setDiagramState('sources');
+                    }}
+                  >
+                    <option value="lexical">Keywords · BM25</option>
+                    <option value="semantic">Semantic · EmbeddingGemma</option>
+                    <option value="hybrid">Hybrid · rank fusion</option>
+                  </select>
+                </label>
+              )}
+              <div className="ml-auto flex flex-wrap justify-end gap-2">
+                {busy && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => client.cancel()}
+                  >
+                    <StopIcon className="size-4" aria-hidden="true" /> Cancel
+                  </Button>
+                )}
+                {retrievalEnabled && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={busy || !question.trim()}
+                    onClick={() => void execute(false)}
+                  >
+                    <MagnifyingGlassIcon
+                      className="size-4"
+                      aria-hidden="true"
+                    />{' '}
+                    Find sources only
+                  </Button>
+                )}
+                <Button type="submit" disabled={busy || !question.trim()}>
+                  <PaperAirplaneIcon className="size-4" aria-hidden="true" />{' '}
+                  {retrievalEnabled ? 'Retrieve and ask' : 'Ask Gemma'}
+                </Button>
+              </div>
+            </div>
+
+            <p className="status m-0" role="status">
+              {status}
+            </p>
+          </form>
+        </div>
+
+        <aside className="chat-inspector demo-system-rail sticky top-0 z-10 order-first min-[1101px]:top-5 min-[1101px]:order-last">
+          <SystemDiagram
+            state={diagramState}
+            runId={runId}
+            sources={summarizeDocuments(documents)}
+            suppliedChunkCount={activeSuppliedCount}
+          />
           <details className="chat-details">
             <summary>Latest prompt · inspect what the model sees</summary>
             <div className="relative">
@@ -476,14 +631,10 @@ export function RagDemo() {
               </div>
             </div>
           </details>
-
           <details className="chat-details">
-            <summary>
-              Evaluation · check retrieval on synthetic examples
-            </summary>
-            <p className="description">
-              Three authored questions check whether each method finds the
-              expected sample. This tests retrieval behavior, not answer
+            <summary>Evaluation · synthetic retrieval checks</summary>
+            <p className="description text-xs">
+              Three authored questions test retrieval behavior, not answer
               accuracy or a general benchmark.
             </p>
             <Button
@@ -492,8 +643,7 @@ export function RagDemo() {
               disabled={busy}
               onClick={() => void runEvaluation()}
             >
-              <BeakerIcon className="size-4" aria-hidden="true" /> Run retrieval
-              checks
+              <BeakerIcon className="size-4" aria-hidden="true" /> Run checks
             </Button>
             {evaluation.length === 0 ? (
               <p className="description">Not run yet.</p>
@@ -525,107 +675,6 @@ export function RagDemo() {
               </Table>
             )}
           </details>
-
-          <form className="chat-composer" onSubmit={submit}>
-            <label className="sr-only" htmlFor="rag-question">
-              Your question
-            </label>
-            <textarea
-              id="rag-question"
-              value={question}
-              maxLength={1000}
-              rows={3}
-              required
-              disabled={busy}
-              placeholder="Ask a question about the attached files…"
-              onKeyDown={event => {
-                if (
-                  event.key === 'Enter' &&
-                  !event.shiftKey &&
-                  !event.nativeEvent.isComposing
-                ) {
-                  event.preventDefault();
-                  event.currentTarget.form?.requestSubmit();
-                }
-              }}
-              onChange={event => {
-                setQuestion(event.currentTarget.value);
-                if (!busy) setDiagramState('sources');
-              }}
-            />
-
-            <DocumentContext
-              disabled={busy}
-              onChange={(nextDocuments, message) => {
-                setDocuments(nextDocuments);
-                setDiagramState('sources');
-                setStatus(message);
-                setActiveSuppliedCount(0);
-              }}
-            />
-
-            <div className="chat-tools flex flex-wrap items-end gap-3">
-              <label className="m-0" htmlFor="retrieval-mode">
-                Retrieval method
-                <select
-                  id="retrieval-mode"
-                  value={mode}
-                  disabled={busy}
-                  onChange={event => {
-                    const value = event.currentTarget.value;
-                    setMode(
-                      value === 'semantic' || value === 'hybrid'
-                        ? value
-                        : 'lexical',
-                    );
-                    setActiveSuppliedCount(0);
-                    setDiagramState('sources');
-                  }}
-                >
-                  <option value="lexical">Keywords · BM25</option>
-                  <option value="semantic">Semantic · EmbeddingGemma</option>
-                  <option value="hybrid">Hybrid · rank fusion</option>
-                </select>
-              </label>
-              <div className="ml-auto flex flex-wrap justify-end gap-2">
-                {busy && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => client.cancel()}
-                  >
-                    <StopIcon className="size-4" aria-hidden="true" /> Cancel
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busy || !question.trim()}
-                  onClick={() => void execute(false)}
-                >
-                  <MagnifyingGlassIcon className="size-4" aria-hidden="true" />{' '}
-                  Find sources only
-                </Button>
-                <Button type="submit" disabled={busy || !question.trim()}>
-                  <PaperAirplaneIcon className="size-4" aria-hidden="true" />{' '}
-                  Retrieve and ask
-                </Button>
-              </div>
-            </div>
-
-            <p className="status m-0" role="status">
-              {status}
-            </p>
-          </form>
-        </div>
-
-        <aside className="chat-inspector demo-system-rail sticky top-0 z-10 order-first min-[1101px]:top-5 min-[1101px]:order-last">
-          <SystemDiagram
-            state={diagramState}
-            runId={runId}
-            sources={summarizeDocuments(documents)}
-            suppliedChunkCount={activeSuppliedCount}
-          />
         </aside>
       </div>
     </section>

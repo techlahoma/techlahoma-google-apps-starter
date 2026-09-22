@@ -1,6 +1,7 @@
 import {afterEach, expect, test} from 'bun:test';
 import {
   addSampleDocument,
+  clearCorpus,
   getCorpus,
   importCorpus,
   removeCorpusDocument,
@@ -9,7 +10,12 @@ import {
 } from './corpus';
 import {lexicalSearch} from './retrieval';
 
-afterEach(restoreExampleCorpus);
+afterEach(clearCorpus);
+
+test('a new tab starts without attached context', () => {
+  clearCorpus();
+  expect(getCorpus()).toEqual([]);
+});
 
 test('sample documents can be removed and restored without duplicates', () => {
   restoreExampleCorpus();
@@ -42,6 +48,22 @@ test('an imported source remains available to later route readers until explicit
   restoreExampleCorpus();
   expect(getCorpus()).toEqual(sampleCorpus);
   expect(lexicalSearch('telescope', getCorpus())).toEqual([]);
+});
+
+test('validated imports append atomically with unique file identities', () => {
+  clearCorpus();
+  importCorpus([{name: 'first.txt', text: 'First source.'}]);
+  importCorpus([{name: 'second.txt', text: 'Second source.'}]);
+  const imported = getCorpus();
+  expect(imported).toHaveLength(2);
+  expect(imported.map(document => document.id.split(':', 1)[0])).toEqual([
+    '0',
+    '1',
+  ]);
+  expect(imported.map(document => document.title)).toEqual([
+    'first.txt · 1',
+    'second.txt · 1',
+  ]);
 });
 
 test('a rejected multi-file import preserves the previously loaded corpus', () => {

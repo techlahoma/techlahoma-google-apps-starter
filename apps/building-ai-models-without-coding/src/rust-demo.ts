@@ -5,11 +5,9 @@ export function mountRustDemo(container: HTMLElement): () => void {
   container.classList.add('demo-system-layout');
   const chat = document.createElement('section');
   chat.className = 'workshop-chat';
-  const heading = document.createElement('h2');
-  heading.textContent = 'Train, then continue a little text';
   const intro = document.createElement('p');
   intro.textContent =
-    'This is a tiny character model, not an assistant. Train it on fictional GDG topics, then give it a short prefix. Replies extend that prefix using the actual trained weights; they will often be nonsense.';
+    'Train a tiny character model, then try a short prefix. Expect rough text continuations, not assistant answers.';
   const thread = document.createElement('div');
   thread.className = 'chat-thread';
   thread.setAttribute('aria-label', 'Rust training and continuation history');
@@ -27,15 +25,17 @@ export function mountRustDemo(container: HTMLElement): () => void {
   cancel.type = 'button';
   cancel.textContent = 'Cancel Rust run';
   cancel.disabled = true;
+  cancel.hidden = true;
   tools.append(train, cancel);
   const composer = document.createElement('form');
   composer.className = 'chat-composer';
   const promptLabel = document.createElement('label');
   promptLabel.htmlFor = 'rust-prompt';
   promptLabel.textContent = 'Character prefix';
+  promptLabel.className = 'sr-only';
   const prompt = document.createElement('input');
   prompt.id = 'rust-prompt';
-  prompt.placeholder = 'Try “build” or “learn” after training';
+  prompt.placeholder = 'Enter a short prefix…';
   prompt.maxLength = 256;
   prompt.disabled = true;
   const send = document.createElement('button');
@@ -47,8 +47,14 @@ export function mountRustDemo(container: HTMLElement): () => void {
   promptHelp.textContent =
     'Default model: fewer than 16 characters, lowercase letters and spaces from the dataset. Unsupported characters are rejected. Each prefix is independent; previous turns are not context.';
   prompt.setAttribute('aria-describedby', promptHelp.id);
-  const examples = document.createElement('div');
-  examples.className = 'chat-tools';
+  const examples = document.createElement('details');
+  examples.hidden = true;
+  const examplesSummary = document.createElement('summary');
+  examplesSummary.textContent = 'Example prefixes';
+  examples.append(examplesSummary);
+  const exampleButtons = document.createElement('div');
+  exampleButtons.className = 'chat-tools';
+  examples.append(exampleButtons);
   for (const prefix of ['build', 'learn']) {
     const example = document.createElement('button');
     example.type = 'button';
@@ -57,10 +63,14 @@ export function mountRustDemo(container: HTMLElement): () => void {
       prompt.value = prefix;
       prompt.focus();
     };
-    examples.append(example);
+    exampleButtons.append(example);
   }
-  composer.append(promptLabel, prompt, send, examples, tools, status);
-  chat.append(heading, intro, thread, composer, promptHelp);
+  const promptRow = document.createElement('div');
+  promptRow.className = 'chat-composer-row';
+  promptRow.hidden = true;
+  promptRow.append(promptLabel, prompt, send);
+  composer.append(promptRow, tools, status, examples);
+  chat.append(intro, thread, composer);
 
   const inspector = document.createElement('aside');
   inspector.className = 'chat-inspector';
@@ -95,8 +105,12 @@ export function mountRustDemo(container: HTMLElement): () => void {
   const warning = document.createElement('p');
   warning.textContent =
     'The compiler warning “sub and ptr_eq are never used” refers to two unused helper methods. It is nonfatal: training and prompting still run. The original warning remains in each training log.';
-  sourceDetails.append(label, editor, download, note, warning, fallback);
-  inspector.append(inspectorTitle, facts, modelState, sourceDetails);
+  sourceDetails.append(label, editor, download, warning, fallback);
+  const modelDetails = document.createElement('details');
+  const modelSummary = document.createElement('summary');
+  modelSummary.textContent = 'Model details and limits';
+  modelDetails.append(modelSummary, facts, promptHelp, note);
+  inspector.append(inspectorTitle, modelState, modelDetails, sourceDetails);
   container.append(chat, inspector);
 
   const terminals: ReturnType<typeof mountTerminalOutput>[] = [];
@@ -119,6 +133,12 @@ export function mountRustDemo(container: HTMLElement): () => void {
         ? 'Trained checkpoint ready for prefixes.'
         : 'No trained checkpoint. Start a training turn.';
     train.disabled = busy || !sourceReady;
+    train.hidden = busy;
+    train.textContent = ready ? 'Retrain' : 'Compile and train';
+    train.classList.toggle('secondary', ready);
+    cancel.hidden = !busy;
+    promptRow.hidden = !ready;
+    examples.hidden = !ready;
     cancel.disabled = !busy;
     prompt.disabled = busy || !ready;
     send.disabled = busy || !ready;
@@ -154,7 +174,7 @@ export function mountRustDemo(container: HTMLElement): () => void {
     figure.innerHTML =
       '<svg viewBox="0 0 640 200" role="img" aria-label="Actual Rust loss by training step"><path d="M50 20 V150 H620" fill="none" stroke="currentColor"/><polyline fill="none" stroke="currentColor" stroke-width="3" points=""/><text x="8" y="16" fill="currentColor">Loss</text><text data-loss-max x="8" y="36" fill="currentColor"></text><text x="25" y="150" fill="currentColor">0</text><text x="50" y="175" fill="currentColor">1</text><text data-last-step x="620" y="175" text-anchor="end" fill="currentColor"></text><text x="300" y="195" fill="currentColor">Training step</text></svg><figcaption>Waiting for actual training loss…</figcaption>';
     const details = document.createElement('details');
-    details.open = training;
+    details.open = false;
     const detailsTitle = document.createElement('summary');
     detailsTitle.textContent = 'Actual compiler and model output';
     const output = document.createElement('div');

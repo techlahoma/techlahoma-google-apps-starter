@@ -26,10 +26,14 @@ export default async function runSmokeTest({
       const composer = element.getBoundingClientRect();
       const parent = element.parentElement!.getBoundingClientRect();
       const thread = element.parentElement!.querySelector('.chat-thread')!.getBoundingClientRect();
-      return {composerBottom: composer.bottom, parentBottom: parent.bottom, threadBottom: thread.bottom, composerTop: composer.top};
+      return {threadHeight: thread.height, composerHeight: composer.height, composerBottom: composer.bottom, parentBottom: parent.bottom, threadBottom: thread.bottom, composerTop: composer.top};
     });
     if (geometry.composerBottom > geometry.parentBottom + 1 || geometry.threadBottom > geometry.composerTop + 1)
       throw new Error(`${slug} composer overlaps conversation or following content at ${viewport}`);
+    if (geometry.threadHeight < (viewport === 'desktop' ? 420 : 330))
+      throw new Error(`${slug} conversation is too cramped: ${geometry.threadHeight}px`);
+    if (geometry.composerHeight > (viewport === 'desktop' ? 230 : 300))
+      throw new Error(`${slug} initial composer is too dense: ${geometry.composerHeight}px`);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
@@ -40,10 +44,17 @@ export default async function runSmokeTest({
     });
   }
   await page.goto(`${baseURL}#retrieval`);
+  if (!(await page.locator('.demo-system-rail').textContent())?.includes('0 chunks')) throw new Error('Retrieval did not start empty');
+  await page.locator('summary').filter({hasText: 'Attachments'}).click();
+  await page.getByRole('button', {name: 'Preview email: equipment', exact: true}).click();
+  await page.getByRole('dialog').getByRole('button', {name: 'Add sample', exact: true}).click();
+  await page.locator('summary').filter({hasText: 'Attachments'}).click();
+  await page.getByLabel('Use retrieval', {exact: true}).check();
   await page.getByLabel('Retrieval method').selectOption('lexical');
   await page
     .getByRole('button', {name: 'Find sources only', exact: true})
     .click();
+  await page.locator('summary').filter({hasText: 'Ranked sources'}).last().click();
   await page
     .getByRole('heading', {name: '[1] Synthetic email: equipment', exact: true})
     .waitFor();
@@ -67,19 +78,37 @@ export default async function runSmokeTest({
   const rail = page.locator('.demo-system-rail');
   await rail.waitFor();
   await page.locator('summary').filter({hasText: 'Attachments'}).click();
-  while (await page.locator('button[aria-pressed="true"]').count()) {
-    await page.locator('button[aria-pressed="true"]').first().click();
-  }
   if (!(await rail.textContent())?.includes('0 chunks'))
     throw new Error('Live visual did not reflect empty context');
-  const equipment = page.getByRole('button', {name: /email: equipment/});
+  const equipment = page.getByRole('button', {name: 'Preview email: equipment', exact: true});
+  await equipment.focus();
+  await page.keyboard.press('Enter');
+  const preview = page.getByRole('dialog');
+  await preview.waitFor();
+  if (!(await preview.textContent())?.includes('Bring a charged laptop')) throw new Error('Preview did not show the actual file');
+  await page.screenshot({path: `apps/building-ai-models-without-coding/test-results/file-preview-${viewport}.png`});
+  if (!(await rail.textContent())?.includes('0 chunks')) throw new Error('Preview attached a file without Add');
+  for (let step = 0; step < 6; step++) {
+    await page.keyboard.press('Tab');
+    // Native Chromium can visit browser chrome between cycles; underlying
+    // application controls must never receive focus while the modal is open.
+    if (!(await preview.evaluate(element => element.contains(document.activeElement) || document.activeElement === document.body)))
+      throw new Error('Keyboard focus escaped the modal');
+  }
+  await page.locator('#context-question').evaluate(element => element.focus());
+  if (await page.locator('#context-question').evaluate(element => element === document.activeElement))
+    throw new Error('Background composer was not inert while preview was open');
+  await page.keyboard.press('Escape');
+  await preview.waitFor({state:'hidden'});
+  if (!(await equipment.evaluate(element => element === document.activeElement))) throw new Error('Preview did not return keyboard focus');
   await equipment.click();
+  await preview.getByRole('button', {name:'Add sample',exact:true}).click();
   if (!(await rail.textContent())?.includes('1 chunk'))
     throw new Error('Live visual did not reflect adding a source');
   await equipment.click();
+  await preview.getByRole('button', {name:'Remove sample',exact:true}).click();
   if (!(await rail.textContent())?.includes('0 chunks'))
     throw new Error('Live visual did not reflect removing a source');
-  await page.getByRole('button', {name: 'Restore samples', exact: true}).click();
   await page.locator('summary').filter({hasText: 'Attachments'}).click();
   if (viewport === 'desktop') {
     await page.evaluate(() => window.scrollTo(0, 650));
@@ -102,9 +131,7 @@ export default async function runSmokeTest({
   if (!(await page.locator('#tuning-baseline').isEnabled()))
     throw new Error('Default model cannot be tried before training');
   const panels = page.locator('#tuning-custom-result article');
-  if (await panels.count() !== 2) throw new Error('Missing default/tuned columns');
-  if (await panels.first().evaluate(element => element.getBoundingClientRect().height) > 260)
-    throw new Error('Prediction panel is too tall before use');
+  if (await panels.count() !== 0) throw new Error('Empty prediction panels clutter the welcome');
   await page.getByText('What changes inside the model?', {exact: true}).click();
   const terminal = page.locator('#tuning-loss .terminal-viewport');
   await terminal.waitFor();

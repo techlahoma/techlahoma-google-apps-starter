@@ -17,8 +17,17 @@ page.on('console', message => {
   if (message.type() === 'error') errors.push(message.text());
 });
 const started = Date.now();
+async function attachSamples() {
+  await page.locator('summary').filter({hasText:'Attachments'}).click();
+  for (const title of ['email: refreshments','document: access','email: equipment','document: transport','document: emoji guide']) {
+    await page.getByRole('button',{name:`Preview ${title}`,exact:true}).click();
+    await page.getByRole('dialog').getByRole('button',{name:'Add sample',exact:true}).click();
+  }
+  await page.locator('summary').filter({hasText:'Attachments'}).click();
+}
 try {
   await page.goto(`${base}/#context`);
+  await attachSamples();
   const hardware = await page.evaluate(async () => {
     const adapter = await navigator.gpu?.requestAdapter();
     if (!adapter || adapter.info.isFallbackAdapter)
@@ -46,6 +55,8 @@ try {
   const contextAnswer = await page.locator('.answer').textContent();
   await page.screenshot({path: `${output}/context.png`, fullPage: true});
   await page.goto(`${base}/#retrieval`);
+  await attachSamples();
+  await page.getByLabel('Use retrieval',{exact:true}).check();
   await page
     .getByRole('button', {name: 'Find sources only', exact: true})
     .click();
@@ -65,8 +76,9 @@ try {
     await page.waitForTimeout(1000);
   }
   const retrievalStatus = await page.getByRole('status').last().textContent();
+  await page.locator('summary').filter({hasText:'Ranked sources'}).last().click();
   await page
-    .getByText('Evaluation · check retrieval on synthetic examples', {
+    .getByText('Evaluation · synthetic retrieval checks', {
       exact: true,
     })
     .click();
@@ -87,7 +99,7 @@ try {
   }
   const evaluation = await page
     .locator('details')
-    .filter({hasText: 'Evaluation · check retrieval'})
+    .filter({hasText: 'Evaluation · synthetic retrieval checks'})
     .locator('table')
     .textContent();
   const sources = await page
