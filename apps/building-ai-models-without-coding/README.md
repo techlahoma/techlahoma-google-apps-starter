@@ -49,9 +49,13 @@ See [runtime provenance and reproduction](scripts/semif/README.md). Asset prepar
 
 ## Make your own version
 
-The [Google AI Studio Build documentation](https://ai.google.dev/gemini-api/docs/aistudio-build-mode) describes Add files → Import from GitHub. Select `techlahoma/techlahoma-google-apps-starter` and ask it to run this app workspace. Browser import verification is tracked separately in the delivery plan; do not assume the default repository welcome app is this workshop.
+The repository is public, so anyone can clone it without an invitation or write access. To save changes to GitHub, [fork it](https://github.com/techlahoma/techlahoma-google-apps-starter/fork) into your own account and clone the fork instead.
 
-Each demo page includes a copyable Antigravity/AI Studio instruction for changing one behavior and checking the result. The [native FunctionGemma CLI experiment](scripts/functiongemma/README.md) provides real training, saved adapter, reload, and held-out evaluation commands.
+- **Antigravity (no terminal):** [download Antigravity](https://antigravity.google/download), open an empty folder, and ask the agent to clone `https://github.com/techlahoma/techlahoma-google-apps-starter.git`, install Bun 1.3.14 if it is missing, then run the two commands in [Start locally](#start-locally).
+- **Terminal:** `git clone https://github.com/techlahoma/techlahoma-google-apps-starter.git`, `cd` into it, then run the commands in [Start locally](#start-locally).
+- **No install:** the [workshop kit](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614) has a from-scratch Google AI Studio prompt that needs only a Google account. Don't import this repository into AI Studio: the import lists repositories your connected GitHub account can access, and AI Studio's documented React-and-Node runtime does not cover this Bun workspace or its asset-preparation step.
+
+Each demo page includes a copyable Antigravity instruction for changing one behavior and checking the result. It assumes the repository is already cloned. The [native FunctionGemma CLI experiment](scripts/functiongemma/README.md) provides real training, saved adapter, reload, and held-out evaluation commands.
 
 ## Rust CLI fallback
 

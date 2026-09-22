@@ -113,21 +113,17 @@ function RebuildPrompt({demo}: {demo: Demo}) {
     <details className="build-later">
       <summary>Make your own version</summary>
       <p>
-        Use the same workshop repository in Google AI Studio or Antigravity.
-        Change one thing, then compare what happened.
+        The workshop repository is public. Clone it in Antigravity or a
+        terminal, then paste this prompt to change one thing and compare what
+        happened. Fork it first if you want to save changes to your own GitHub.
       </p>
       <p className="link-row">
         <a href="https://github.com/techlahoma/techlahoma-google-apps-starter">
           GitHub repository <ArrowTopRightOnSquareIcon aria-hidden="true" />
         </a>
-        <a href="https://aistudio.google.com/">
-          Google AI Studio <ArrowTopRightOnSquareIcon aria-hidden="true" />
+        <a href="https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614">
+          Workshop kit <ArrowTopRightOnSquareIcon aria-hidden="true" />
         </a>
-      </p>
-      <p>
-        In AI Studio Build, use <strong>Add files → Import from GitHub</strong>{' '}
-        and select the workshop repository. Ask it to run{' '}
-        <code>apps/building-ai-models-without-coding</code>.
       </p>
       <label htmlFor="rebuild-prompt">Prompt for this demo</label>
       <textarea id="rebuild-prompt" readOnly rows={4} value={text} />
