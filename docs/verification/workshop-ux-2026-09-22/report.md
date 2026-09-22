@@ -51,4 +51,10 @@ Implemented and checked locally:
 - `bun run verify` and final `bun run app:verify --app building-ai-models-without-coding` passed. The hidden Local Jev route remains covered by smoke checks but its model implementation was not changed. Optional local actionlint/shellcheck are unavailable; those remain CI checks.
 - The audit skill preflight was repeated. Wrapper, lock, and dependency integrity values match the starting receipt; local installation paths are redacted from the published JSON. Reduced-motion layout checks passed. No Lighthouse or full assistive-technology conformance result is claimed.
 
-Publication and live verification are recorded below after delivery.
+## Publication and live verification
+
+- Runtime commit `78e5589277e8cb05e1ef3002cd049ab575b20abb` was pushed to the existing public repository's `main`; the remote SHA matched. Staged `prek` and Gitleaks passed.
+- Deployed only `building-ai-models-without-coding` to the existing [workshop site](https://gdg-model-workshop.web.app/). Other sites and the protected default site were preserved.
+- Live desktop/phone smoke passed: the original four routes, modal preview/add/remove, keyboard dismissal/background inertness/focus return, readable chat geometry, baseline empty states, and hidden Local Jev regression checks. Live receipt/file tests also passed, including additive uploads and focus return after deleting a previewed upload.
+- Revision-specific CI is [35751346418](https://github.com/techlahoma/techlahoma-google-apps-starter/actions/runs/35751346418); remote CI is separate from the passing local and live checks. The previously documented full-history secret finding was not altered or suppressed by this UX work.
+- Task-owned servers and proof browsers were closed; personal browser windows were untouched.
