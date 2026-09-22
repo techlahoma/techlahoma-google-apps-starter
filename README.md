@@ -4,9 +4,11 @@ Oklahoma's public launchpad for building small Google-powered apps with agents.
 
 [Techlahoma](https://www.techlahoma.org/) maintains this Bun and TypeScript monorepo so Antigravity
 can turn one prompt into one isolated, runnable `apps/<slug>` project with a Google-aligned control
-plane and app-scoped Firebase Hosting configuration. New here? Open the
-[Model Workshop Kit in Notion](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614)
-or follow the no-terminal setup below and let Antigravity be your developer.
+plane and app-scoped Firebase Hosting configuration. Here for **Google Dev: Local Models &
+Fine-Tuning** (September 22, 2026)? Open the
+[GDG Tulsa — Model Workshop Kit in Notion](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614)
+or follow the no-terminal setup below and let Antigravity be your developer. Earlier events are in
+[workshop kits by event](#workshop-kits-by-event).
 
 <!-- SBC4 compatibility: `Tease:` and `Lede:` render above without labels. `Why it matters:` and
 `Go deeper:` are intentionally collapsed into the lede and table of contents. -->
@@ -20,7 +22,7 @@ or follow the no-terminal setup below and let Antigravity be your developer.
 ## Table of contents
 
 - [Start here: let Antigravity set everything up](#start-here-let-antigravity-set-everything-up)
-- [Intro to GDG workshop links](#intro-to-gdg-workshop-links)
+- [Workshop kits by event](#workshop-kits-by-event)
 - [Clone and start](#clone-and-start)
 - [Fork setup](#fork-setup)
 - [One-prompt demo builds](#one-prompt-demo-builds)
@@ -32,7 +34,7 @@ or follow the no-terminal setup below and let Antigravity be your developer.
 - [Complexity ladder](#complexity-ladder)
 - [Agent contract](#agent-contract)
 - [About Techlahoma](#about-techlahoma)
-- [GDG Tulsa Builder Kit](#gdg-tulsa-builder-kit)
+- [Workshop resource directory](#workshop-resource-directory)
 
 ## Start here: let Antigravity set everything up
 
@@ -92,16 +94,37 @@ step that still needs me.
 Once the starter is running, continue with the
 [copy-ready one-shot demo prompts](docs/events/antigravity-one-shot-prompts.md) to build a new app.
 
-## Intro to GDG workshop links
+## Workshop kits by event
 
-This starter is the public build workspace for Techlahoma's **Intro to Google Developer Group**
-workshop with GDG Tulsa. Start with the public repository handout or directory; the linked Notion
-kit may require a Notion session:
+This starter is the public build workspace for Techlahoma's GDG Tulsa workshops. Each event has its
+own kit. Start with the public repository handout or directory; a linked Notion kit may require a
+Notion session.
+
+### Current — Google Dev: Local Models & Fine-Tuning (September 22, 2026)
+
+Local models and fine-tuning with GDG Tulsa and OklahomAI during Tulsa Tech Week.
+
+- [GDG Tulsa — Model Workshop Kit in Notion](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614)
+  — the four demos and everything needed to keep experimenting afterward
+- [Run the four demos](https://gdg-model-workshop.web.app/) — [context](https://gdg-model-workshop.web.app/#context),
+  [retrieval](https://gdg-model-workshop.web.app/#retrieval),
+  [fine-tuning](https://gdg-model-workshop.web.app/#fine-tuning), and
+  [tiny-model training](https://gdg-model-workshop.web.app/#train)
+- [App source and local setup](apps/building-ai-models-without-coding/README.md)
+- [Event page](https://luma.com/r166uhh4)
+
+Bring a laptop with a current version of Chrome. Models download on first use, roughly 300–470 MB
+each, so start the downloads before the workshop if you can.
+
+### Previous — Intro to Google Developer Group (August 6, 2026)
 
 - [GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f)
 - [Public event handout in this repository](docs/events/README.md)
 - [Play Tulsa Gravity Rally](https://tulsa-gravity-rally.web.app/host) — scan the in-game QR code to join from a phone
-- [Complete README resource directory](#gdg-tulsa-builder-kit)
+- [Event page](https://luma.com/j0vrcn5h)
+
+Both events share this repository. The [complete resource directory](#workshop-resource-directory)
+at the bottom covers either night.
 
 The working presentation is intentionally not linked here until its Google Drive sharing setting is
 public. The resource directory at the bottom preserves its attendee-relevant links and safety
@@ -320,14 +343,17 @@ The complete command/effect table and current proof live in [`PROJECT.md`](PROJE
 This is a Techlahoma community project, not an official Google product. GDG Tulsa is an independent
 Google Developer Group; its activities and opinions are not affiliated with or endorsed by Google.
 
-## GDG Tulsa Builder Kit
+## Workshop resource directory
 
-For the four-demo Model Workshop, start with the [Model Workshop Kit in Notion](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614) and its [app source and local instructions](apps/building-ai-models-without-coding/README.md). The kit links back to this repository.
+The complete public resource directory for GDG Tulsa workshops, newest event first.
 
-The August introduction resources remain below.
+**Google Dev: Local Models & Fine-Tuning — September 22, 2026.** Start with the
+[GDG Tulsa — Model Workshop Kit in Notion](https://samcarltoncreative.notion.site/GDG-Tulsa-Model-Workshop-Kit-3dc012b9b020817e93b7dac0365ca614)
+and its [app source and local instructions](apps/building-ai-models-without-coding/README.md). The
+kit links back to this repository.
 
-This is the complete public resource directory for the Intro to Google Developer Group workshop.
-The same links are maintained in the
+**Intro to Google Developer Group — August 6, 2026.** The introduction resources below are
+maintained alongside the
 [GDG Tulsa Builder Kit in Notion](https://app.notion.com/p/samcarltoncreative/GDG-Tulsa-Builder-Kit-3b2012b9b02081eebdc7dea8c5cbd69f).
 
 ### Start here
@@ -386,10 +412,13 @@ observe a problem.
 
 ### Coming next
 
-The August 2026 workshop slide plan lists **OklahomAI Google Edition** as planned for September 23,
-2026 at 6 PM. The public [Techlahoma Events calendar](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC)
-does not yet confirm the event, so treat the date as planned and follow the calendar for the
-authoritative registration link, schedule, and venue when they are published.
+The August 2026 workshop slide plan listed **OklahomAI Google Edition** as planned for September 23,
+2026. It is now confirmed as
+[**Google Dev: Local Models & Fine-Tuning**](https://luma.com/r166uhh4) on **Tuesday, September 22,
+2026, 6:00–8:00 PM at Gitwit in Tulsa** — hosted by OklahomAI Developers Tulsa with GDG Tulsa and
+Techlahoma during Tulsa Tech Week. Registration requires host approval. Follow the public
+[Techlahoma Events calendar](https://luma.com/calendar/cal-CNuOfIVzrRIe4AC) for the authoritative
+registration link, schedule, and venue for later events.
 
 [Luma documents calendar Follow](https://help.luma.com/p/discovering-events) as the public signup for
 a calendar's events, newsletters, and reminders, so this directory does not invent a second “blast
