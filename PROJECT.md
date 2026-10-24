@@ -17,7 +17,7 @@
 
 - Lifecycle: `active`
 - Current objective: let a first-time developer or Antigravity bootstrap and launch isolated workshop apps on native Windows or Apple Silicon macOS without guessing at developer tooling
-- Next decision or action: complete the Model Workshop AI Studio import after GitHub sign-in, and review the existing historical API-key scanner finding; use the CI matrix as per-revision portability proof
+- Next decision or action: rehearse the WordPress workshop in a real browser and local Antigravity, then resolve its AI Studio/Firebase deployment target; the Model Workshop import and historical scanner finding remain separately documented; use the CI matrix as per-revision portability proof
 - Verification base: current `main`; durable local evidence belongs under `docs/verification/` and remote CI remains revision-specific
 - Last verified at: 2026-09-15 (local repository and live Model Workshop checks; CI and import limits are recorded separately)
 
@@ -42,6 +42,7 @@
 - Read-only doctor and plan commands
 - Exact project-ID confirmation for provision, deploy, and whole-project deletion
 - Source-backed research, operating guide, tests, and production build
+- A scoped WordPress Playground workshop scaffold with local MCP tooling, ZIP recovery, and an optional standalone AI Studio export
 - Native PowerShell and macOS onboarding with a read-only environment doctor
 - Cross-platform repository verification plus Windows and macOS CI coverage
 
@@ -52,6 +53,8 @@
 - Terraform, OpenTofu, Pulumi, or remote infrastructure state
 - Creating a cloud project, app registration, or deployment
 - Hiding Google Cloud costs or destructive effects behind a generic command
+
+The WordPress workshop adds an optional app-scoped Node static server for a later AI Studio/Cloud Run deployment. It does not introduce a root server requirement, deploy anything, or enable billing. The normal starter deployment remains Firebase Hosting.
 
 ### Success proof
 
@@ -81,7 +84,7 @@
 - Reproducible or disposable state: `node_modules/`, `dist/`, Firebase emulator state, and the entire
   development cloud project unless the product later declares durable data
 - Last-known-good output: a prior Git revision rebuilt and redeployed to Hosting
-- Documented exceptions: none
+- Documented exceptions: the WordPress workshop's active site is temporary browser state, intentionally disposable for isolation/reset. Git and its Blueprint preserve the starter; participant ZIP exports are the recovery boundary, pending browser verification. Node 24.18+ is required only for its local MCP lane and optional Cloud Run static server. Review the design if shared or durable hosted content becomes a requirement. See the [workshop spec](docs/wordpress-workshop/SPEC.md).
 
 See
 [`docs/decisions/project-per-environment-google-starter-2026-08-03.md`](docs/decisions/project-per-environment-google-starter-2026-08-03.md).
@@ -113,6 +116,8 @@ See
 | Public Intro to GDG event materials | `docs/events/README.md` |
 | Model Workshop and public Notion kit | `apps/building-ai-models-without-coding/README.md` |
 | Model Workshop proof and remaining import/CI limits | `docs/verification/model-workshop-2026-09-15.md` |
+| WordPress Agent Workshop source and handoff | `apps/wordpress-playground/README.md` and `PROMPT.md` |
+| WordPress workshop spec, progress, and proof | `docs/wordpress-workshop/SPEC.md`, `docs/plans/wordpress-playground-workshop-2026-10-24.md`, and `docs/verification/wordpress-playground-workshop-2026-10-24.md` |
 | Runtime data | no server-side workshop records; user-selected documents and model execution remain on the device |
 
 ## Commands and effects
@@ -134,6 +139,10 @@ See
 | `bun run verify` | read-only except disposable build output | local checkout | none | cross-platform exit status and output |
 | `bun run deploy [APP]` | deploy | selected app workspace and its dedicated Firebase Hosting site | explicit deployment authority | CLI deployment result & live URL check |
 | `bun run deploy --all` | deploy | all app workspaces and their dedicated Firebase Hosting sites | explicit deployment authority | CLI deployment results & live URL checks |
+| `node apps/wordpress-playground/scripts/export-aistudio.mjs plan` | read-only | isolated WordPress app export plan | none | allowlisted source files, target, and lockfile caveat |
+| `node apps/wordpress-playground/scripts/export-aistudio.mjs apply` | local-write | ignored `dist/wordpress-playground-aistudio` | local-edit authority | generated standalone project; refuses overwrite |
+| `node apps/wordpress-playground/scripts/mcp.mjs --url=APP_ORIGIN` | local runtime | official stdio MCP and loopback browser bridge | local tool-use intent | actual MCP handshake; browser connection requires a separate user action |
+| `bun run --cwd apps/wordpress-playground start` | local runtime | app-only static server, `PORT` or 8080 | local runtime intent | HTTP assets and health endpoint; no MCP or database endpoint |
 | `bun run deploy [APP] --dry-run` | read-only | deployment plan, project config, site mapping | none | JSON or text dry run plan |
 | `bun run google:doctor [--app APP]` | read-only | shared project, app hosting sites, local tools, and ignored config | none | JSON report |
 | `bun run google:config plan --project-id ID --display-name NAME` | read-only | proposed shared project config | none | JSON plan |
@@ -160,6 +169,8 @@ See
 | development | provisioned project | `bun run deploy APP` | rebuild and redeploy a prior Git revision | Firebase Hosting URL check |
 
 There is no deploy-on-push workflow in the starter.
+
+The WordPress workshop branch prepares AI Studio/Cloud Run and Firebase Hosting paths. No project/account, deployed URL, or billing change is inferred from that source publication. Before an actual Cloud Run deployment, resolve the project, region, public audience, billing authority, zero-minimum-instance setting, revision, and rollback path. Firebase uses the existing app-scoped deployment commands above.
 
 The source host is the public GitHub template repository
 `techlahoma/techlahoma-google-apps-starter`. Repository publication is separate from Firebase Hosting or Google

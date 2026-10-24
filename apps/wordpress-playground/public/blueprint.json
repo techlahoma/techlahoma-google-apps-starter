@@ -1,0 +1,27 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Agent Workshop — fictional demo site",
+    "author": "techlahoma",
+    "description": "Disposable workshop fixtures. All sample content is fictional and is not a real event announcement."
+  },
+  "preferredVersions": {
+    "php": "8.3",
+    "wp": "7.1.3"
+  },
+  "login": true,
+  "landingPage": "/wp-admin/edit.php",
+  "steps": [
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "DEMO · Agent Workshop",
+        "blogdescription": "Fictional workshop content in a disposable browser site."
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php\nrequire '/wordpress/wp-load.php';\n$category = wp_insert_term('Workshop demos', 'category');\n$category_id = is_wp_error($category) ? 0 : $category['term_id'];\n$posts = array(\n  array('post_title' => 'DEMO: Welcome to your browser WordPress', 'post_status' => 'publish', 'post_content' => '<!-- wp:paragraph --><p>This is fictional sample content for an agent workshop. It is not a real event or a public production website.</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Ask your agent to create a draft, read it back, and show it in the editor. Export a ZIP before closing this tab.</p><!-- /wp:paragraph -->'),\n  array('post_title' => 'DEMO DRAFT: Community workshop announcement', 'post_status' => 'draft', 'post_content' => '<!-- wp:paragraph --><p>Fictional practice brief: Demo Community Lab is planning a beginner session about agent skills. Date, time, location, and registration URL are TBD.</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Keep this as a draft. Do not invent the missing details.</p><!-- /wp:paragraph -->')\n);\nforeach ($posts as $post) {\n  $post['post_type'] = 'post';\n  if ($category_id) { $post['post_category'] = array($category_id); }\n  $result = wp_insert_post($post, true);\n  if (is_wp_error($result)) { throw new Exception($result->get_error_message()); }\n}\n"
+    }
+  ]
+}

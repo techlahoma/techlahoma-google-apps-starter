@@ -100,6 +100,18 @@ This starter is the public build workspace for Techlahoma's GDG Tulsa workshops.
 own kit. Start with the public repository handout or directory; a linked Notion kit may require a
 Notion session.
 
+### In preparation — Agent Skills with WordPress
+
+Use a browser WordPress/WebAssembly sandbox with local Antigravity MCP tooling.
+
+- [App, setup, and recovery guide](apps/wordpress-playground/README.md)
+- [Agent handoff prompt](apps/wordpress-playground/PROMPT.md) and [AI Studio prompt](apps/wordpress-playground/AI_STUDIO_PROMPT.md)
+- [Research, specification, and progress](docs/plans/wordpress-playground-workshop-2026-10-24.md)
+- [Verification and remaining rehearsal work](docs/verification/wordpress-playground-workshop-2026-10-24.md)
+
+The source scaffold includes a standalone AI Studio export and Firebase Hosting configuration.
+Browser rehearsal and deployment remain separate completion steps; no live workshop URL is claimed.
+
 ### Current — Google Dev: Local Models & Fine-Tuning (September 22, 2026)
 
 Local models and fine-tuning with GDG Tulsa and OklahomAI during Tulsa Tech Week.

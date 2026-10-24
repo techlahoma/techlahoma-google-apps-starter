@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "wordpress-workshop": {
+      "command": "node",
+      "args": ["./apps/wordpress-playground/scripts/mcp.mjs", "--url=http://127.0.0.1:5173/"]
+    }
+  }
+}

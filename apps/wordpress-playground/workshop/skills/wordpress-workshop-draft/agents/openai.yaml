@@ -1,0 +1,4 @@
+interface:
+  display_name: "WordPress Workshop Draft"
+  short_description: "Create and verify a workshop WordPress draft"
+  default_prompt: "Use $wordpress-workshop-draft to turn the workshop event brief into a verified WordPress draft."
