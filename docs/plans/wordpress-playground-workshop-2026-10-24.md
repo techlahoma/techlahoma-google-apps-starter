@@ -11,6 +11,18 @@ Repository: `techlahoma/techlahoma-google-apps-starter`. Starting revision: `3aa
 
 This document owns the ongoing plan and progress. The verification record owns measured evidence. A checkbox means its stated outcome has been observed, not that code for it merely exists.
 
+## Slice 0: restore the actual planning skills
+
+Depends on: the repository's pinned Bun and Git prerequisites.
+
+- [x] Install the pinned `skills-lock` manager from the root dependency lock.
+- [x] Restore `setup-matt-pocock-skills`, `to-spec`, `to-tickets`, `handoff`, and `writing-for-agents` from the committed skill lock, including their bundled resources.
+- [x] Verify installed content against the lock and confirm the five upstream directories are ignored by Git.
+- [x] Apply the setup skill's repository configuration to the existing local spec/plan and domain documentation conventions.
+- [x] Confirm repeat installation preserves unchanged files and refuses edited copies.
+
+Use the [app guide's install commands](../../apps/wordpress-playground/README.md#install-the-planning-skills). The manifest and lock are tracked; upstream skill copies and their download cache are local. Open the installed source instructions for spec, ticket, agent-documentation, and handoff work. The current spec was written before this install; installation is not evidence that a skill generated earlier documents.
+
 ## Slice 1: launch an isolated starting site
 
 Depends on: none.
@@ -52,7 +64,7 @@ Implementation: ZIP export/import first. Browser persistence is a later requirem
 Depends on: slices 2 and 3.
 
 - [ ] Run the same event task in fresh conversations with identical inputs and tool access.
-- [ ] Keep only the drafting skill different between runs.
+- [ ] Keep the installed planning skills identical and only the drafting skill different between runs.
 - [ ] Inspect actual saved content against the shared rubric.
 - [ ] Record observed differences, including the possibility that both runs succeed.
 
@@ -72,6 +84,8 @@ Depends on: source/build verification; hosted bridge acceptance still depends on
 
 The current repository has no deploy-on-push workflow. Publishing this branch does not deploy the app.
 
+Perform planning and spec updates with the installed upstream skills in the monorepo. The standalone AI Studio export excludes the skill manager, skill lock, and installed skill copies.
+
 ## Integration progress
 
 Research, spec, prompts, browser source, local MCP launcher, Node static server, standalone export, and demonstration materials are present in this branch. The full repository check, ten Node tooling tests, seven app tests, real MCP protocol checks, standalone npm build/server checks, and applicable staged guardrails passed. Read the verification record for the exact boundaries and existing warning/tool gaps.
@@ -80,8 +94,9 @@ The environment's pinned Chromium download returned an invalid archive. Preserve
 
 ## Next-agent order
 
-1. Read the [handoff prompt](../../apps/wordpress-playground/PROMPT.md) and evidence.
-2. Resolve any recorded build or validation issue, then prove slices 1 and 2 locally.
-3. Prove ZIP recovery, rehearse the skill comparison, and prepare the chosen deployment.
-4. Apply only an authorized deployment to the named target, then repeat hosted acceptance.
-5. Update this plan, the evidence, and app contract from actual results. Preserve separate source, build, browser, Antigravity, and deployed statuses.
+1. Read the [handoff prompt](../../apps/wordpress-playground/PROMPT.md) and evidence, then restore and check the actual planning skills in slice 0.
+2. Open the relevant installed skill before revising its canonical spec, plan, or handoff document. Preserve settled setup choices in `docs/agents/`.
+3. Resolve any recorded build or validation issue, then prove slices 1 and 2 locally.
+4. Prove ZIP recovery, rehearse the skill comparison, and prepare the chosen deployment.
+5. Apply only an authorized deployment to the named target, then repeat hosted acceptance.
+6. Update this plan, the evidence, and app contract from actual results. Preserve separate source, build, browser, Antigravity, and deployed statuses.

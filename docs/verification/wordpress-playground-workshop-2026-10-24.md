@@ -97,6 +97,39 @@ The builds retain Vite's advisory warning about an upstream client chunk over 50
 
 The standalone export is generated output, not a second tracked project or proof that AI Studio's importer accepted it. Its separate npm lockfile was used for validation only. GitHub source publication targets the named task branch; the containing Git commit is the durable checkpoint. No merge, cloud deployment, provisioning, or billing change is implied.
 
+## Upstream skill installation follow-up
+
+October 24, 2026. This follow-up extends local checkpoint
+`c6f0362e1a0e438587c02937cb62f1c7a4a686fa` with the user's explicit request to
+install the literal upstream planning skills. The containing Git commit owns the
+updated source. Checks used Linux, Bun 1.3.14, and Git 2.51.1.
+
+| Check | Observed result |
+| --- | --- |
+| Manager installation | The existing `skills-lock` revision `4e37719a163b6022d4a2828850567421f9de7825` was installed from its immutable archive; the root Bun lock records archive integrity. |
+| Locked dependency restore | `bun install --frozen-lockfile` passed with no changes after the new manager was added. |
+| Actual skill restore | `bun run skills:apply` restored all five selected skills from an empty installed directory set and empty source cache, using native `install --frozen`. The lock file stayed unchanged. |
+| Installed content | `bun run skills:check` verified all five directory hashes at Matt Pocock revision `5beb35b040e3de97e54fa9e386d7e42d15c295c2`: 16 original files, including setup templates, agent metadata, and writing mechanics. |
+| Repository boundaries | `git check-ignore` confirms each of the five external skill directories and the source cache is ignored. `git ls-files .agents/skills` still contains only the existing first-party bootstrap/demo skills. |
+| Repeat and refusal behavior | Four installer tests, 15 assertions, passed. They exercise offline plan/check, unchanged repeat apply, refusal of edited copies, missing installs, inconsistent locks, and symlink rejection. The symlink test skips Windows because creating links there can require separate privileges. |
+| Literal setup | The setup skill and its local tracker/domain templates were read and applied to `docs/agents/`. Existing durable spec/plan and decision locations were retained. No remote issues or triage labels were created. |
+| Documentation use | Installed `writing-for-agents` and `handoff` instructions were read for this update. The existing spec is not claimed to have been generated retroactively by the installed `to-spec` skill. |
+| Repository validation | `bun run verify` passed after the changes, including format, lint, strict types, tests, and workspace checks/builds. Existing 32 Biome warnings, the upstream chunk-size advisory, and missing optional actionlint/shellcheck remain as previously recorded. |
+| Independent review | A separate read-only review found no material issue in the installer, locked source, ignore rules, setup, or updated prompts. |
+
+The normal install is explicit and project-local. It runs the pinned manager with
+Bun, so this skill setup does not add a Node prerequisite to the base starter.
+No automatic install hook, global skill directory, or floating source is used.
+The native manager overwrites destinations; the wrapper checks existing copies
+before invoking it and refuses content that differs from the lock. Its Git
+line-ending setting applies only to the child process. Native Windows/macOS runs
+and actual skill discovery in the Antigravity UI were not exercised here.
+
+This follow-up changes skill setup and documentation. Browser, WordPress, MCP,
+AI Studio import, and deployment acceptance remain at their previously recorded
+states. The standalone AI Studio export does not contain these installed skills
+or the monorepo's skill manager.
+
 ## Remaining acceptance
 
 1. Install the exact browser on a supported environment and run the shell and real runtime suites without weakened settings.

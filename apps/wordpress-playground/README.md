@@ -7,6 +7,25 @@
 
 **Status:** runnable source scaffold; the app contract remains `scaffold` until actual browser and workshop acceptance passes. Source/build checks, MCP protocol checks, browser checks, Antigravity checks, and deployment are separate evidence. No public demo URL is claimed yet.
 
+## Install the planning skills
+
+The repo installs Matt Pocock's actual `setup-matt-pocock-skills`, `to-spec`, `to-tickets`, `handoff`, and `writing-for-agents` directories from a reviewed source revision. The root [manifest](../../package.json) selects the skills, and [skills-lock.json](../../skills-lock.json) records each source commit, directory, and content hash. Installed copies under `.agents/skills/` are ignored by Git; bundled templates and references stay with each skill.
+
+From the repository root, after verifying Git and the pinned Bun version:
+
+```sh
+bun install --frozen-lockfile
+bun run skills:plan
+bun run skills:apply
+bun run skills:check
+```
+
+`plan` reports the selected files and targets without network access or writes. `apply` restores the frozen skill versions locally and refuses to overwrite edited copies. `check` verifies the installed content against the lock. Dependency installation alone does not install the skills.
+
+Open the installed `SKILL.md` for the task being performed. Use `to-spec` for requirements, `to-tickets` for implementation slices, `handoff` for the next session, and `writing-for-agents` for agent-facing documents. `setup-matt-pocock-skills` uses the committed [issue-tracker settings](../../docs/agents/issue-tracker.md) and [domain settings](../../docs/agents/domain.md). Those settings retain the existing local spec/plan workflow and repository terminology. They do not configure a new remote tracker.
+
+The [research memo](../../docs/research/matt-pocock-specs-and-handoffs-2026-10-24.md) records the upstream sources and update procedure. Planning skills help build the app. Keep them the same across both workshop comparison runs; the optional `wordpress-workshop-draft` skill is the one being compared.
+
 ## Start locally
 
 From the repository root, use the [fresh-machine guide](../../docs/operations/fresh-machine-setup.md) if Git or Bun is missing. The repository pins Bun 1.3.14 and one root lockfile.
@@ -73,6 +92,8 @@ node apps/wordpress-playground/scripts/export-aistudio.mjs apply
 
 This creates `dist/wordpress-playground-aistudio/`, outside tracked source, and refuses to overwrite an existing export. It contains the browser app, Blueprint, independent TypeScript/package configuration, a dependency-free static server, and [AI_STUDIO_PROMPT.md](AI_STUDIO_PROMPT.md). It excludes local MCP settings, credentials, tests, and participant data. Inspect the export before importing it.
 
+Do planning and spec revisions with the installed upstream skills in the monorepo before generating this export. The standalone project does not include the monorepo's skill manager, skill lock, or installed skill directories.
+
 The generated project needs its **own reviewed npm lockfile** before deployment. Exact top-level versions alone do not freeze its transitive dependencies. The monorepo's root `bun.lock` remains the source project's authoritative lock. Do not add a second lockfile inside this app workspace.
 
 In the standalone project, install with the supported Node/npm versions, generate/review its lock, run `npm ci`, `npm run typecheck`, and `npm run build`. `npm start` serves `dist` on `0.0.0.0` and the platform's `PORT` (8080 by default). The server exposes `/healthz` and serves no MCP, database, or PHP endpoint.
@@ -113,6 +134,7 @@ See the [browser security research](../../docs/research/wordpress-playground-bro
 ## Checks and evidence
 
 ```sh
+bun run skills:check
 bun run --cwd apps/wordpress-playground check
 node --test apps/wordpress-playground/scripts/*.test.mjs
 bun run app:browser:verify --app wordpress-playground

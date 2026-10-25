@@ -105,6 +105,7 @@ Notion session.
 Use a browser WordPress/WebAssembly sandbox with local Antigravity MCP tooling.
 
 - [App, setup, and recovery guide](apps/wordpress-playground/README.md)
+- [Install the actual pinned planning skills](apps/wordpress-playground/README.md#install-the-planning-skills), with local copies restored from [skills-lock.json](skills-lock.json)
 - [Agent handoff prompt](apps/wordpress-playground/PROMPT.md) and [AI Studio prompt](apps/wordpress-playground/AI_STUDIO_PROMPT.md)
 - [Research, specification, and progress](docs/plans/wordpress-playground-workshop-2026-10-24.md)
 - [Verification and remaining rehearsal work](docs/verification/wordpress-playground-workshop-2026-10-24.md)

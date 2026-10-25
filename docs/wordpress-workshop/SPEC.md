@@ -42,16 +42,25 @@ flowchart TD
 8. As a participant whose browser blocks the bridge or runtime, I receive a clear next step without being asked to disable browser protections.
 9. As a maintainer, I can build the app in the monorepo and produce a standalone AI Studio project without changing other apps or the root default commands.
 10. As the next coding agent, I can distinguish completed checks from proposed or blocked checks and continue from the recorded state.
+11. As a maintainer, I can restore the actual reviewed planning skills from a lockfile and verify their contents without committing installed upstream copies.
 
 ## 4. Implementation decisions
 
 ### Decision status
 
-**Requested:** WordPress/WASM, GitHub research and scaffold, MCP control through local Antigravity, AI Studio as the preferred hosting workflow, and Firebase as the fallback.
+**Requested:** WordPress/WASM, GitHub research and scaffold, MCP control through local Antigravity, AI Studio as the preferred hosting workflow, Firebase as the fallback, and a reproducible local installation of the actual planning skills.
 
 **Selected implementation defaults:** official Playground browser client and bridge, exact version 3.1.58, a small static TypeScript app, explicit start/connect actions, a temporary site with ZIP recovery, and a standalone export. These are implementation choices made for the requested scaffold.
 
 **Unverified:** real Antigravity tool discovery and browser round trip, hosted HTTPS permission behavior, actual AI Studio import, and cross-browser compatibility. They remain acceptance work until recorded as observed.
+
+### Planning skill source and setup
+
+Install the actual selected Matt Pocock skill directories from a reviewed immutable revision. Track the selection, source commits, directory hashes, and installation recipe. Keep installed upstream files unchanged and outside version control, including their bundled references and templates. A new checkout must be able to restore the same content and check its integrity.
+
+The selected set is `setup-matt-pocock-skills`, `to-spec`, `to-tickets`, `handoff`, and `writing-for-agents`. Configure the setup skill for the existing local specification, plan, and domain documentation conventions. Keep publication authority separate from a skill's instruction to publish. Use the actual installed instructions when revising requirements, splitting work, or preparing agent documents.
+
+These skills support implementation of the workshop. Keep their installation and use identical across the two drafting runs. Only the optional workshop drafting skill changes in that comparison. Perform planning in the monorepo before exporting the standalone AI Studio project; the export does not include the planning-skill installation.
 
 ### Runtime and site contract
 
@@ -99,7 +108,9 @@ Automated local checks cover strict port/origin validation, source types/build, 
 
 Hosted rehearsal must cover a fresh Chrome permission state, allow and deny, wrong origin, stopped/restarted bridge, two distinct tabs, and a top-level deployed URL. Firefox and Safari results are recorded separately; source inspection alone does not establish browser support. Current Chromium is the primary workshop target.
 
-For the skill comparison, use fresh conversations and identical initial sites, model, tool access, brief, rules, and allowed external information. Change only skill context. Do not force or promise a weaker baseline result.
+Check the planning-skill installation against its locked directory hashes and verify that installed upstream copies are ignored by Git. This check proves source identity, not that an agent invoked the skills or that application behavior passed.
+
+For the skill comparison, use fresh conversations and identical initial sites, model, tool access, brief, rules, installed planning skills, and allowed external information. Change only the workshop drafting-skill context. Do not force or promise a weaker baseline result.
 
 Report every acceptance criterion as passed, failed, blocked, or not exercised, with command/browser/version evidence. The app contract stays `scaffold` until its declared completion checks actually pass.
 
@@ -110,10 +121,10 @@ Report every acceptance criterion as passed, failed, blocked, or not exercised, 
 - WordPress MCP Adapter/Abilities plugins, WebMCP, or a Docker-based fallback.
 - A new database, Firebase Auth, Gemini API calls, a paid cloud service provisioned automatically, or modifications to other meetup apps.
 - Guaranteed offline operation or a fully frozen self-hosted WASM asset distribution.
-- Installing Matt Pocock's complete skills collection or creating a parallel ticketing system.
+- Installing Matt Pocock's collection beyond the selected five planning skills, or creating a parallel ticketing system.
 
 ## 7. Further notes
 
-This structure adapts the current [Matt Pocock research](../research/matt-pocock-specs-and-handoffs-2026-10-24.md): synthesize decisions, preserve uncertainty, verify observable behavior, and keep implementation slices demonstrable. It does not claim to have run his skills or his evaluation workflow.
+The initial specification adapted the [Matt Pocock research](../research/matt-pocock-specs-and-handoffs-2026-10-24.md). The follow-up adds actual skill installation and repository setup for future revisions. That does not retroactively establish how the initial spec was generated or claim an evaluation result.
 
 Primary technical evidence and version caveats are in the [Playground research](../research/wordpress-playground-workshop-2026-10-24.md) and [browser bridge review](../research/wordpress-playground-browser-bridge-2026-10-24.md). Repository-specific commands and paths belong in the app guide and handoff rather than defining the product contract here.

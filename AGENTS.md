@@ -206,6 +206,23 @@
 - Project-specific rules override profile rules. Preserve and report material
   conflicts rather than silently choosing.
 
+## Agent skills
+
+- When a task calls for Matt Pocock's spec, ticket, handoff, or agent-writing
+  workflow, use the literal installed skill and its bundled references. Run
+  `bun run skills:plan`, install with `bun run skills:apply`, and verify with
+  `bun run skills:check`. The manifest and lock pin the upstream files;
+  installed copies under `.agents/skills/` stay local.
+- Read `.agents/skills/<name>/SKILL.md` for the requested workflow. The selected
+  skills are `setup-matt-pocock-skills`, `to-spec`, `to-tickets`, `handoff`, and
+  `writing-for-agents`. Installation does not invoke every workflow.
+- Issue tracker: use the existing repository Markdown spec and plan convention.
+  Read `docs/agents/issue-tracker.md` before generating specs or tickets.
+- Domain docs: follow the existing monorepo scopes and decision records.
+  Read `docs/agents/domain.md` before exploring the affected app.
+- Keep these build-planning skills consistent across the WordPress workshop's
+  comparison runs. Only the separate workshop drafting skill changes between runs.
+
 ## Google Cloud lifecycle
 
 - Keep the Level 0 starter on Firebase Hosting without billing. Do not add a

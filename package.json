@@ -9,6 +9,9 @@
   ],
   "scripts": {
     "setup:doctor": "bun scripts/setup-doctor.ts",
+    "skills:plan": "bun scripts/planning-skills.ts plan",
+    "skills:apply": "bun scripts/planning-skills.ts apply",
+    "skills:check": "bun scripts/planning-skills.ts check",
     "dev": "bun run --cwd apps/welcome dev",
     "build": "bun scripts/workspace-apps.ts build",
     "app:create": "bun scripts/create-app.ts",
@@ -49,8 +52,36 @@
     "gts": "7.0.0",
     "playwright": "1.62.1",
     "prettier": "3.6.2",
+    "skills-lock": "https://codeload.github.com/luisalima/skills-lock/tar.gz/4e37719a163b6022d4a2828850567421f9de7825",
     "typescript": "5.9.3",
     "vite": "8.0.16"
+  },
+  "skills": {
+    "setup-matt-pocock-skills": {
+      "source": "mattpocock/skills#5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "path": "skills/engineering/setup-matt-pocock-skills"
+    },
+    "to-spec": {
+      "source": "mattpocock/skills#5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "path": "skills/engineering/to-spec"
+    },
+    "to-tickets": {
+      "source": "mattpocock/skills#5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "path": "skills/engineering/to-tickets"
+    },
+    "handoff": {
+      "source": "mattpocock/skills#5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "path": "skills/productivity/handoff"
+    },
+    "writing-for-agents": {
+      "source": "mattpocock/skills#5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "path": "skills/productivity/writing-for-agents"
+    }
+  },
+  "skillsConfig": {
+    "agents": [
+      "universal"
+    ]
   },
   "overrides": {
     "tmp": "0.2.7",

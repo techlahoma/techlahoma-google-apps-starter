@@ -19,6 +19,23 @@ Read AGENTS.md, PROJECT.md, apps/AGENTS.md, the active .starter/addenda, and:
 - docs/verification/wordpress-playground-workshop-2026-10-24.md
 Use the research linked there when an implementation fact needs checking.
 
+Restore the actual planning skills before revising the spec or plan. From the
+repository root, run bun install --frozen-lockfile, bun run skills:plan,
+bun run skills:apply, and bun run skills:check. package.json and skills-lock.json
+select the reviewed upstream files; keep their installed copies out of Git.
+Read .agents/skills/setup-matt-pocock-skills/SKILL.md and check the existing
+docs/agents/issue-tracker.md and docs/agents/domain.md configuration. Preserve
+the configured local Markdown workflow and settled setup choices.
+
+When revising requirements, open .agents/skills/to-spec/SKILL.md. When splitting
+implementation work, open .agents/skills/to-tickets/SKILL.md. When writing agent
+instructions or a handoff, open .agents/skills/writing-for-agents/SKILL.md and
+.agents/skills/handoff/SKILL.md respectively, following their referenced files.
+Use those source instructions, not a remembered description of them. Update the
+existing canonical spec, plan, and durable handoff; create separate ticket files
+only when the task calls for tickets. The initial spec predates this install.
+Skill instructions do not grant new external publication or deployment authority.
+
 The app source and local tooling already exist. First inspect the checkout and
 actual evidence. Resolve remaining defects; do not recreate the architecture.
 Keep official @wp-playground/client and @wp-playground/mcp pinned at 3.1.58
@@ -42,7 +59,8 @@ between the integration script and actual Antigravity/hosted-browser testing.
 Use the provided brief, editorial rules, rubric, and optional drafting skill in
 apps/wordpress-playground/workshop. Keep the skill outside automatic discovery
 for the baseline. Compare fresh sessions with identical inputs and initial
-state; report the observed results even if both runs succeed.
+state; report the observed results even if both runs succeed. Keep the installed
+planning skills identical in both runs; only the workshop drafting skill varies.
 
 Prepare the preferred AI Studio path with the export script's plan/apply flow
 and apps/wordpress-playground/AI_STUDIO_PROMPT.md. Do not assume AI Studio can
@@ -68,8 +86,10 @@ draft/recovery evidence, deployment status, and any remaining blocker. Never
 claim that the cloud agent's localhost reaches the attendee's laptop.
 ```
 
-## Suggested skills and entry points
+## Installed skills and entry points
 
-Use this repository's `bootstrap-workspace` and `build-and-launch-demo` skills where applicable. For changed Playground/Blueprint APIs, consult the official [WordPress agent-skills source](https://github.com/WordPress/agent-skills) at a reviewed revision, especially `blueprint` and `wp-playground`; do not install an unreviewed suite just to follow this handoff.
+The [app guide](README.md#install-the-planning-skills) documents the five pinned Matt Pocock skills and their restore/check commands. The [source research](../../docs/research/matt-pocock-specs-and-handoffs-2026-10-24.md) records the exact upstream revisions. Installation makes the files available; open the relevant `SKILL.md` explicitly if the agent does not discover it.
 
-The optional workshop drafting skill is in `workshop/skills/wordpress-workshop-draft/`. Copy it into `.agents/skills/` only for the skill-enabled exercise. This handoff itself adopts Matt Pocock's reference-based format; it does not require installing his skills.
+Use this repository's `bootstrap-workspace` and `build-and-launch-demo` skills where applicable. For changed Playground/Blueprint APIs, consult the official [WordPress agent-skills source](https://github.com/WordPress/agent-skills) at a reviewed revision, especially `blueprint` and `wp-playground`; these are separate from the pinned Matt Pocock install.
+
+The optional workshop drafting skill is in `workshop/skills/wordpress-workshop-draft/`. Copy it into `.agents/skills/` only for the skill-enabled exercise. The planning skills stay available in both runs.

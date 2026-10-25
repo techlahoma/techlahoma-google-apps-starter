@@ -43,6 +43,7 @@
 - Exact project-ID confirmation for provision, deploy, and whole-project deletion
 - Source-backed research, operating guide, tests, and production build
 - A scoped WordPress Playground workshop scaffold with local MCP tooling, ZIP recovery, and an optional standalone AI Studio export
+- Explicit, reproducible installation of the selected upstream planning skills, with local copies ignored and source commits/content hashes tracked
 - Native PowerShell and macOS onboarding with a read-only environment doctor
 - Cross-platform repository verification plus Windows and macOS CI coverage
 
@@ -97,6 +98,8 @@ See
 | Human onboarding | `README.md` |
 | Fresh-machine onboarding | `docs/operations/fresh-machine-setup.md` |
 | Agent rules | `AGENTS.md` and `.starter/addenda/` |
+| Upstream planning skill dependencies | `package.json` skills fields, `skills-lock.json`, and `scripts/planning-skills.ts`; installed `.agents/skills/` copies are local |
+| Planning skill repository settings | `docs/agents/issue-tracker.md` and `docs/agents/domain.md`; upstream license in `docs/agents/MATT-POCOCK-LICENSE.txt` |
 | Antigravity environment bootstrap | `.agents/rules/environment-bootstrap.md` and `.agents/skills/bootstrap-workspace/` |
 | One-prompt local demo workflow | `.agents/skills/build-and-launch-demo/` |
 | Runnable apps | `apps/<slug>/` |
@@ -126,6 +129,9 @@ See
 |---|---|---|---|---|
 | `bun run setup:doctor [--json]` | read-only | local platform, tools, checkout, dependencies, and browser readiness | none | findings and exact next actions |
 | `bun run setup:doctor --network` | read-only network query | GitHub and npm registry reachability | none | bounded endpoint results |
+| `bun run skills:plan` | read-only, offline | selected skill manifest, lock, and local installation | none | exact source, target, integrity, and missing/verified/modified status |
+| `bun run skills:apply` | local-write plus public source download when missing | only the locked `.agents/skills/<name>` directories and repo-local `.skills/cache` | skill-install intent | frozen install and installed-content verification; refuses edited copies |
+| `bun run skills:check` | read-only, offline | installed selected skill trees | none | all installed content matches the native skill lock |
 | `bun run browser:install` | local-write plus network download | pinned Playwright Chromium cache | explicit dependency/browser install intent | local browser executable |
 | `bun run dev` | local runtime | `apps/welcome` Vite server | none | local page loads |
 | `bun run app:create plan --name APP --title TITLE` | read-only | proposed `apps/APP` workspace | none | JSON plan |

@@ -14,6 +14,12 @@ app, pinned WordPress Playground browser packages, committed Blueprint, and
 dependency-free scripts/serve.mjs server. Do not replace them with a new WordPress
 backend or generate an unrelated React app.
 
+The source monorepo installs Matt Pocock's pinned planning skills through its
+skills:plan, skills:apply, and skills:check commands. This standalone export does
+not contain that toolchain or the installed skills. Do spec or planning revisions
+in the monorepo using the actual installed SKILL.md files, then regenerate the
+export. Do not claim those skills ran in AI Studio merely from reading this prompt.
+
 Use Node >=24.18.0 and npm >=11.16.0. Generate and review this isolated project's
 own package-lock.json, then use npm ci. Run npm run typecheck, npm run build,
 and npm start. The server must listen on 0.0.0.0 and process.env.PORT, serve dist,

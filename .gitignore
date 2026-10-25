@@ -3,6 +3,13 @@
 .vscode/settings.json
 .starter/cache/
 .starter/tmp/
+.skills/
+# External planning skills are restored from skills-lock.json.
+/.agents/skills/setup-matt-pocock-skills/
+/.agents/skills/to-spec/
+/.agents/skills/to-tickets/
+/.agents/skills/handoff/
+/.agents/skills/writing-for-agents/
 .firebase/
 google.project.json
 
