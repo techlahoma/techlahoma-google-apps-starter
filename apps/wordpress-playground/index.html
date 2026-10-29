@@ -88,29 +88,17 @@
                 <h3 id="connect-title">Connect your agent</h3>
               </div>
               <p>
-                Open the URL from your local MCP server, or enter its port. Nothing connects until
-                you choose Connect.
+                Paste this prompt into Antigravity. It sets up the WordPress MCP server on your
+                laptop, then tells you when to connect. Nothing connects until you choose Connect.
               </p>
-              <label class="field-label" for="mcp-port">Local MCP port</label>
-              <div class="port-field">
-                <span aria-hidden="true">127.0.0.1 :</span>
-                <input
-                  id="mcp-port"
-                  type="text"
-                  inputmode="numeric"
-                  autocomplete="off"
-                  spellcheck="false"
-                  maxlength="100"
-                  placeholder="e.g. 5400"
-                  aria-describedby="port-help port-error"
-                >
-              </div>
-              <p id="port-help" class="field-help">
-                Use the port from <code>playground_get_website_url</code>.
-              </p>
-              <p id="port-error" class="error-message" role="alert" hidden></p>
+              <label class="field-label" for="agent-prompt">Hand this to Antigravity</label>
+              <textarea id="agent-prompt" class="agent-prompt" rows="8" readonly spellcheck="false"></textarea>
+              <button class="button secondary" id="copy-prompt" type="button">
+                Copy Antigravity prompt
+              </button>
+              <output id="prompt-status" class="field-help" aria-live="polite"></output>
               <button class="button primary" id="connect-mcp" type="button" disabled>
-                Connect local MCP
+                Connect agent
               </button>
               <button class="button secondary" id="disconnect-mcp" type="button" hidden>
                 Disconnect MCP
@@ -158,7 +146,7 @@
               </button>
             </section>
           </section>
-          <section class="workspace card" aria-labelledby="workspace-title">
+          <section class="workspace card" id="workspace" aria-labelledby="workspace-title">
             <div class="workspace-heading">
               <div>
                 <p class="small-heading">THIS TAB'S SITE</p>
@@ -168,9 +156,7 @@
             </div>
             <div class="site-target">
               <div><span class="field-label">MCP site ID</span><code id="site-id"></code></div>
-              <button class="text-button" id="copy-target" type="button">Copy target prompt</button>
             </div>
-            <p id="copy-status" class="copy-status" aria-live="polite" hidden></p>
             <p id="site-notice" class="site-notice" hidden></p>
             <div class="workspace-nav" aria-label="WordPress navigation">
               <span>WORDPRESS WORKSPACE</span>
@@ -178,6 +164,8 @@
                 <button id="show-posts" type="button" disabled>Posts</button
                 ><button id="show-site" type="button" disabled>
                   View site <span aria-hidden="true">↗</span>
+                </button><button id="toggle-fullscreen" type="button">
+                  <span id="fullscreen-label">Full screen</span> <span aria-hidden="true">⤢</span>
                 </button>
               </div>
             </div>

@@ -2,11 +2,12 @@ import type {Blueprint, PlaygroundClient} from '@wp-playground/client';
 import type {McpBridgeHandle} from '@wp-playground/mcp/client';
 import blueprintJson from '../public/blueprint.json';
 import {
+  agentStartPrompt,
   BOOT_TIMEOUT_MS,
   BRIDGE_TIMEOUT_MS,
+  DEFAULT_MCP_PORT,
   importFileError,
   normalizeSiteName,
-  parsePort,
   portFromSearch,
 } from './app';
 import {createRevocableBridge} from './bridge';
@@ -28,8 +29,6 @@ const cancelStart = element<HTMLButtonElement>('cancel-start');
 const runtimeStatus = element<HTMLOutputElement>('runtime-status');
 const runtimeError = element<HTMLParagraphElement>('runtime-error');
 const runtimeDot = element<HTMLSpanElement>('runtime-dot');
-const portInput = element<HTMLInputElement>('mcp-port');
-const portError = element<HTMLParagraphElement>('port-error');
 const connectButton = element<HTMLButtonElement>('connect-mcp');
 const disconnectButton = element<HTMLButtonElement>('disconnect-mcp');
 const bridgeStatus = element<HTMLOutputElement>('bridge-status');
@@ -45,12 +44,17 @@ const frameContainer = element<HTMLDivElement>('playground-frame');
 const emptyState = element<HTMLDivElement>('empty-state');
 const siteIdOutput = element<HTMLElement>('site-id');
 const siteTitle = element<HTMLHeadingElement>('workspace-title');
-const copyStatus = element<HTMLParagraphElement>('copy-status');
+const agentPrompt = element<HTMLTextAreaElement>('agent-prompt');
+const promptStatus = element<HTMLOutputElement>('prompt-status');
 
 type Phase = 'idle' | 'starting' | 'ready' | 'error';
 let phase: Phase = 'idle';
 let busy = false;
 let client: PlaygroundClient | undefined;
+// A link from playground_get_website_url may carry its own port.
+const linkedPort = portFromSearch(window.location.search);
+const bridgePort =
+  linkedPort.kind === 'valid' ? linkedPort.port : DEFAULT_MCP_PORT;
 let siteId = freshSiteId();
 let siteName = 'Agent Workshop demo';
 let bootGeneration = 0;
@@ -85,10 +89,8 @@ function updateControls(): void {
     : 'Start WordPress →';
   cancelStart.hidden = phase !== 'starting';
   connectButton.hidden = Boolean(bridge) || connecting;
-  connectButton.disabled =
-    !ready || parsePort(portInput.value).kind !== 'valid';
+  connectButton.disabled = !ready;
   disconnectButton.hidden = !bridge && !connecting;
-  portInput.readOnly = Boolean(bridge) || connecting;
   for (const button of [
     exportButton,
     importButton,
@@ -106,6 +108,7 @@ function updateControls(): void {
     error: 'Could not start',
   }[phase];
   siteIdOutput.textContent = siteId;
+  agentPrompt.value = agentStartPrompt(siteId, window.location.origin);
   siteTitle.textContent = siteName;
 }
 
@@ -204,20 +207,9 @@ async function startWordPress(): Promise<void> {
 
 async function connectMcp(): Promise<void> {
   if (phase !== 'ready' || busy || connecting || bridge) return;
-  const parsed = parsePort(portInput.value);
-  if (parsed.kind !== 'valid') {
-    showText(
-      portError,
-      parsed.kind === 'invalid'
-        ? parsed.message
-        : 'Enter the port from your local MCP server.',
-    );
-    return;
-  }
-  showText(portError, '');
   const generation = ++bridgeGeneration;
   connecting = true;
-  bridgeStatus.textContent = `Opening local bridge on port ${parsed.port}…`;
+  bridgeStatus.textContent = `Connecting to your agent on port ${bridgePort}…`;
   showText(
     bridgeDetail,
     'If your browser asks, allow this site to connect to your local network.',
@@ -226,7 +218,7 @@ async function connectMcp(): Promise<void> {
   bridgeTimer = setTimeout(() => {
     if (generation !== bridgeGeneration) return;
     disconnectMcp(
-      'Could not open the bridge within 20 seconds. Start the local MCP server, check its port and --url origin, allow the browser’s local-network permission, then try Connect again.',
+      'Could not open the bridge within 20 seconds. Check that Antigravity says the WordPress MCP server is running, allow this site to reach your local network if the browser asks, then try Connect again.',
     );
   }, BRIDGE_TIMEOUT_MS);
 
@@ -262,7 +254,7 @@ async function connectMcp(): Promise<void> {
           );
         },
       },
-      parsed.port,
+      bridgePort,
     );
     connecting = false;
     updateControls();
@@ -360,12 +352,6 @@ cancelStart.addEventListener('click', () => {
 });
 connectButton.addEventListener('click', () => void connectMcp());
 disconnectButton.addEventListener('click', () => disconnectMcp());
-portInput.addEventListener('input', () => {
-  const parsed = parsePort(portInput.value);
-  showText(portError, parsed.kind === 'invalid' ? parsed.message : '');
-  portInput.setAttribute('aria-invalid', String(parsed.kind === 'invalid'));
-  updateControls();
-});
 exportButton.addEventListener('click', () => void exportSite());
 importButton.addEventListener('click', () => importInput.click());
 importInput.addEventListener('change', () => void importSite());
@@ -388,24 +374,63 @@ resetButton.addEventListener('click', () => {
   siteName = 'Agent Workshop demo';
   element<HTMLSpanElement>('site-content-label').textContent = 'FICTIONAL DEMO';
   fileStatus.textContent = '';
-  showText(copyStatus, '');
   void startWordPress();
 });
-element<HTMLButtonElement>('copy-target').addEventListener(
+async function copyAgentPrompt(status: HTMLElement): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(agentPrompt.value);
+    showText(status, 'Prompt copied. Paste it into Antigravity.');
+  } catch {
+    agentPrompt.focus();
+    agentPrompt.select();
+    showText(
+      status,
+      'Copy is blocked here. The prompt is selected; copy it manually.',
+    );
+  }
+}
+element<HTMLButtonElement>('copy-prompt').addEventListener(
   'click',
-  async () => {
-    const prompt = `Read apps/wordpress-playground/workshop/event-brief.md and apps/wordpress-playground/workshop/publishing-rules.md in this repository. Use playground_list_sites to find the site whose siteId is ${siteId}. Confirm it exists, then pass that exact returned siteId to the tools. Create a WordPress draft using the fictional event brief and publishing rules, preserve TBD details, and read the saved draft back.`;
-    try {
-      await navigator.clipboard.writeText(prompt);
-      showText(
-        copyStatus,
-        'Target prompt copied. Paste it into Antigravity after connecting.',
-      );
-    } catch {
-      showText(copyStatus, `Copy this prompt: ${prompt}`);
+  () => void copyAgentPrompt(promptStatus),
+);
+const workspace = element<HTMLElement>('workspace');
+const fullscreenLabel = element<HTMLSpanElement>('fullscreen-label');
+
+/** Expands the workspace in place; moving the iframe would reload WordPress. */
+function setExpanded(expanded: boolean): void {
+  workspace.classList.toggle('is-fullscreen', expanded);
+  document.body.classList.toggle('workspace-expanded', expanded);
+  fullscreenLabel.textContent = expanded ? 'Exit full screen' : 'Full screen';
+}
+element<HTMLButtonElement>('toggle-fullscreen').addEventListener(
+  'click',
+  () => {
+    if (workspace.classList.contains('is-fullscreen')) {
+      if (document.fullscreenElement) void document.exitFullscreen();
+      setExpanded(false);
+      return;
+    }
+    // Expand first: some embedded browsers never settle requestFullscreen().
+    setExpanded(true);
+    if (document.fullscreenEnabled) {
+      workspace.requestFullscreen().catch(() => {
+        // The in-page layout already fills the window.
+      });
     }
   },
 );
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) setExpanded(false);
+});
+document.addEventListener('keydown', event => {
+  if (
+    event.key === 'Escape' &&
+    !document.fullscreenElement &&
+    workspace.classList.contains('is-fullscreen')
+  ) {
+    setExpanded(false);
+  }
+});
 window.addEventListener('beforeunload', event => {
   if (phase === 'ready' || busy) {
     event.preventDefault();
@@ -414,12 +439,6 @@ window.addEventListener('beforeunload', event => {
 });
 window.addEventListener('pagehide', () => disconnectMcp());
 
-const initialPort = portFromSearch(window.location.search);
-if (initialPort.kind === 'valid') portInput.value = String(initialPort.port);
-if (initialPort.kind === 'invalid') {
-  showText(portError, initialPort.message);
-  portInput.setAttribute('aria-invalid', 'true');
-}
 if (new URLSearchParams(window.location.search).has('site-slug')) {
   showText(
     element<HTMLParagraphElement>('site-notice'),
