@@ -54,3 +54,48 @@ export function normalizeSiteName(value: unknown): string {
   }
   return value.trim();
 }
+
+/** Fixed so the agent configures the server and nobody copies a port. */
+export const DEFAULT_MCP_PORT = 7811;
+export const MCP_PACKAGE = '@wp-playground/mcp@3.1.58';
+
+/** A self-contained Antigravity prompt; it assumes no checkout or files. */
+export function agentStartPrompt(siteId: string, origin: string): string {
+  const appUrl = `${origin.replace(/\/+$/, '')}/`;
+  const config = JSON.stringify(
+    {
+      mcpServers: {
+        'wordpress-workshop': {
+          command: 'npx',
+          args: [
+            '-y',
+            MCP_PACKAGE,
+            `--url=${appUrl}`,
+            `--port=${DEFAULT_MCP_PORT}`,
+          ],
+        },
+      },
+    },
+    null,
+    2,
+  );
+  return [
+    `I'm in the WordPress Agent Workshop at ${appUrl}. WordPress runs in my browser tab there. Connect to it and help me update the site.`,
+    '',
+    '1. Add this MCP server to your MCP configuration, keeping any servers already there, then enable or refresh it:',
+    '',
+    config,
+    '',
+    '   It needs Node.js 24.18 or newer. If Node is missing or older, stop and tell me how to install it. Do not install anything without asking me.',
+    '2. When the server is running, tell me to choose Connect agent on the workshop page.',
+    `3. After I say I'm connected, call playground_list_sites and use the site whose siteId is ${siteId}. If it is not listed, stop and tell me. Do not open a new Playground tab; that creates a separate site.`,
+    '4. First task: create a WordPress draft announcing this fictional event. Never publish or schedule it.',
+    '   - Title: Build a small website with agents',
+    '   - Organizer: Demo Developer Group, a fictional group',
+    '   - When: March 14, 2030, 6:00–7:30 p.m. Central Time',
+    '   - Venue: to be announced. Registration: not available yet. Do not invent either.',
+    '   - Cost: free. Audience: anyone who can use a browser; no coding needed. Bring a laptop and charger.',
+    '   Label it as a fictional workshop example, include AGENT-SKILLS-DEMO in the body, use heading, paragraph, and list blocks, and assign an Events category (create it if missing).',
+    '5. Read the saved draft back, tell me its title and post ID, and open it in the editor. Then ask me what to change on the site next.',
+  ].join('\n');
+}

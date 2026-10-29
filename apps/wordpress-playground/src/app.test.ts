@@ -1,5 +1,7 @@
 import {describe, expect, test} from 'bun:test';
 import {
+  agentStartPrompt,
+  DEFAULT_MCP_PORT,
   importFileError,
   MAX_IMPORT_BYTES,
   normalizeSiteName,
@@ -68,5 +70,34 @@ describe('user-controlled imports and names', () => {
     for (const value of ['', '   ', null, {}, 'a'.repeat(81)]) {
       expect(() => normalizeSiteName(value)).toThrow();
     }
+  });
+});
+
+describe('Antigravity start prompt', () => {
+  const prompt = agentStartPrompt(
+    'workshop-abc',
+    'https://gdg-wordpress-workshop.web.app',
+  );
+
+  test('targets this tab site and inlines the MCP server for this origin', () => {
+    expect(prompt).toContain('siteId is workshop-abc');
+    expect(prompt).toContain('"@wp-playground/mcp@3.1.58"');
+    expect(prompt).toContain('"--url=https://gdg-wordpress-workshop.web.app/"');
+    expect(prompt).toContain(`"--port=${DEFAULT_MCP_PORT}"`);
+  });
+
+  test('assumes no repository checkout or local files', () => {
+    expect(prompt).not.toMatch(/apps\/|\.md\b|repository/);
+  });
+
+  test('keeps the agent on drafts and asks before installing', () => {
+    expect(prompt).toContain('Never publish');
+    expect(prompt).toContain('Do not install anything without asking me');
+  });
+
+  test('normalizes a trailing slash on the origin', () => {
+    expect(agentStartPrompt('x', 'http://127.0.0.1:5173/')).toContain(
+      '"--url=http://127.0.0.1:5173/"',
+    );
   });
 });

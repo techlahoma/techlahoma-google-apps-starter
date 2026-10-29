@@ -31,7 +31,10 @@ export async function runSmokeTest({
     await page.locator('#runtime-status').innerText(),
     'Not started',
   );
-  assert.equal(await page.locator('#mcp-port').inputValue(), '54123');
+  const prompt = await page.locator('#agent-prompt').inputValue();
+  assert.match(prompt, /"@wp-playground\/mcp@3\.1\.58"/);
+  assert.match(prompt, new RegExp(`--url=${appOrigin}/`));
+  assert.doesNotMatch(prompt, /apps\/|\.md\b/);
   assert.equal(await page.locator('#connect-mcp').isDisabled(), true);
   assert.equal(await page.locator('#playground-frame iframe').count(), 0);
   assert.match(
@@ -72,21 +75,12 @@ export async function runSmokeTest({
     `${baseURL}?mcp-port=54123&mcp-port=54124&site-slug=${firstSiteId}`,
     {waitUntil: 'networkidle'},
   );
-  assert.match(await page.locator('#port-error').innerText(), /exactly one/);
-  assert.equal(await page.locator('#mcp-port').inputValue(), '');
   assert.notEqual(await page.locator('#site-id').innerText(), firstSiteId);
   assert.match(
     await page.locator('#site-notice').innerText(),
     /new, separate site/,
   );
-  await page.locator('#mcp-port').fill('65536');
-  assert.match(
-    await page.locator('#port-error').innerText(),
-    /between 1 and 65535/,
-  );
   assert.equal(await page.locator('#connect-mcp').isDisabled(), true);
-  await page.locator('#mcp-port').fill('54123');
-  assert.equal(await page.locator('#port-error').isHidden(), true);
   assert.deepEqual(offOriginRequests, []);
   assert.deepEqual(bridgeSockets, []);
 
