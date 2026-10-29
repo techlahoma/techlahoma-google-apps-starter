@@ -13,210 +13,105 @@
   </head>
   <body>
     <a class="skip-link" href="#controls">Skip to workshop controls</a>
-    <div class="page-shell">
-      <header class="masthead">
-        <a class="brand" href="./" aria-label="WordPress Agent Workshop home">
-          <span class="brand-mark" aria-hidden="true">W</span>
-          <span>Techlahoma<span class="brand-subtitle">Agent Skills Workshop</span></span>
-        </a>
-        <span class="edition">BROWSER EDITION <span aria-hidden="true">↗</span></span>
-      </header>
-      <main>
-        <section class="intro" aria-labelledby="page-title">
-          <div>
-            <p class="eyebrow"><span aria-hidden="true"></span> A SMALL SITE. A REAL AGENT.</p>
-            <h1 id="page-title">WordPress.<br>Now in your browser.</h1>
-            <p class="lede">
-              Start a fresh site, connect your local agent, and turn a workshop brief into a
-              WordPress draft.
-            </p>
+    <main class="app">
+      <aside class="sidebar" id="controls" aria-labelledby="page-title">
+        <h1 id="page-title" class="brand">
+          <span class="brand-mark" aria-hidden="true">W</span> WordPress Agent Workshop
+        </h1>
+        <section class="control-section" aria-labelledby="start-title">
+          <h2 id="start-title"><span class="step">1</span> Start</h2>
+          <button class="button primary" id="start-wordpress" type="button">
+            Start WordPress <span aria-hidden="true">→</span>
+          </button>
+          <button class="button secondary" id="cancel-start" type="button" hidden>
+            Cancel startup
+          </button>
+          <div class="status-row">
+            <span class="status-dot" id="runtime-dot" aria-hidden="true"></span
+            ><output id="runtime-status" aria-live="polite">Not started</output>
           </div>
-          <aside class="connection-map" aria-label="How it connects">
-            <p class="small-heading">THE CONNECTION</p>
-            <ol>
-              <li>
-                <span class="map-number">01</span
-                ><span>Antigravity<small>Your local agent</small></span>
-              </li>
-              <li>
-                <span class="map-number">02</span
-                ><span>Playground MCP<small>A local Node process</small></span>
-              </li>
-              <li>
-                <span class="map-number">03</span
-                ><span>This browser tab<small>WordPress + PHP in WebAssembly</small></span>
-              </li>
-            </ol>
-          </aside>
+          <p id="runtime-error" class="error-message" role="alert" hidden></p>
         </section>
-        <div class="memory-notice" role="note">
-          <span class="notice-icon" aria-hidden="true">!</span>
-          <p>
-            <strong>This site lives in this tab.</strong>
-            Closing, reloading, or resetting it loses your edits. Export a ZIP to keep your work.
-            Each visitor gets a separate site.
-          </p>
-          <span class="pill">MEMORY ONLY</span>
-        </div>
-        <div class="workbench">
-          <section class="controls card" id="controls" aria-labelledby="controls-title">
-            <h2 id="controls-title">Your workshop</h2>
-            <section class="control-section" aria-labelledby="start-title">
-              <div class="section-heading">
-                <span class="step">1</span>
-                <h3 id="start-title">Start the site</h3>
-              </div>
-              <p>
-                Loads the official WordPress Playground runtime from wordpress.net and seeds clearly
-                labeled fictional content.
-              </p>
-              <button class="button primary" id="start-wordpress" type="button">
-                Start WordPress <span aria-hidden="true">→</span>
-              </button>
-              <button class="button secondary" id="cancel-start" type="button" hidden>
-                Cancel startup
-              </button>
-              <div class="status-row">
-                <span class="status-dot" id="runtime-dot" aria-hidden="true"></span
-                ><output id="runtime-status" aria-live="polite">Not started</output>
-              </div>
-              <p id="runtime-error" class="error-message" role="alert" hidden></p>
-            </section>
-            <section class="control-section" aria-labelledby="connect-title">
-              <div class="section-heading">
-                <span class="step">2</span>
-                <h3 id="connect-title">Connect your agent</h3>
-              </div>
-              <p>
-                Paste this prompt into Antigravity. It sets up the WordPress MCP server on your
-                laptop, then tells you when to connect. Nothing connects until you choose Connect.
-              </p>
-              <label class="field-label" for="agent-prompt">Hand this to Antigravity</label>
-              <textarea id="agent-prompt" class="agent-prompt" rows="8" readonly spellcheck="false"></textarea>
-              <button class="button secondary" id="copy-prompt" type="button">
-                Copy Antigravity prompt
-              </button>
-              <output id="prompt-status" class="field-help" aria-live="polite"></output>
-              <button class="button primary" id="connect-mcp" type="button" disabled>
-                Connect agent
-              </button>
-              <button class="button secondary" id="disconnect-mcp" type="button" hidden>
-                Disconnect MCP
-              </button>
-              <p class="consent-note">
-                Connecting lets your local agent read and change this demo site, including running
-                PHP. Use a local MCP server you trust.
-              </p>
-              <output id="bridge-status" class="bridge-status" aria-live="polite"
-                >Disconnected. No local connection has been attempted.</output
-              >
-              <p id="bridge-detail" class="field-help" hidden></p>
-            </section>
-            <section class="control-section" aria-labelledby="keep-title">
-              <div class="section-heading">
-                <span class="step">3</span>
-                <h3 id="keep-title">Keep your work</h3>
-              </div>
-              <p>
-                Export site content, or restore a trusted Playground ZIP. Import replaces the
-                current site. Both actions disconnect MCP first.
-              </p>
-              <p class="field-help">
-                Imports accept ZIPs up to 100 MiB. Exports may be larger and need another restore
-                path. Keep any larger backup elsewhere.
-              </p>
-              <div class="button-pair">
-                <button class="button secondary" id="export-site" type="button" disabled>
-                  Export ZIP <span aria-hidden="true">↓</span>
-                </button>
-                <button class="button secondary" id="import-site" type="button" disabled>
-                  Import ZIP <span aria-hidden="true">↑</span>
-                </button>
-              </div>
-              <input
-                id="import-file"
-                type="file"
-                accept=".zip,application/zip"
-                aria-label="Choose a WordPress Playground ZIP"
-                hidden
-              >
-              <output id="file-status" class="field-help" aria-live="polite"></output>
-              <button class="text-button" id="reset-site" type="button" disabled>
-                Reset to a fresh demo
-              </button>
-            </section>
-          </section>
-          <section class="workspace card" id="workspace" aria-labelledby="workspace-title">
-            <div class="workspace-heading">
-              <div>
-                <p class="small-heading">THIS TAB'S SITE</p>
-                <h2 id="workspace-title">Agent Workshop demo</h2>
-              </div>
-              <span class="demo-label" id="site-content-label">FICTIONAL DEMO</span>
-            </div>
-            <div class="site-target">
-              <div><span class="field-label">MCP site ID</span><code id="site-id"></code></div>
-            </div>
-            <p id="site-notice" class="site-notice" hidden></p>
-            <div class="workspace-nav" aria-label="WordPress navigation">
-              <span>WORDPRESS WORKSPACE</span>
-              <div>
-                <button id="show-posts" type="button" disabled>Posts</button
-                ><button id="show-site" type="button" disabled>
-                  View site <span aria-hidden="true">↗</span>
-                </button><button id="toggle-fullscreen" type="button">
-                  <span id="fullscreen-label">Full screen</span> <span aria-hidden="true">⤢</span>
-                </button>
-              </div>
-            </div>
-            <div id="playground-frame" class="playground-frame">
-              <div class="empty-state" id="empty-state">
-                <div class="browser-sketch" aria-hidden="true">
-                  <div><i></i><i></i><i></i></div>
-                  <span>W</span><b></b><b></b>
-                </div>
-                <p class="small-heading">YOUR NEXT EXPERIMENT</p>
-                <h3>A WordPress site, without a server.</h3>
-                <p>
-                  Choose <strong>Start WordPress</strong> to load the editor here. Your agent can
-                  work on this same site once you connect MCP.
-                </p>
-                <span class="empty-note">No Docker · No hosting login · No API key</span>
-              </div>
-            </div>
-            <div class="workspace-footnote">
-              <span>Browser memory · SQLite · PHP WebAssembly</span
-              ><a href="/blueprint.json" target="_blank" rel="noreferrer"
-                >View demo blueprint <span aria-hidden="true">↗</span></a
-              >
-            </div>
-          </section>
-        </div>
-        <section class="try-next" aria-labelledby="try-title">
-          <div>
-            <p class="small-heading">ONCE YOU'RE CONNECTED</p>
-            <h2 id="try-title">Give your agent something real to do.</h2>
-          </div>
-          <p>
-            Ask it to list connected sites, select the ID shown above, create a draft from the
-            fictional brief, and read the saved post back. Compare the same prompt with and without
-            your publishing skill.
+        <section class="control-section" aria-labelledby="connect-title">
+          <h2 id="connect-title"><span class="step">2</span> Connect your agent</h2>
+          <button class="button secondary" id="copy-prompt" type="button">
+            Copy Antigravity prompt
+          </button>
+          <output id="prompt-status" class="field-help" aria-live="polite"></output>
+          <details class="disclosure">
+            <summary>Show prompt</summary>
+            <textarea
+              id="agent-prompt"
+              class="agent-prompt"
+              rows="10"
+              readonly
+              spellcheck="false"
+              aria-label="Antigravity prompt"
+            ></textarea>
+          </details>
+          <button class="button primary" id="connect-mcp" type="button" disabled>
+            Connect agent
+          </button>
+          <button class="button secondary" id="disconnect-mcp" type="button" hidden>
+            Disconnect
+          </button>
+          <output id="bridge-status" class="field-help" aria-live="polite"
+            >Not connected.</output
+          >
+          <p id="bridge-detail" class="field-help" hidden></p>
+          <p class="field-help">
+            Connecting lets your agent edit this site, including running PHP. Site
+            <code id="site-id"></code>
           </p>
         </section>
-      </main>
-      <footer>
-        <p>
-          Built for learning with
-          <a
-            href="https://wordpress.github.io/wordpress-playground/"
-            target="_blank"
-            rel="noreferrer"
-            >WordPress Playground</a
-          >.
-        </p>
-        <p>Client &amp; MCP 3.1.58 · Hosted runtime follows upstream</p>
-      </footer>
-    </div>
+        <section class="control-section" aria-labelledby="keep-title">
+          <h2 id="keep-title"><span class="step">3</span> Keep your work</h2>
+          <p class="memory-notice" role="note">Reloading or closing this tab loses your edits.</p>
+          <div class="button-pair">
+            <button class="button secondary" id="export-site" type="button" disabled>
+              Export ZIP
+            </button>
+            <button class="button secondary" id="import-site" type="button" disabled>
+              Import ZIP
+            </button>
+          </div>
+          <input
+            id="import-file"
+            type="file"
+            accept=".zip,application/zip"
+            aria-label="Choose a WordPress Playground ZIP"
+            hidden
+          >
+          <output id="file-status" class="field-help" aria-live="polite"></output>
+          <details class="disclosure">
+            <summary>More</summary>
+            <button class="text-button" id="reset-site" type="button" disabled>
+              Reset to a fresh demo
+            </button>
+          </details>
+        </section>
+      </aside>
+      <section class="workspace" id="workspace" aria-labelledby="workspace-title">
+        <div class="workspace-bar">
+          <h2 id="workspace-title">Agent Workshop demo</h2>
+          <span class="demo-label" id="site-content-label">FICTIONAL DEMO</span>
+          <nav class="workspace-nav" aria-label="WordPress navigation">
+            <button id="show-posts" type="button" disabled>Posts</button
+            ><button id="show-site" type="button" disabled>View site</button
+            ><button id="toggle-fullscreen" type="button">
+              <span id="fullscreen-label">Full screen</span>
+            </button>
+          </nav>
+        </div>
+        <p id="site-notice" class="site-notice" hidden></p>
+        <div id="playground-frame" class="playground-frame">
+          <div class="empty-state" id="empty-state">
+            <h3>WordPress loads here</h3>
+            <p>Choose Start WordPress.</p>
+          </div>
+        </div>
+      </section>
+    </main>
     <noscript>
       <p class="noscript">Enable JavaScript to start WordPress in this browser.</p>
     </noscript>
