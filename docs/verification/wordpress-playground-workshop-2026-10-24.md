@@ -145,6 +145,13 @@ Revision `6fb570a` on macOS (Apple Silicon), Bun 1.3.14 via mise, Node 26.6.0, n
 
 The user-level Antigravity config (`~/.gemini/antigravity/mcp_config.json`, previously empty) now registers `wordpress-workshop` with the mise Node shim and absolute paths. It is machine-local and not committed. The paste-in prompt is [ANTIGRAVITY_START.md](../../apps/wordpress-playground/ANTIGRAVITY_START.md). Antigravity itself has not yet loaded the server or run the draft task; acceptance item 2 below remains open.
 
+### Portable setup and fixed port, 2026-10-29
+
+- `scripts/antigravity-setup.mjs plan|apply` replaces the hand-written config: it resolves this checkout and the running Node, merges only `wordpress-workshop`, and is idempotent (`apply` then `plan` reported "Already up to date"; the `~/.gemini` symlink was preserved). Its 5 unit tests pass.
+- `vite.config.ts` pins `127.0.0.1:5173` with `strictPort`. With 5173 occupied, `bun run dev` exited with "Port 5173 is already in use" instead of moving to 5174.
+- The upstream bridge allows any `localhost`/`127.0.0.1` port. A one-off copy of the full roundtrip, with MCP `--url` fixed at 5173 and the app on a random port (opened with the advertised `mcp-port`), passed: draft post 6. The fixed port is a convention for agents, not a bridge requirement.
+- `bun run --cwd apps/wordpress-playground check` passes. Tooling tests: 14/15, with the same unrelated export CLI failure.
+
 ## Remaining acceptance
 
 1. Install the exact browser on a supported environment and run the shell and real runtime suites without weakened settings.

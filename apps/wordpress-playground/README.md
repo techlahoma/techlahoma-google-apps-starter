@@ -45,7 +45,7 @@ The committed [Blueprint](public/blueprint.json) creates synthetic workshop cont
 The optional MCP lane additionally requires **Node >=24.18.0**. When installing the upstream package with npm, its manifest also requires **npm >=11.16.0**. The normal monorepo app path remains Bun-based; our launcher uses the installed dependency directly and does not run npx.
 
 1. Open this repository in local Antigravity.
-2. Merge [antigravity.mcp.example.json](antigravity.mcp.example.json) into the workspace's `.agents/mcp_config.json`, preserving other servers. The example assumes the MCP process starts from the repository root. If the client uses another working directory, use the absolute path to `scripts/mcp.mjs`.
+2. Run `bun run --cwd apps/wordpress-playground antigravity:setup apply` to add the server to Antigravity's user config with this checkout's absolute paths, or merge [antigravity.mcp.example.json](antigravity.mcp.example.json) into the workspace's `.agents/mcp_config.json` by hand, preserving other servers. [ANTIGRAVITY_START.md](ANTIGRAVITY_START.md) has a paste-in prompt that does the whole flow. The example assumes the MCP process starts from the repository root. If the client uses another working directory, use the absolute path to `scripts/mcp.mjs`.
 3. For a hosted app, change the example's `--url=` to the **exact final HTTPS origin at `/`**. Keep HTTP only for local development. Do not put `mcp-port`, a token, or credentials in this configuration.
 4. Enable/restart the MCP server. Ask it to call `playground_get_website_url`.
 5. Open that returned URL in a top-level browser tab on the **same laptop**. Start WordPress, then click **Connect**. Grant that site loopback/device permission if prompted.

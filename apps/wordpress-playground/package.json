@@ -13,7 +13,8 @@
     "start": "node scripts/serve.mjs",
     "export:aistudio": "node scripts/export-aistudio.mjs",
     "test:tooling": "node --test scripts/*.test.mjs",
-    "mcp": "node scripts/mcp.mjs"
+    "mcp": "node scripts/mcp.mjs",
+    "antigravity:setup": "node scripts/antigravity-setup.mjs"
   },
   "dependencies": {
     "@wp-playground/client": "3.1.58",
