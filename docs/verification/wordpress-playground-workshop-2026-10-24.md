@@ -130,6 +130,21 @@ AI Studio import, and deployment acceptance remain at their previously recorded
 states. The standalone AI Studio export does not contain these installed skills
 or the monorepo's skill manager.
 
+## Local Antigravity MCP setup, 2026-10-29
+
+Revision `6fb570a` on macOS (Apple Silicon), Bun 1.3.14 via mise, Node 26.6.0, npm 11.18.0.
+
+| Check | Result |
+| --- | --- |
+| `bun install --frozen-lockfile` | Pass; lockfile unchanged. |
+| `mcp.mjs --check` | Pass: Playground MCP 3.1.58. |
+| `e2e/mcp-roundtrip.ts --mcp-only` | Pass: stdio, origin allowlist, token and WebSocket rejection. |
+| `e2e/mcp-roundtrip.ts` (full) | Pass: Chromium 151.0.7922.34 created and read back draft post 6. |
+| Launch as configured from `/tmp` | Pass: `initialize`, 18 `playground_*` tools listed, `playground_get_website_url` answered. |
+| `node --test scripts/*.test.mjs` | 9/10 pass. `export CLI requires an explicit action…` fails (exit 0, expected 1). That covers the AI Studio exporter, not the MCP lane; not investigated. |
+
+The user-level Antigravity config (`~/.gemini/antigravity/mcp_config.json`, previously empty) now registers `wordpress-workshop` with the mise Node shim and absolute paths. It is machine-local and not committed. The paste-in prompt is [ANTIGRAVITY_START.md](../../apps/wordpress-playground/ANTIGRAVITY_START.md). Antigravity itself has not yet loaded the server or run the draft task; acceptance item 2 below remains open.
+
 ## Remaining acceptance
 
 1. Install the exact browser on a supported environment and run the shell and real runtime suites without weakened settings.
