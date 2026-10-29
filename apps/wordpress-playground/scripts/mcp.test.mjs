@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {checkNode, validateAppUrl} from './mcp.mjs';
+import {checkNode, validateAppUrl, validatePort} from './mcp.mjs';
 
 test('accepts explicit secure origins and local development', () => {
   assert.equal(
@@ -33,4 +33,11 @@ test('rejects older runtimes before starting a bridge', () => {
   assert.throws(() => checkNode('invalid'));
   checkNode('24.18.0');
   checkNode('26.0.0');
+});
+
+test('accepts only an unprivileged numeric bridge port', () => {
+  assert.equal(validatePort('7811'), 7811);
+  for (const value of ['80', '70000', '7811a', '', '-1']) {
+    assert.throws(() => validatePort(value), value);
+  }
 });

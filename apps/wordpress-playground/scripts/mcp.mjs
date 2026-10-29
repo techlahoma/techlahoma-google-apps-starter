@@ -29,6 +29,15 @@ export function validateAppUrl(value) {
   return url.href;
 }
 
+/** A fixed bridge port lets a hosted page connect without a ?mcp-port link. */
+export function validatePort(value) {
+  const port = Number(value);
+  if (!/^\d+$/.test(value) || port < 1024 || port > 65535) {
+    throw new Error('Use a --port= between 1024 and 65535.');
+  }
+  return port;
+}
+
 export function checkNode(version) {
   const [major, minor] = version.split('.').map(Number);
   if (
@@ -50,18 +59,30 @@ async function main() {
   const args = process.argv.slice(2);
   if (args.includes('--help')) {
     console.error(
-      'Usage: node scripts/mcp.mjs [--check] --url=https://YOUR-APP-HOST/',
+      'Usage: node scripts/mcp.mjs [--check] --url=https://YOUR-APP-HOST/ [--port=7811]',
     );
     return;
   }
   const urls = args.filter(arg => arg.startsWith('--url='));
+  const ports = args.filter(arg => arg.startsWith('--port='));
   if (
     urls.length !== 1 ||
-    args.some(arg => arg !== '--check' && !arg.startsWith('--url='))
+    ports.length > 1 ||
+    args.some(
+      arg =>
+        arg !== '--check' &&
+        !arg.startsWith('--url=') &&
+        !arg.startsWith('--port='),
+    )
   ) {
-    throw new Error('Supply exactly one --url= argument. Optional: --check.');
+    throw new Error(
+      'Supply exactly one --url= argument. Optional: --port=, --check.',
+    );
   }
   const url = validateAppUrl(urls[0].slice('--url='.length));
+  const port = ports.length
+    ? validatePort(ports[0].slice('--port='.length))
+    : undefined;
   const manifest = JSON.parse(
     readFileSync(
       fileURLToPath(import.meta.resolve('@wp-playground/mcp/package.json')),
@@ -75,7 +96,7 @@ async function main() {
   }
   if (args.includes('--check')) {
     console.error(
-      `Ready: Node ${process.versions.node}; Playground MCP ${manifest.version}; app ${url}`,
+      `Ready: Node ${process.versions.node}; Playground MCP ${manifest.version}; app ${url}${port ? `; port ${port}` : ''}`,
     );
     return;
   }
@@ -96,7 +117,12 @@ async function main() {
       );
     },
   });
-  process.argv = [process.execPath, fileURLToPath(entry), `--url=${url}`];
+  process.argv = [
+    process.execPath,
+    fileURLToPath(entry),
+    `--url=${url}`,
+    ...(port ? [`--port=${port}`] : []),
+  ];
   try {
     // Keep stdout reserved for MCP JSON-RPC; the upstream module owns stdio.
     await import(entry);
